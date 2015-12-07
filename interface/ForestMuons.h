@@ -3,6 +3,8 @@
 
 #define maxForestMuons 10
 
+#include <iostream>
+#include <vector>
 #include "TBranch.h"
 
 class ForestMuons {
@@ -11,6 +13,7 @@ public :
    ~ForestMuons(){};
 
    // Declaration of leaf types
+   // Event info
    Int_t           Run;
    Int_t           Event;
    Int_t           Lumi;
@@ -18,6 +21,7 @@ public :
    Float_t         vx;
    Float_t         vy;
    Float_t         vz;
+   // GenParticle info
    Int_t           Gen_nptl;
    Int_t           Gen_pid[maxForestMuons];   //[Gen_nptl]
    Int_t           Gen_mom[maxForestMuons];   //[Gen_nptl] pid mother
@@ -26,63 +30,74 @@ public :
    Float_t         Gen_pt[maxForestMuons];   //[Gen_nptl]
    Float_t         Gen_eta[maxForestMuons];   //[Gen_nptl]
    Float_t         Gen_phi[maxForestMuons];   //[Gen_nptl]
+   // RecoMuon info
+   //// (mu->isPFMuon() || mu->isGlobalMuon() || mu->isTrackerMuon()) && mu->pt() > 5
    Int_t           Glb_nptl;
-   Int_t           Glb_charge[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_p[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_pt[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_eta[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_phi[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_dxy[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_dz[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_nValMuHits[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_nValTrkHits[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_nValPixHits[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_trkLayerWMeas[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_nMatchedStations[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_nTrkFound[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_glbChi2_ndof[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_trkChi2_ndof[maxForestMuons];   //[Glb_nptl]
-   Int_t           Glb_pixLayerWMeas[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_trkDxy[maxForestMuons];   //[Glb_nptl]
-   Float_t         Glb_trkDz[maxForestMuons];   //[Glb_nptl]
-   Int_t           Sta_nptl;
-   Int_t           Sta_charge[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_p[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_pt[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_eta[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_phi[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_dxy[maxForestMuons];   //[Sta_nptl]
-   Float_t         Sta_dz[maxForestMuons];   //[Sta_nptl]
-   Int_t           Glb_isArbitrated[maxForestMuons];   //[Glb_nptl]
-   Int_t           Di_npair;
-   Float_t         Di_vProb[maxForestMuons];   //[Di_npair]
-   Float_t         Di_mass[maxForestMuons];   //[Di_npair]
-   Float_t         Di_e[maxForestMuons];   //[Di_npair]
-   Float_t         Di_pt[maxForestMuons];   //[Di_npair]
-   Float_t         Di_pt1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_pt2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_eta[maxForestMuons];   //[Di_npair]
-   Float_t         Di_eta1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_eta2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_phi[maxForestMuons];   //[Di_npair]
-   Float_t         Di_phi1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_phi2[maxForestMuons];   //[Di_npair]
-   Int_t           Di_charge1[maxForestMuons];   //[Di_npair]
-   Int_t           Di_charge2[maxForestMuons];   //[Di_npair]
-   Int_t           Di_isArb1[maxForestMuons];   //[Di_npair]
-   Int_t           Di_isArb2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_nTrkHit1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_nTrkHit2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_trkChi2_1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_trkChi2_2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_glbChi2_1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_glbChi2_2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_dxy1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_dxy2[maxForestMuons];   //[Di_npair]
-   Float_t         Di_dz1[maxForestMuons];   //[Di_npair]
-   Float_t         Di_dz2[maxForestMuons];   //[Di_npair]
+   std::vector<Int_t>           *Glb_charge=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_p=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_pt=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_eta=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_phi=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_dxy=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_dz=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_nValMuHits=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_nValTrkHits=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_nValPixHits=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_trkLayerWMeas=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_nMatchedStations=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_nTrkFound=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_glbChi2_ndof=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_trkChi2_ndof=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_pixLayerWMeas=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_trkDxy=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_trkDz=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_trkQuality=0; //[Glb_nptl]
+   std::vector<Int_t>           *Glb_isGood=0; //[Glb_nptl]
+   std::vector<Float_t>         *Glb_pfChIso=0; //[Glb_nptl]
+   std::vector<Float_t>         *Glb_pfPhoIso=0; //[Glb_nptl]
+   std::vector<Float_t>         *Glb_pfNeuIso=0; //[Glb_nptl]
+   std::vector<Float_t>         *Glb_pfPUIso=0; //[Glb_nptl]
+   std::vector<Int_t>           *Glb_isArbitrated=0;   //[Glb_nptl]
+   //Needed ? 
+   Int_t                        Sta_nptl;
+   std::vector<Int_t>           *Sta_charge=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_p=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_pt=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_eta=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_phi=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_dxy=0;   //[Sta_nptl]
+   std::vector<Float_t>         *Sta_dz=0;   //[Sta_nptl]
+   // Dimuon
+   Int_t                        Di_npair;
+   std::vector<Float_t>         *Di_vProb=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_mass=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_e=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_pt=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_pt1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_pt2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_eta=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_eta1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_eta2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_phi=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_phi1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_phi2=0;   //[Di_npair]
+   std::vector<Int_t>           *Di_charge1=0;   //[Di_npair]
+   std::vector<Int_t>           *Di_charge2=0;   //[Di_npair]
+   std::vector<Int_t>           *Di_isArb1=0;   //[Di_npair]
+   std::vector<Int_t>           *Di_isArb2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_nTrkHit1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_nTrkHit2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_trkChi2_1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_trkChi2_2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_glbChi2_1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_glbChi2_2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_dxy1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_dxy2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_dz1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_dz2=0;   //[Di_npair]
 
    // List of branches
+   // Event info
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
    TBranch        *b_lumi;   //!
@@ -90,6 +105,7 @@ public :
    TBranch        *b_vx;   //!
    TBranch        *b_vy;   //!
    TBranch        *b_vz;   //!
+   // GenParticle info
    TBranch        *b_Gen_nptl;   //!
    TBranch        *b_Gen_pid;   //!
    TBranch        *b_Gen_mom;   //!
@@ -98,6 +114,7 @@ public :
    TBranch        *b_Gen_pt;   //!
    TBranch        *b_Gen_eta;   //!
    TBranch        *b_Gen_phi;   //!
+   // RecoMuon info
    TBranch        *b_Glb_nptl;   //!
    TBranch        *b_Glb_charge;   //!
    TBranch        *b_Glb_p;   //!
@@ -117,6 +134,14 @@ public :
    TBranch        *b_Glb_pixLayerWMeas;   //!
    TBranch        *b_Glb_trkDxy;   //!
    TBranch        *b_Glb_trkDz;   //!
+   TBranch        *b_Glb_trkQuality;
+   TBranch        *b_Glb_isGood;
+   TBranch        *b_Glb_pfChIso;
+   TBranch        *b_Glb_pfPhoIso;
+   TBranch        *b_Glb_pfNeuIso;
+   TBranch        *b_Glb_pfPUIso;
+   TBranch        *b_Glb_isArbitrated;   //!
+   // Needed?
    TBranch        *b_Sta_nptl;   //!
    TBranch        *b_Sta_charge;   //!
    TBranch        *b_Sta_p;   //!
@@ -125,7 +150,7 @@ public :
    TBranch        *b_Sta_phi;   //!
    TBranch        *b_Sta_dxy;   //!
    TBranch        *b_Sta_dz;   //!
-   TBranch        *b_Glb_isArbitrated;   //!
+   //Dimuons
    TBranch        *b_Di_npair;   //!
    TBranch        *b_Di_vProb;   //!
    TBranch        *b_Di_mass;   //!

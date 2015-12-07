@@ -45,7 +45,9 @@ class lwMuonProducer : public inputBase {
   Int_t                        fMinNMuHits;     // min muon hits
   Int_t                        fMinMS;          // #matched stations
   Float_t                      fMaxDxy;         // max dxy
-  Float_t                      fMaxDz;          // max trk dz
+  Float_t                      fMaxDz;          // max dz
+  Float_t                      fMaxtrkDxy;      // max innerTrack dxy
+  Float_t                      fMaxtrkDz;       // max innerTrack dz
   Int_t                        fMinNPixHits;    // min pixel hits
   Int_t                        fMinTrkLWM;      // min tracker layer hits
 

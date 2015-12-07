@@ -26,10 +26,11 @@ anaZToMuMu::anaZToMuMu(const char *name, const char *title)
 //----------------------------------------------------------
 void anaZToMuMu::Exec(Option_t * /*option*/)
 {
-  anaBaseTask::Exec();
-  if(!SelectEvent()) return;
+   anaBaseTask::Exec();
+   //printf("anaZToMuMu executing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+
+   if(!SelectEvent()) return;
   
-   //printf("anaZToMuMu executing\n");
    if(!fInitOutput) CreateOutputObjects();
 
    //Get objects from event
@@ -39,7 +40,7 @@ void anaZToMuMu::Exec(Option_t * /*option*/)
      fMuons = dynamic_cast<TClonesArray*>(fEventObjects->FindObject(fMuonsName.Data()));
    }
    if(!fMuons) return;
-
+   
    //Make array for Z candidates
    if(!fEventObjects->FindObject(fZsName) && !fZs) {
       fZs = new TClonesArray("diParticle");
@@ -48,13 +49,13 @@ void anaZToMuMu::Exec(Option_t * /*option*/)
     }
    if(fZs) fZs->Delete();
 
-   Double_t cent = 5.;//fHiEvent->GetCentrality();
+   Double_t cent = fHiEvent->GetCentrality();
    Int_t nmuons = fMuons->GetEntriesFast();
-   //Printf("nmuons: %d",nmuons);
+   Printf("nmuons: %d",nmuons);
    fh1NMuons->Fill(nmuons);
    if(nmuons<2) return;
 
-   //Printf("muon loop");
+   Printf("muon loop %d\n", fMuons->GetEntriesFast()-1);
    for (int i = 0; i < fMuons->GetEntriesFast()-1; i++) {
      particleBase *mu1 = static_cast<particleBase*>(fMuons->At(i));
      if(!mu1) {

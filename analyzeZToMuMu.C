@@ -59,12 +59,13 @@ void analyzeZToMuMu(std::vector<std::string> urls, const char *outname = "eventO
   chain->AddFriend(skimTree);
   Printf("skimTree done");
 
-  TChain *muTree = new TChain("hltMuTree/HLTMuTree");
+  TChain *muTree = new TChain("ggHiNtuplizer/EventTree");
   for(size_t i=firstFile; i<lastFile; i++) muTree->Add(urls[i].c_str());
   chain->AddFriend(muTree);
   Printf("muTree done");
 
-    TList *fEventObjects = new TList();
+  muTree->Print();
+  TList *fEventObjects = new TList();
 
 
   //---------------------------------------------------------------

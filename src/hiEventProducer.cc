@@ -83,6 +83,7 @@ Bool_t hiEventProducer::Init() {
     fChain->SetBranchAddress("vz",    &fVz,    &b_vz);
     fChain->SetBranchAddress("hiBin", &fHiBin, &b_hiBin);
     fChain->SetBranchAddress("hiHF",  &fHiHF,  &b_hiHF);
+    fChain->Print();
     if(fChain->GetBranch("nPU"))
       fChain->SetBranchAddress("nPU",&fNPV,&b_nPU);
     if(fChain->GetBranch("HLT_AK4PFJet80_Eta5p1_v1"))
