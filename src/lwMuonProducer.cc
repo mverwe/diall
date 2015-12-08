@@ -6,6 +6,7 @@
 #include "UserCode/diall/interface/genParticle.h"
 #include "UserCode/diall/interface/lwMuon.h"
 
+
 ClassImp(lwMuonProducer)
 
 //__________________________________________________________
@@ -20,12 +21,14 @@ inputBase("lwMuonProducer"),
   fMaxEtaAbs(2.1),
   fMaxTrkChi2(4.),
   fMaxGlbChi2(10.),
-  fMinNMuHits(1),
-  fMinMS(2),
+  fMinNMuHits(0),
+  fMinMS(1),
   fMaxDxy(0.2),//3.),
   fMaxDz(0.5),//15.),
-  fMinNPixHits(1),
-  fMinTrkLWM(6)
+  fMaxtrkDxy(0.3),//3.),
+  fMaxtrkDz(20.),
+  fMinNPixHits(0),
+  fMinTrkLWM(5)
 {
   //default constructor
 }
@@ -42,12 +45,14 @@ lwMuonProducer::lwMuonProducer(const char *name) :
   fMaxEtaAbs(2.1),
   fMaxTrkChi2(4.),
   fMaxGlbChi2(10.),
-  fMinNMuHits(1),
-  fMinMS(2),
+  fMinNMuHits(0),
+  fMinMS(1),
   fMaxDxy(0.2),//3.),
   fMaxDz(0.5),//15.),
-  fMinNPixHits(1),
-  fMinTrkLWM(6)
+  fMaxtrkDxy(0.3),//3.),
+  fMaxtrkDz(20.),
+  fMinNPixHits(0),
+  fMinTrkLWM(5)
 {
   //standard constructor
 }
@@ -58,6 +63,7 @@ Bool_t lwMuonProducer::Init() {
   if(!inputBase::Init()) return kFALSE;
   
   if(fInputMode==hiForest) {
+    // Gen Info
     if (fChain->GetBranch("Gen_nptl"))
       fChain->SetBranchAddress("Gen_nptl", &fMuons.Gen_nptl, &fMuons.b_Gen_nptl);
     if (fChain->GetBranch("Gen_pid"))
@@ -70,33 +76,55 @@ Bool_t lwMuonProducer::Init() {
       fChain->SetBranchAddress("Gen_eta", &fMuons.Gen_eta, &fMuons.b_Gen_eta);
     if (fChain->GetBranch("Gen_phi"))
       fChain->SetBranchAddress("Gen_phi", &fMuons.Gen_phi, &fMuons.b_Gen_phi);
-    if (fChain->GetBranch("Glb_nptl"))
-      fChain->SetBranchAddress("Glb_nptl", &fMuons.Glb_nptl, &fMuons.b_Glb_nptl);
-    if (fChain->GetBranch("Glb_charge"))
-      fChain->SetBranchAddress("Glb_charge", &fMuons.Glb_charge, &fMuons.b_Glb_charge);
-    if (fChain->GetBranch("Glb_pt"))
-      fChain->SetBranchAddress("Glb_pt", &fMuons.Glb_pt, &fMuons.b_Glb_pt);
-    if (fChain->GetBranch("Glb_eta"))
-      fChain->SetBranchAddress("Glb_eta", &fMuons.Glb_eta, &fMuons.b_Glb_eta);
-    if (fChain->GetBranch("Glb_phi"))
-      fChain->SetBranchAddress("Glb_phi", &fMuons.Glb_phi, &fMuons.b_Glb_phi);
-    if (fChain->GetBranch("Glb_dxy"))
-      fChain->SetBranchAddress("Glb_dxy", &fMuons.Glb_dxy, &fMuons.b_Glb_dxy);
-    if (fChain->GetBranch("Glb_nValMuHits"))
-      fChain->SetBranchAddress("Glb_nValMuHits", &fMuons.Glb_nValMuHits, &fMuons.b_Glb_nValMuHits);
-    if (fChain->GetBranch("Glb_nValTrkHits"))
-      fChain->SetBranchAddress("Glb_nValTrkHits", &fMuons.Glb_nValTrkHits, &fMuons.b_Glb_nValTrkHits);
-    if (fChain->GetBranch("Glb_nValPixHits"))
-      fChain->SetBranchAddress("Glb_nValPixHits", &fMuons.Glb_nValPixHits, &fMuons.b_Glb_nValPixHits);
-    if (fChain->GetBranch("Glb_trkChi2_ndof"))
-      fChain->SetBranchAddress("Glb_trkChi2_ndof", &fMuons.Glb_trkChi2_ndof, &fMuons.b_Glb_trkChi2_ndof);
-    if (fChain->GetBranch("Glb_nMatchedStations"))
-      fChain->SetBranchAddress("Glb_nMatchedStations", &fMuons.Glb_nMatchedStations, &fMuons.b_Glb_nMatchedStations);
-    if (fChain->GetBranch("Glb_trkDz"))
-      fChain->SetBranchAddress("Glb_trkDz", &fMuons.Glb_trkDz, &fMuons.b_Glb_trkDz);
-    if (fChain->GetBranch("Glb_trkLayerWMeas"))
-      fChain->SetBranchAddress("Glb_trkLayerWMeas", &fMuons.Glb_trkLayerWMeas, &fMuons.b_Glb_trkLayerWMeas);
-
+    // Reco Info
+    fChain->SetBranchStatus("*", 0);
+    fChain->SetBranchStatus("nMu", 1);
+    fChain->SetBranchStatus("mu*", 1);
+    if (fChain->GetBranch("nMu"))
+      fChain->SetBranchAddress("nMu", &fMuons.Glb_nptl, &fMuons.b_Glb_nptl);
+    if (fChain->GetBranch("muCharge"))
+      fChain->SetBranchAddress("muCharge", &fMuons.Glb_charge, &fMuons.b_Glb_charge);
+    if (fChain->GetBranch("muPt"))
+      fChain->SetBranchAddress("muPt", &fMuons.Glb_pt, &fMuons.b_Glb_pt);
+    if (fChain->GetBranch("muEta"))
+      fChain->SetBranchAddress("muEta", &fMuons.Glb_eta, &fMuons.b_Glb_eta);
+    if (fChain->GetBranch("muPhi"))
+      fChain->SetBranchAddress("muPhi", &fMuons.Glb_phi, &fMuons.b_Glb_phi);
+    if (fChain->GetBranch("muD0"))
+      fChain->SetBranchAddress("muD0", &fMuons.Glb_dxy, &fMuons.b_Glb_dxy);
+    if (fChain->GetBranch("muDz"))
+      fChain->SetBranchAddress("muDz", &fMuons.Glb_dz, &fMuons.b_Glb_dz);
+    if (fChain->GetBranch("muPixelHits"))
+      fChain->SetBranchAddress("muPixelHits", &fMuons.Glb_nValPixHits, &fMuons.b_Glb_nValPixHits);
+    //if (fChain->GetBranch("Glb_nValTrkHits"))
+    //fChain->SetBranchAddress("Glb_nValTrkHits", &fMuons.Glb_nValTrkHits, &fMuons.b_Glb_nValTrkHits);
+    if (fChain->GetBranch("muMuonHits"))
+      fChain->SetBranchAddress("muMuonHits", &fMuons.Glb_nValMuHits, &fMuons.b_Glb_nValMuHits);
+    if (fChain->GetBranch("muTrkQuality"))
+      fChain->SetBranchAddress("muTrkQuality", &fMuons.Glb_trkQuality, &fMuons.b_Glb_trkQuality);
+    if (fChain->GetBranch("muIsGood"))
+      fChain->SetBranchAddress("muIsGood", &fMuons.Glb_isGood, &fMuons.b_Glb_isGood);
+    if (fChain->GetBranch("muChi2NDF"))
+      fChain->SetBranchAddress("muChi2NDF", &fMuons.Glb_glbChi2_ndof, &fMuons.b_Glb_glbChi2_ndof);
+    if (fChain->GetBranch("muStations"))
+      fChain->SetBranchAddress("muStations", &fMuons.Glb_nMatchedStations, &fMuons.b_Glb_nMatchedStations);
+    if (fChain->GetBranch("muInnerD0"))
+      fChain->SetBranchAddress("muInnerD0", &fMuons.Glb_trkDxy, &fMuons.b_Glb_trkDxy);
+    if (fChain->GetBranch("muInnerDz"))
+      fChain->SetBranchAddress("muInnerDz", &fMuons.Glb_trkDz, &fMuons.b_Glb_trkDz);
+    if (fChain->GetBranch("muPixelLayers"))
+      fChain->SetBranchAddress("muPixelLayers", &fMuons.Glb_pixLayerWMeas, &fMuons.b_Glb_pixLayerWMeas);
+    if (fChain->GetBranch("muTrkLayers"))
+      fChain->SetBranchAddress("muTrkLayers", &fMuons.Glb_trkLayerWMeas, &fMuons.b_Glb_trkLayerWMeas);
+    if (fChain->GetBranch("muPFChIso"))
+      fChain->SetBranchAddress("muPFChIso", &fMuons.Glb_pfChIso, &fMuons.b_Glb_pfChIso);
+    if (fChain->GetBranch("muPFPhoIso"))
+      fChain->SetBranchAddress("muPFPhoIso", &fMuons.Glb_pfPhoIso, &fMuons.b_Glb_pfPhoIso);
+    if (fChain->GetBranch("muPFNeuIso"))
+      fChain->SetBranchAddress("muPFNeuIso", &fMuons.Glb_pfNeuIso, &fMuons.b_Glb_pfNeuIso);
+    if (fChain->GetBranch("muPFPUIso"))
+      fChain->SetBranchAddress("muPFPUIso", &fMuons.Glb_pfPUIso, &fMuons.b_Glb_pfPUIso);
+    
     fInit = kTRUE;
   }
   return kTRUE;
@@ -142,12 +170,12 @@ Bool_t lwMuonProducer::Run(Long64_t entry) {
   Int_t muCount = 0;
   for(Int_t i = 0; i<fMuons.Glb_nptl; i++) {
     if(!AcceptMuon(i)) continue;
-    lwMuon *mu = new lwMuon(fMuons.Glb_pt[i],
-                            fMuons.Glb_eta[i],
-                            fMuons.Glb_phi[i],
+    lwMuon *mu = new lwMuon(fMuons.Glb_pt->at(i),
+                            fMuons.Glb_eta->at(i),
+                            fMuons.Glb_phi->at(i),
                             0,
                             i);
-    mu->SetCharge(fMuons.Glb_charge[i]);
+    mu->SetCharge(fMuons.Glb_charge->at(i));
     (*flwMuonsReco)[muCount] = mu;
     ++muCount;
   }
@@ -179,18 +207,23 @@ Bool_t lwMuonProducer::Run(Long64_t entry) {
 //__________________________________________________________
 Bool_t lwMuonProducer::AcceptMuon(Int_t i) {
 
-  //muon quality selection
-
-  if(fMuons.Glb_pt[i]<fPtMin)                     return kFALSE;
-  else if(fabs(fMuons.Glb_eta[i])>fMaxEtaAbs)     return kFALSE;
-  else if(fMuons.Glb_trkChi2_ndof[i]>fMaxTrkChi2) return kFALSE;
-  else if(fMuons.Glb_glbChi2_ndof[i]>fMaxGlbChi2) return kFALSE;
-  else if(fMuons.Glb_nValMuHits[i]<fMinNMuHits)   return kFALSE;
-  else if(fMuons.Glb_nMatchedStations[i]<fMinMS)  return kFALSE;
-  else if(fMuons.Glb_dxy[i]>fMaxDxy)              return kFALSE;
-  else if(fMuons.Glb_dz[i]>fMaxDz)                return kFALSE;
-  else if(fMuons.Glb_nValPixHits[i]<fMinNPixHits) return kFALSE;
-  else if(fMuons.Glb_trkLayerWMeas[i]<fMinTrkLWM) return kFALSE;
+  //muon quality selection 
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2#Soft_Muon
+  //plus https://github.com/CmsHI/quickZMacros/blob/master/ggHistos.C#L4
+  if(!(fMuons.Glb_isGood->at(i)))                       return kFALSE;
+  else if((fMuons.Glb_pt->at(i))<fPtMin)                return kFALSE;
+  else if((fabs(fMuons.Glb_eta->at(i)))>fMaxEtaAbs)     return kFALSE;
+  //else if((fMuons.Glb_trkChi2_ndof->at(i))>fMaxTrkChi2) return kFALSE;
+  else if((fMuons.Glb_glbChi2_ndof->at(i))>fMaxGlbChi2) return kFALSE;
+  else if((fMuons.Glb_nValMuHits->at(i))<fMinNMuHits)   return kFALSE;
+  else if((fMuons.Glb_nMatchedStations->at(i))<fMinMS)  return kFALSE;
+  //else if((fMuons.Glb_dxy->at(i))>fMaxDxy)            return kFALSE;
+  //else if((fMuons.Glb_dz->at(i))>fMaxDz)              return kFALSE;
+  else if((fabs(fMuons.Glb_trkDxy->at(i)))>fMaxDxy)     return kFALSE;
+  else if((fabs(fMuons.Glb_trkDz->at(i)))>fMaxDz)       return kFALSE;
+  else if((fMuons.Glb_nValPixHits->at(i))<fMinNPixHits) return kFALSE;
+  else if((fMuons.Glb_trkLayerWMeas->at(i))<fMinTrkLWM) return kFALSE;
+  else if (!(fMuons.Glb_trkQuality->at(i)))             return kFALSE; 
   else return kTRUE;
 }
 
