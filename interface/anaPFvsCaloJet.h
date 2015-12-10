@@ -7,6 +7,7 @@
 #include "TString.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TTree.h"
 
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
@@ -29,6 +30,36 @@ public:
    TString           fJets2Name;      //name of jet container
    lwJetContainer   *fJets2Cont;      //!jet container
 
+   int        fRun;
+   int        fLumi;
+   int        fEvent;
+   int        fNjet;
+   float      fJetPt[200];
+   float      fJetRawPt[200];
+   float      fJetEta[200];
+   float      fJetPhi[200];
+   float      fChargedSum[200];
+   float      fChargedMax[200];
+   int        fChargedN[200];
+   float      fChargedHardSum[200];
+   float      fChargedHardMax[200];
+   int        fChargedHardN[200];
+   float      fPhotonSum[200];
+   float      fPhotonMax[200];
+   int        fPhotonN[200];
+   float      fNeutralSum[200];
+   float      fNeutralMax[200];
+   int        fNeutralN[200];
+   float      fEmSum[200];
+   float      fEmMax[200];
+   int        fEmN[200];
+   float      fMuSum[200];
+   float      fMuMax[200];
+   int        fMuN[200];
+   int        fNConst[200];
+   float      fJetPtMatch[200];
+   float      fDeltaR[200];
+   TTree     *fTreeOut;
    
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;

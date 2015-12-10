@@ -11,6 +11,7 @@ anaJetMatching::anaJetMatching(const char *name, const char *title)
   fJetsNameTag(""),
   fJetsContTag(),
   fNcentBins(4),
+  fMatchingType(0),
   fh2PtJet1VsPtJet2(0),
   fh2PtJet2VsRelPt(0),
   fh2PtJet1VsDeltaR(0)
@@ -91,6 +92,7 @@ void anaJetMatching::MatchJetsGeo() {
   iFlag.Reset(0);
 
   Double_t maxDist = 0.4; //limit CPU time
+  if(fMatchingType==1) maxDist = 0.1;
   
   //Find the clostest tag jet to base jet
   Double_t dist = maxDist;
@@ -115,44 +117,71 @@ void anaJetMatching::MatchJetsGeo() {
   }//jet1 loop
   
 
-  //other way around
-  dist = maxDist;
-  for (int j = 0; j < nJets2; j++) {
-    lwJet *jet2 = fJetsContTag->GetJet(j);
-    if(!jet2) continue;
-    if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
-
-    for (int i = 0; i < nJets1; i++) {
-      lwJet *jet1 = fJetsContBase->GetJet(i);
-      if(!jet1) continue;
-      if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
-
-      Double_t dR = jet1->DeltaR(jet2);
-      if(dR<dist && dR<maxDist){
-        faMatchIndex1[j]=i;
-	dist = dR;
-      }
-    }
-    if(faMatchIndex1[j]>=0)
-      iFlag[faMatchIndex1[j]*nJets2+j]+=2;//i closest to j
-  }
-
-  // check for "true" correlations
-  for(int i = 0;i<nJets1;i++) {
-    lwJet *jet1 = fJetsContBase->GetJet(i);
-    if(!jet1) continue;
-    if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
-
+  if(fMatchingType==0) {
+    //other way around
+    dist = maxDist;
     for (int j = 0; j < nJets2; j++) {
       lwJet *jet2 = fJetsContTag->GetJet(j);
       if(!jet2) continue;
       if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
 
-      // we have a unique correlation
-      if(iFlag[i*nJets2+j]==3) {
+      for (int i = 0; i < nJets1; i++) {
+        lwJet *jet1 = fJetsContBase->GetJet(i);
+        if(!jet1) continue;
+        if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
+
+        Double_t dR = jet1->DeltaR(jet2);
+        if(dR<dist && dR<maxDist){
+          faMatchIndex1[j]=i;
+          dist = dR;
+        }
+      }
+      if(faMatchIndex1[j]>=0)
+        iFlag[faMatchIndex1[j]*nJets2+j]+=2;//i closest to j
+    }
+
+    // check for "true" correlations
+    for(int i = 0;i<nJets1;i++) {
+      lwJet *jet1 = fJetsContBase->GetJet(i);
+      if(!jet1) continue;
+      if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
+
+      for (int j = 0; j < nJets2; j++) {
+        lwJet *jet2 = fJetsContTag->GetJet(j);
+        if(!jet2) continue;
+        if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
+
+        // we have a unique correlation
+        if(iFlag[i*nJets2+j]==3) {
+          jet1->SetMatchId1(j);
+          jet2->SetMatchId1(i);
+
+          //Fill histograms
+          if(fCentBin>-1 && fCentBin<fNcentBins) {
+            Double_t dR = jet1->DeltaR(jet2);
+            fh2PtJet1VsDeltaR[fCentBin]->Fill(jet1->Pt(),dR);
+            fh2PtJet1VsPtJet2[fCentBin]->Fill(jet1->Pt(),jet2->Pt());
+            if(jet2->Pt()>0.) fh2PtJet2VsRelPt[fCentBin]->Fill(jet2->Pt(),(jet1->Pt()-jet2->Pt())/jet2->Pt());
+          }
+        }
+      }
+    }
+  }
+  else if(fMatchingType==1) {
+    for(int i = 0;i<nJets1;i++) {
+      lwJet *jet1 = fJetsContBase->GetJet(i);
+      if(!jet1) continue;
+      if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
+
+      int j = faMatchIndex2[i];
+      if(j>-1) {
+        lwJet *jet2 = fJetsContTag->GetJet(j);
+        if(!jet2) continue;
+        if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
+        
         jet1->SetMatchId1(j);
         jet2->SetMatchId1(i);
-
+        
         //Fill histograms
         if(fCentBin>-1 && fCentBin<fNcentBins) {
           Double_t dR = jet1->DeltaR(jet2);

@@ -4,6 +4,7 @@
 
 #include "UserCode/diall/interface/trackProducer.h"
 #include "UserCode/diall/interface/particleBase.h"
+#include "UserCode/diall/interface/hiEventContainer.h"
 
 ClassImp(trackProducer)
 
@@ -35,6 +36,12 @@ Bool_t trackProducer::Init() {
   if(!inputBase::Init()) return kFALSE;
   
   if(fInputMode==hiForest) {
+    if(fChain->GetBranch("nEv"))
+      fChain->SetBranchAddress("nEv", &fForestTracks.nEv, &fForestTracks.b_nEv);
+    if(fChain->GetBranch("nLumi"))
+      fChain->SetBranchAddress("nLumi", &fForestTracks.nLumi, &fForestTracks.b_nLumi);
+    if(fChain->GetBranch("nRun"))
+      fChain->SetBranchAddress("nRun", &fForestTracks.nRun, &fForestTracks.b_nRun);
     if(fChain->GetBranch("N"))
       fChain->SetBranchAddress("N", &fForestTracks.N, &fForestTracks.b_N);
     if(fChain->GetBranch("nVtx"))
@@ -157,6 +164,14 @@ Bool_t trackProducer::Run(Long64_t entry) {
   if(centry<0) return kFALSE;
 
   if(!InitEventObjects()) return kFALSE;
+
+  //get hiEventContainer
+  hiEventContainer *fHiEvent = dynamic_cast<hiEventContainer*>(fEventObjects->FindObject("hiEventContainer"));
+  if(fHiEvent) {
+    if(fHiEvent->GetRun()<0)   fHiEvent->SetRun(fForestTracks.nRun);
+    if(fHiEvent->GetLumi()<0)  fHiEvent->SetLumi(fForestTracks.nLumi);
+    if(fHiEvent->GetEvent()<0) fHiEvent->SetEvent(fForestTracks.nEv);
+  }
  
   //clear array
   fTracks->Delete();

@@ -10,6 +10,23 @@ anaPFvsCaloJet::anaPFvsCaloJet(const char *name, const char *title)
   fJetsCont(0x0),
   fJets2Name(""),
   fJets2Cont(0x0),
+  fNjet(0),
+  // fJetPt(0.),
+  // fJetEta(0.),
+  // fJetPhi(0.),
+  // fChargedSum(0.),
+  // fChargedMax(0.),
+  // fChargedN(0),
+  // fPhotonSum(0.),
+  // fPhotonMax(0.),
+  // fPhotonN(0),
+  // fNeutralSum(0.),
+  // fNeutralMax(0.),
+  // fNeutralN(0),
+  // fNConst(0),
+  // fJetPtMatch(0.),
+  // fDeltaR(0.),
+  fTreeOut(0x0),
   fhEventSel(),
   fhCentrality(),
   fhNPV(),
@@ -26,6 +43,7 @@ anaPFvsCaloJet::anaPFvsCaloJet(const char *name, const char *title)
   fh3PtTruePtSubEta()
 {
 
+
 }
 
 //----------------------------------------------------------
@@ -33,7 +51,7 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
 {
  
   anaBaseTask::Exec();
-  if(!SelectEvent()) return;
+  //if(!SelectEvent()) return;
 
 
   //printf("anaPFvsCaloJet executing\n");
@@ -41,30 +59,42 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
 
   //Get event properties
   if(fHiEvent) {
-    if(abs(fHiEvent->GetVz())>15.) return;
+    if(abs(fHiEvent->GetVz())>15.) {
+      Printf("%s: Didn't pass vertex selection: %f",GetName(),fHiEvent->GetVz());
+      return;
+    }
   }
   
   //Get PF jets
   if(!fJetsCont && !fJetsName.IsNull())
     fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
-  if(!fJetsCont) return;
-
+  if(!fJetsCont) {
+    Printf("%s: Cannot find %s",GetName(),fJetsName.Data());
+    return;
+  }
    //Get calo jets
    if(!fJets2Cont && !fJets2Name.IsNull())
      fJets2Cont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJets2Name.Data()));
-   if(!fJets2Cont) return;
-
+   if(!fJets2Cont) {
+     Printf("%s: Cannot find %s",GetName(),fJets2Name.Data());
+     return;
+   }
    const Int_t nJets1 = fJetsCont->GetNJets();
    const Int_t nJets2 = fJets2Cont->GetNJets();
    if(nJets1==0 || nJets2==0) {
-     //Printf("nJets1: %d  nJets2: %d",nJets1,nJets2);
+     // Printf("%s: nJets1: %d  nJets2: %d",GetName(),nJets1,nJets2);
      return;
    }
 
-
+   //  Printf("event accepted");
+   
    int npv = 1;
    if(fHiEvent) npv = fHiEvent->GetNPV();
    fhNPV->Fill(npv);
+
+   fRun = fHiEvent->GetRun();
+   fLumi = fHiEvent->GetLumi();
+   fEvent = fHiEvent->GetEvent();
 
    fhEventSel->Fill(0.5);
 
@@ -72,20 +102,92 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
    if(fHiEvent) {
      if(fHiEvent->GetWeight()>0.) weight = fHiEvent->GetWeight();
    }
+
+   for(int i = 0; i<200; ++i) {
+     fJetPt[i]  = -1.;
+     fJetRawPt[i]  = -1.;
+     fJetEta[i] = -1.;
+     fJetPhi[i] = -1;
+     fChargedSum[i] = -1;
+     fChargedMax[i] = -1;
+     fChargedN[i] = -1;
+     fChargedHardSum[i] = -1;
+     fChargedHardMax[i] = -1;
+     fChargedHardN[i] = -1;
+     fPhotonSum[i] = -1;
+     fPhotonMax[i] = -1;
+     fPhotonN[i] = -1;
+     fNeutralSum[i] = -1;
+     fNeutralMax[i] = -1;
+     fNeutralN[i] = -1;
+     fEmSum[i] = -1;
+     fEmMax[i] = -1;
+     fEmN[i] = -1;
+     fMuSum[i] = -1;
+     fMuMax[i] = -1;
+     fMuN[i] = -1;
+     fNConst[i] = -1;
+     fJetPtMatch[i] = -1;
+     fDeltaR[i] = -1;
+   }
    
+   fNjet = 0;
+
    for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
      lwJet *jet1 = fJetsCont->GetJet(ij);
      if(!jet1) continue;
 
+     bool saveJet = false;
+     if(jet1->Pt()>30.) saveJet = true;
+     if(!saveJet) continue;
+     if(saveJet) {
+       fJetPt[fNjet]  = (float)jet1->Pt();
+       fJetRawPt[fNjet]  = (float)jet1->GetRawPt();
+       fJetEta[fNjet] = (float)jet1->Eta();
+       fJetPhi[fNjet] = (float)jet1->Phi();
+       fChargedSum[fNjet] = (float)jet1->GetChargedSum();
+       fChargedMax[fNjet] = (float)jet1->GetChargedMax();
+       fChargedN[fNjet] = (int)jet1->GetChargedN();
+       fChargedHardSum[fNjet] = (float)jet1->GetChargedHardSum();
+       fChargedHardMax[fNjet] = (float)jet1->GetChargedHardMax();
+       fChargedHardN[fNjet] = (int)jet1->GetChargedHardN();
+       fPhotonSum[fNjet] = (float)jet1->GetPhotonSum();
+       fPhotonMax[fNjet] = (float)jet1->GetPhotonMax();
+       fPhotonN[fNjet] = jet1->GetPhotonN();
+       fNeutralSum[fNjet] = (float)jet1->GetNeutralSum();
+       fNeutralMax[fNjet] = (float)jet1->GetNeutralMax();
+       fNeutralN[fNjet] = jet1->GetNeutralN();
+       fEmSum[fNjet] = (float)jet1->GetEmSum();
+       fEmMax[fNjet] = (float)jet1->GetEmMax();
+       fEmN[fNjet] = jet1->GetEmN();
+       fMuSum[fNjet] = (float)jet1->GetMuSum();
+       fMuMax[fNjet] = (float)jet1->GetMuMax();
+       fMuN[fNjet] = jet1->GetMuN();
+       int nconst = jet1->GetChargedN() + jet1->GetPhotonN() + jet1->GetNeutralN() + jet1->GetEmN() + jet1->GetMuN();
+       fNConst[fNjet] = nconst;
+     }
+     
+     
      fh2PtEtaNoMatching->Fill(jet1->Pt(),jet1->Eta(),weight);
           
      int id = jet1->GetMatchId1();
      lwJet *jet2 = fJets2Cont->GetJet(id);
      if(!jet2) {
        fh3PtEtaPhiNotMatched->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
+       if(saveJet) {
+         fJetPtMatch[fNjet] = -1.;
+         fDeltaR[fNjet] = -1.;
+         fNjet++;
+       }
        continue;
      }
-       
+
+     if(saveJet) {
+       fJetPtMatch[fNjet] = (float)jet2->Pt();
+       float dr = (float)jet1->DeltaR(jet2);
+       fDeltaR[fNjet] = dr;
+     }
+     
      fh3PtEtaPhiMatched->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
      
      double dpt = jet2->Pt()-jet1->Pt();
@@ -106,7 +208,11 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
        }
        fh3PtTruePtSubNPV->Fill(jet1->Pt(),jet2->Pt(),npv,weight);
      }
+
+     if(saveJet) fNjet++;
    }
+   fTreeOut->Fill();
+
 
 }
 //----------------------------------------------------------
@@ -118,6 +224,39 @@ void anaPFvsCaloJet::CreateOutputObjects() {
     Printf("anaPFvsCaloJet: fOutput not present");
     return;
   }
+
+  fTreeOut = new TTree(Form("%sTree",GetName()),"jet matching tree");
+  fTreeOut->Branch("run",	&fRun,	"run/I");
+  fTreeOut->Branch("lumi",	&fLumi,	"lumi/I");
+  fTreeOut->Branch("event",	&fEvent, "event/I");
+  fTreeOut->Branch("njet",	&fNjet,	"njet/I");
+  fTreeOut->Branch("jetpt",	&fJetPt,	"jetpt[njet]/F");
+  fTreeOut->Branch("jetrawpt",	&fJetRawPt,	"jetrawpt[njet]/F");
+  fTreeOut->Branch("jeteta",	&fJetEta,	"jeteta[njet]/F");
+  fTreeOut->Branch("jetphi",	&fJetPhi,	"jetphi[njet]/F");
+  fTreeOut->Branch("chargedSum",&fChargedSum,	"chargedSum[njet]/F");
+  fTreeOut->Branch("chargedMax",&fChargedMax,	"chargedMax[njet]/F");
+  fTreeOut->Branch("chargedN",  &fChargedN,	"chargedN[njet]/I");
+  fTreeOut->Branch("chargedHardSum",&fChargedHardSum,	"chargedHardSum[njet]/F");
+  fTreeOut->Branch("chargedHardMax",&fChargedHardMax,	"chargedHardMax[njet]/F");
+  fTreeOut->Branch("chargedHardN",  &fChargedHardN,	"chargedHardN[njet]/I");
+  fTreeOut->Branch("photonSum", &fPhotonSum,	"photonSum[njet]/F");
+  fTreeOut->Branch("photonMax", &fPhotonMax,	"photonMax[njet]/F");
+  fTreeOut->Branch("photonN",   &fPhotonN,	"photonN[njet]/I");
+  fTreeOut->Branch("neutralSum",&fNeutralSum,	"neutralSum[njet]/F");
+  fTreeOut->Branch("neutralMax",&fNeutralMax,	"neutralMax[njet]/F");
+  fTreeOut->Branch("neutralN",  &fNeutralN,	"neutralN[njet]/I");
+  fTreeOut->Branch("emSum",     &fEmSum,	"emSum[njet]/F");
+  fTreeOut->Branch("emMax",     &fEmMax,	"emMax[njet]/F");
+  fTreeOut->Branch("emN",       &fEmN,	        "emN[njet]/I");
+  fTreeOut->Branch("muSum",     &fMuSum,	"muSum[njet]/F");
+  fTreeOut->Branch("muMax",     &fMuMax,	"muMax[njet]/F");
+  fTreeOut->Branch("muN",       &fMuN,	        "muN[njet]/I");
+  fTreeOut->Branch("nconst",   &fNConst,	"nconst[njet]/I");
+  fTreeOut->Branch("jetptmatch",&fJetPtMatch,	"jetptmatch[njet]/F");
+  fTreeOut->Branch("deltaR",	&fDeltaR,	"deltaR[njet]/F");
+  
+  fOutput->Add(fTreeOut);
 
   TString histTitle;
   TString histName;

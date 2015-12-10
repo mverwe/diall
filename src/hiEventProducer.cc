@@ -28,8 +28,8 @@ inputBase("hiEventProducer"),
   fHLT_HISinglePhoton30_Eta3p5_v1(0),
   fHLT_FullTrack24ForPPRef_v1(0),
   fHLT_FullTrack45ForPPRef_v1(0),
-  fcollisionEvtSel(0),
-  fHBHENoise(0)
+  fcollisionEvtSel(1),
+  fHBHENoise(1)
 {
   //default constructor
 }
@@ -53,8 +53,8 @@ hiEventProducer::hiEventProducer(const char *name) :
   fHLT_HISinglePhoton30_Eta3p5_v1(0),
   fHLT_FullTrack24ForPPRef_v1(0),
   fHLT_FullTrack45ForPPRef_v1(0),
-  fcollisionEvtSel(0),
-  fHBHENoise(0)
+  fcollisionEvtSel(1),
+  fHBHENoise(1)
 {
   //standard constructor
 }
@@ -73,17 +73,24 @@ Bool_t hiEventProducer::Init() {
   if(!inputBase::Init()) return kFALSE;
 
   if(fInputMode==hiForest) {
-    fChain->SetBranchAddress("run",   &fRun,   &b_run);
-    fChain->SetBranchAddress("evt",   &fEvt,   &b_evt);
-    fChain->SetBranchAddress("lumi",  &fLumi,  &b_lumi);
+    if(fChain->GetBranch("run"))
+      fChain->SetBranchAddress("run",   &fRun,   &b_run);
+    if(fChain->GetBranch("evt"))
+      fChain->SetBranchAddress("evt",   &fEvt,   &b_evt);
+    if(fChain->GetBranch("lumi"))
+      fChain->SetBranchAddress("lumi",  &fLumi,  &b_lumi);
     if(fChain->GetBranch("weight"))
       fChain->SetBranchAddress("weight",&fWeight,&b_weight);
-    fChain->SetBranchAddress("vx",    &fVx,    &b_vx);
-    fChain->SetBranchAddress("vy",    &fVy,    &b_vy);
-    fChain->SetBranchAddress("vz",    &fVz,    &b_vz);
-    fChain->SetBranchAddress("hiBin", &fHiBin, &b_hiBin);
-    fChain->SetBranchAddress("hiHF",  &fHiHF,  &b_hiHF);
-    fChain->Print();
+    if(fChain->GetBranch("vx"))
+      fChain->SetBranchAddress("vx",    &fVx,    &b_vx);
+    if(fChain->GetBranch("vy"))
+      fChain->SetBranchAddress("vy",    &fVy,    &b_vy);
+    if(fChain->GetBranch("vz"))
+      fChain->SetBranchAddress("vz",    &fVz,    &b_vz);
+    if(fChain->GetBranch("hiBin"))
+      fChain->SetBranchAddress("hiBin", &fHiBin, &b_hiBin);
+    if(fChain->GetBranch("hiHF"))
+      fChain->SetBranchAddress("hiHF",  &fHiHF,  &b_hiHF);
     if(fChain->GetBranch("nPU"))
       fChain->SetBranchAddress("nPU",&fNPV,&b_nPU);
     if(fChain->GetBranch("HLT_AK4PFJet80_Eta5p1_v1"))
@@ -114,6 +121,7 @@ Bool_t hiEventProducer::InitEventObjects() {
     if(!fEventObjects->FindObject(fhiEventContName)) {
       fhiEventContainer = new hiEventContainer(fhiEventContName);
       fEventObjects->Add(fhiEventContainer);
+      Printf("Created hiEventContainer");
     }
   }
   return kTRUE;

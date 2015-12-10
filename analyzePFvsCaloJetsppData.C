@@ -35,8 +35,8 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   // Printf("anaFile: %d",anaFile);
   
   std::cout << "nfiles: " << urls.size() << std::endl;
-  for (auto i = urls.begin(); i != urls.end(); ++i)
-    std::cout << *i << std::endl;
+//  for (auto i = urls.begin(); i != urls.end(); ++i)
+  //  std::cout << *i << std::endl;
 
   size_t firstFile = 0;
   size_t lastFile = urls.size();

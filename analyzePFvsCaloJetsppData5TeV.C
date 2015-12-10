@@ -28,7 +28,7 @@
 
 using namespace std;
 
-void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1) {
+void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
   // std::vector<std::string> urls = CollectFiles(list);
 
@@ -46,17 +46,25 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
     lastFile = (size_t)lastF;
   }
   std::cout << "firstFile: " << firstFile << "  lastFile: " << lastFile << std::endl;
+
+  Int_t lastEvent = nentries;
+  if(firstEvent>0) {
+    lastEvent = firstEvent + nentries;
+  }
+  std::cout << "firstEvent: " << firstEvent << std::endl;
   
   //add files to chain
   TChain *chain = NULL;
-  chain = new TChain("hiEvtAnalyzer/HiTree");
+  chain = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
-  Printf("hiTree done");
-
-  TChain *hltTree = new TChain("hltanalysis/HltTree");
-  for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
-  chain->AddFriend(hltTree);
   Printf("hltTree done");
+
+  /*
+  TChain *hiEvtTree = new TChain("hiEvtAnalyzer/HiTree");
+  for(size_t i=firstFile; i<lastFile; i++) hiEvtTree->Add(urls[i].c_str());
+  chain->AddFriend(hiEvtTreE);
+  Printf("hiTree done");
+  */
 
   TChain *skimTree = new TChain("skimanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
@@ -87,6 +95,11 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   //chain->AddFriend(caloJetTree);
   Printf("caloJetTree done");
 
+  TChain *trackTree = new TChain("ppTrack/trackTree");
+  for(size_t i=firstFile; i<lastFile; i++) trackTree->Add(urls[i].c_str());
+  chain->AddFriend(trackTree);
+  Printf("trackTree done");
+
   // TChain *genTree = new TChain("HiGenParticleAna/hi");
   // for(size_t i=firstFile; i<lastFile; i++) genTree->Add(urls[i].c_str());
   // chain->AddFriend(genTree);
@@ -108,19 +121,26 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   p_pf->SetpfParticlesName("pfParticles");
   p_pf->SetEventObjects(fEventObjects);
 
-  lwJetFromForestProducer *p_pfJet = new lwJetFromForestProducer("lwJetForestProd");
+  lwJetFromForestProducer *p_pfJet = new lwJetFromForestProducer("lwJetForestProdPF");
   p_pfJet->SetInput(pfJetTree);//chain);
   p_pfJet->SetJetContName("akt4PF");
+  p_pfJet->DoPFJetID(false);//true);
   p_pfJet->SetGenJetContName("");//akt4Gen");
   p_pfJet->SetEventObjects(fEventObjects);
   p_pfJet->SetRadius(0.4);
   
-  lwJetFromForestProducer *p_caloJet = new lwJetFromForestProducer("lwJetForestProd");
+  lwJetFromForestProducer *p_caloJet = new lwJetFromForestProducer("lwJetForestProdCalo");
   p_caloJet->SetInput(caloJetTree);
   p_caloJet->SetJetContName("akt4Calo");
   p_caloJet->SetGenJetContName("");
   p_caloJet->SetEventObjects(fEventObjects);
   p_caloJet->SetRadius(0.4);
+
+  trackProducer *p_trk = new trackProducer("trackProd");
+  p_trk->SetInput(chain);
+  p_trk->SetTracksName("tracks");
+  p_trk->SetEventObjects(fEventObjects);
+  
   
   //---------------------------------------------------------------
   //analysis modules
@@ -133,26 +153,29 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   matchingPFCaloJet->ConnectEventObject(fEventObjects);
   matchingPFCaloJet->SetHiEvtName("hiEventContainer");
   matchingPFCaloJet->DoPFJet80(true);
-  matchingPFCaloJet->DoExcludePhoton30(true);
+  matchingPFCaloJet->DoExcludePhoton30(false);//true);
   matchingPFCaloJet->SetJetsNameBase("akt4PF");
   matchingPFCaloJet->SetJetsNameTag("akt4Calo");
   matchingPFCaloJet->SetNCentBins(1);
+  matchingPFCaloJet->SetMatchingType(1);
   handler->Add(matchingPFCaloJet);  
   
   anaPFvsCaloJet *anaPFCaloJet = new anaPFvsCaloJet("anaPFvsCaloJet","anaPFvsCaloJet");
   anaPFCaloJet->ConnectEventObject(fEventObjects);
   anaPFCaloJet->SetHiEvtName("hiEventContainer");
   anaPFCaloJet->DoPFJet80(true);
-  anaPFCaloJet->DoExcludePhoton30(true);
+  anaPFCaloJet->DoExcludePhoton30(false);//true);
   anaPFCaloJet->SetPFJetsName("akt4PF");
   anaPFCaloJet->SetCaloJetsName("akt4Calo");
+  anaPFCaloJet->DoCollionEventSel(false);
+  anaPFCaloJet->DoHBHENoiseFilter(false);
   handler->Add(anaPFCaloJet);
 
   anaPFvsCaloJet *anaCaloPFJet = new anaPFvsCaloJet("anaCalovsPFJet","anaCalovsPFJet");
   anaCaloPFJet->ConnectEventObject(fEventObjects);
   anaCaloPFJet->SetHiEvtName("hiEventContainer");
   anaCaloPFJet->DoPFJet80(true);
-  anaCaloPFJet->DoExcludePhoton30(true);
+  anaCaloPFJet->DoExcludePhoton30(false);//true);
   anaCaloPFJet->SetPFJetsName("akt4Calo");
   anaCaloPFJet->SetCaloJetsName("akt4PF");
   handler->Add(anaCaloPFJet);
@@ -182,7 +205,8 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   if(nentries<0) nentries = chain->GetEntries();
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
-  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+  for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
+    //  for (Long64_t jentry=0; jentry<nentries;jentry++) {
     if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(nentries));
     //Run producers
     // Printf("produce hiEvent");
@@ -196,7 +220,6 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
     //Execute all analysis tasks
     handler->ExecuteTask();
   }
-    
   fEventObjects->Print();
 
   TFile *out = new TFile(outname,"RECREATE");
@@ -205,8 +228,6 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   anaBaseTask *obj;
   while ((obj = dynamic_cast<anaBaseTask*>(next()) ))
     if(obj->GetOutput()) obj->GetOutput()->Write(obj->GetName(),TObject::kSingleKey);
-  
   out->Write();
   out->Close();
-  
 }
