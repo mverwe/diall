@@ -40,13 +40,17 @@ public:
   
   TH1F             *fh1HiHF;               //!HFE distribution
   TH1F             *fh1Cent;               //!centrality distribution
+  TH1F             *fh1NPV;                //!n pileup events generated
   
   TH2F            **fh2CentPt;             //!pt vs centrality full event
   TH2F            **fh2CentPtInJet;        //!pt vs centrality in jet
   TH2F            **fh2HiHFPt;             //!pt vs HF energy full event
   TH2F            **fh2HiHFPtInJet;        //!pt vs HF energy in jet
+  TH2F            **fh2NPVPt;              //!pt vs NPV full event
+  TH2F            **fh2NPVPtInJet;         //!pt vs NPV in jet
   TH2F             *fh2CentPtJet;          //!centrality vs pt jet
   TH2F             *fh2HiHFPtJet;          //!HF energy vs pt jet
+  TH2F             *fh2NPVPtJet;           //!NPV vs pt jet
 
   TH2F             *fh2JetPtPartPtEta1;    //!
   TH2F             *fh2JetPtPartPtEta2;    //!    
@@ -56,9 +60,12 @@ public:
   TH3F            **fh3CentPtEtaInJet;        //!pt vs eta vs centrality in jet
   TH3F            **fh3HiHFPtEta;             //!pt vs eta vs HF energy full event
   TH3F            **fh3HiHFPtEtaInJet;        //!pt vs eta vs HF energy in jet
+  TH3F            **fh3NPVPtEta;              //!pt vs eta vs NPV full event
+  TH3F            **fh3NPVPtEtaInJet;         //!pt vs eta vs NPV in jet
   TH3F             *fh3CentPtEtaJet;          //!centrality vs pt vs eta jet
   TH3F             *fh3HiHFPtEtaJet;          //!HF energy vs pt vs eta jet
+  TH3F             *fh3NPVPtEtaJet;          //!NPV vs pt vs eta jet
   
-  ClassDef(anaPFCandidates,3)
+  ClassDef(anaPFCandidates,4)
 };
 #endif

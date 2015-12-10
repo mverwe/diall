@@ -29,7 +29,7 @@ using namespace std;
 
 Bool_t doTracks        = kFALSE;//kTRUE;
 
-void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1) {
+void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
   // std::vector<std::string> urls = CollectFiles(list);
 
@@ -47,24 +47,35 @@ void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "e
     lastFile = (size_t)lastF;
   }
   std::cout << "firstFile: " << firstFile << "  lastFile: " << lastFile << std::endl;
-  
+ 
+  Int_t lastEvent = nentries;
+  if(firstEvent>0) {
+    lastEvent = firstEvent + nentries;
+  }
+  std::cout << "firstEvent: " << firstEvent << std::endl;
+ 
   //add files to chain
   TChain *chain = NULL;
-//  chain = new TChain("hiEvtAnalyzer/HiTree");
-  //for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
-  //Printf("hiTree done");
+  chain = new TChain("hiEvtAnalyzer/HiTree");
+  for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
+  Printf("hiTree done");
   
-  //TChain *pfTree = new TChain("pfcandAnalyzer/pfTree");
-  chain = new TChain("pfcandAnalyzer/pfTree");
-  //for(size_t i=firstFile; i<lastFile; i++) pfTree->Add(urls[i].c_str());
-  for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());  
-  //chain->AddFriend(pfTree);
+  TChain *pfTree = new TChain("pfcandAnalyzer/pfTree");
+  //chain = new TChain("pfcandAnalyzer/pfTree");
+  for(size_t i=firstFile; i<lastFile; i++) pfTree->Add(urls[i].c_str());
+  //for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());  
+  chain->AddFriend(pfTree);
   Printf("pfTree done");
   
   // TChain *muTree = new TChain("hltMuTree/HLTMuTree");
   // for(size_t i=firstFile; i<lastFile; i++) muTree->Add(urls[i].c_str());
   // chain->AddFriend(muTree);
   // Printf("muTree done");
+
+  TChain *pileupTree = new TChain("pileup/tree");
+  for(size_t i=firstFile; i<lastFile; i++) pileupTree->Add(urls[i].c_str());
+  chain->AddFriend(pileupTree);
+  Printf("pileupTree done");
 
   TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");//akPu4CaloJetAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
@@ -132,14 +143,14 @@ void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "e
 
   anaPFCandidates *anaPFCandJet = new anaPFCandidates("pfCandWithPFJets","pfCandWithPFJets");
   anaPFCandJet->ConnectEventObject(fEventObjects);
-//  anaPFCandJet->SetHiEvtName("hiEventContainer");
+  anaPFCandJet->SetHiEvtName("hiEventContainer");
   anaPFCandJet->SetParticlesName("pfParticles");
   anaPFCandJet->SetJetsName("akt4PF");
   handler->Add(anaPFCandJet);
 
   anaPFCandidates *anaPF = new anaPFCandidates("pfCand","pfCand");
   anaPF->ConnectEventObject(fEventObjects);
-  //anaPF->SetHiEvtName("hiEventContainer");
+  anaPF->SetHiEvtName("hiEventContainer");
   anaPF->SetParticlesName("pfParticles");
   anaPF->SetJetsName("akt4Gen");
   handler->Add(anaPF);
@@ -165,11 +176,11 @@ void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "e
   if(nentries<0) nentries = chain->GetEntries();
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
-  for (Long64_t jentry=0; jentry<nentries;jentry++) {
-
+//  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+  for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
     //Run producers
     // Printf("produce hiEvent");
-    // p_evt->Run(jentry);   //hi event properties
+    p_evt->Run(jentry);   //hi event properties
     //Printf("produce pf particles");
     p_pf->Run(jentry);    //pf particles
     if(doTracks) p_trk->Run(jentry);    //tracks
@@ -184,9 +195,10 @@ void analyzePFCandidates(std::vector<std::string> urls, const char *outname = "e
   TFile *out = new TFile(outname,"RECREATE");
   TList *tasks = handler->GetListOfTasks();
   TIter next(tasks);
-  anaBaseTask *obj;
-  while ((obj = dynamic_cast<anaBaseTask*>(next()) ))
-    if(obj->GetOutput()) obj->GetOutput()->Write(obj->GetName(),TObject::kSingleKey);
+  anaBaseTask *obj = NULL;
+  while ((obj = dynamic_cast<anaBaseTask*>(next()) )) {
+    if(obj) { if(obj->GetOutput()) obj->GetOutput()->Write(obj->GetName(),TObject::kSingleKey); }
+  }
   
   out->Write();
   out->Close();

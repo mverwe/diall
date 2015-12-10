@@ -15,7 +15,8 @@ inputBase("lwJetFromForestProducer"),
   flwGenJetContName("flwGenJetCont"),
   flwGenJetContainer(0x0),
   fForestJets(),
-  fRadius(-1.)
+  fRadius(-1.),
+  fDoPFJetID(false)
 {
   //default constructor
 }
@@ -28,7 +29,8 @@ lwJetFromForestProducer::lwJetFromForestProducer(const char *name) :
   flwGenJetContName("flwGenJetCont"),
   flwGenJetContainer(0x0),
   fForestJets(),
-  fRadius(-1.)
+  fRadius(-1.),
+  fDoPFJetID(false)
 {
   //standard constructor
 }
@@ -55,6 +57,46 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("jtpu", fForestJets.jtpu, &fForestJets.b_jtpu);
     if (fChain->GetBranch("jtm"))
       fChain->SetBranchAddress("jtm", fForestJets.jtm, &fForestJets.b_jtm);
+
+    if (fChain->GetBranch("trackMax"))
+      fChain->SetBranchAddress("trackMax", fForestJets.trackMax, &fForestJets.b_trackMax);
+    if (fChain->GetBranch("chargedMax"))
+      fChain->SetBranchAddress("chargedMax", fForestJets.chargedMax, &fForestJets.b_chargedMax);
+    if (fChain->GetBranch("photonMax"))
+      fChain->SetBranchAddress("photonMax", fForestJets.photonMax, &fForestJets.b_photonMax);
+    if (fChain->GetBranch("neutralMax"))
+      fChain->SetBranchAddress("neutralMax", fForestJets.neutralMax, &fForestJets.b_neutralMax);
+    if (fChain->GetBranch("eMax"))
+      fChain->SetBranchAddress("eMax", fForestJets.eMax, &fForestJets.b_eMax);
+    if (fChain->GetBranch("muMax"))
+      fChain->SetBranchAddress("muMax", fForestJets.muMax, &fForestJets.b_muMax);
+    
+    if (fChain->GetBranch("chargedSum"))
+      fChain->SetBranchAddress("chargedSum", fForestJets.chargedSum, &fForestJets.b_chargedSum);
+    if (fChain->GetBranch("chargedHardSum"))
+      fChain->SetBranchAddress("chargedHardSum", fForestJets.chargedHardSum, &fForestJets.b_chargedHardSum);
+    if (fChain->GetBranch("photonSum"))
+      fChain->SetBranchAddress("photonSum", fForestJets.photonSum, &fForestJets.b_photonSum);
+    if (fChain->GetBranch("neutralSum"))
+      fChain->SetBranchAddress("neutralSum", fForestJets.neutralSum, &fForestJets.b_neutralSum);
+    if (fChain->GetBranch("eSum"))
+      fChain->SetBranchAddress("eSum", fForestJets.eSum, &fForestJets.b_eSum);
+    if (fChain->GetBranch("muSum"))
+      fChain->SetBranchAddress("muSum", fForestJets.muSum, &fForestJets.b_muSum);
+    
+    if (fChain->GetBranch("trackN"))
+      fChain->SetBranchAddress("trackN", fForestJets.trackN, &fForestJets.b_trackN);
+    if (fChain->GetBranch("chargedN"))
+      fChain->SetBranchAddress("chargedN", fForestJets.chargedN, &fForestJets.b_chargedN);
+    if (fChain->GetBranch("photonN"))
+      fChain->SetBranchAddress("photonN", fForestJets.photonN, &fForestJets.b_photonN);
+    if (fChain->GetBranch("neutralN"))
+      fChain->SetBranchAddress("neutralN", fForestJets.neutralN, &fForestJets.b_neutralN);
+    if (fChain->GetBranch("eN"))
+      fChain->SetBranchAddress("eN", fForestJets.eN, &fForestJets.b_eN);
+    if (fChain->GetBranch("muN"))
+      fChain->SetBranchAddress("muN", fForestJets.muN, &fForestJets.b_muN);
+    
     if (fChain->GetBranch("discr_ssvHighEff"))
       fChain->SetBranchAddress("discr_ssvHighEff", fForestJets.discr_ssvHighEff, &fForestJets.b_discr_ssvHighEff);
     if (fChain->GetBranch("discr_ssvHighPur"))
@@ -126,6 +168,10 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
   Int_t jetCount = 0;
   //Printf("%s: njets: %d",GetName(),fForestJets.nref);
   for(Int_t i = 0; i<fForestJets.nref; i++) {
+    if( fDoPFJetID && !IsGoodPFJet(i)) {
+      //Printf("jet not accepted");
+      continue;
+    }
     lwJet *jet = new lwJet(fForestJets.jtpt[i],
                            fForestJets.jteta[i],
                            fForestJets.jtphi[i],
@@ -133,6 +179,13 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetRefToParton(fForestJets.refparton_flavor[i]);
     jet->SetRefToPartonForB(fForestJets.refparton_flavorForB[i]);
     jet->SetCsvSimpleDiscr(fForestJets.discr_csvSimple[i]);
+    jet->SetRawPt(fForestJets.rawpt[i]);
+    jet->SetChargedProp(fForestJets.chargedMax[i],fForestJets.chargedSum[i],fForestJets.chargedN[i]);
+    jet->SetChargedHardProp(fForestJets.chargedMax[i],fForestJets.chargedHardSum[i],fForestJets.chargedHardN[i]);
+    jet->SetPhotonProp(fForestJets.photonMax[i],fForestJets.photonSum[i],fForestJets.photonN[i]);
+    jet->SetNeutralProp(fForestJets.neutralMax[i],fForestJets.neutralSum[i],fForestJets.neutralN[i]);
+    jet->SetEmProp(fForestJets.eMax[i],fForestJets.eSum[i],fForestJets.eN[i]);
+    jet->SetMuProp(fForestJets.muMax[i],fForestJets.muSum[i],fForestJets.muN[i]);
     flwJetContainer->AddJet(jet,jetCount);
     ++jetCount;
   }
@@ -141,7 +194,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
 
   //only produce gen jets if requested and if they exist
   if(flwGenJetContainer && fChain->GetBranch("ngen")) {
-    Printf("doing gen jets");
+    //Printf("doing gen jets");
     if(fForestJets.ngen>0) {
       flwGenJetContainer->ClearVec();
       Int_t genJetCount = 0;
@@ -186,4 +239,25 @@ Long64_t lwJetFromForestProducer::LoadTree(Long64_t entry) {
   fChain->GetEntry(entry);
   
   return centry;
+}
+
+//__________________________________________________________
+bool lwJetFromForestProducer::IsGoodPFJet(int i) const {
+  //pf jet selection (https://twiki.cern.ch/twiki/bin/view/CMS/JetID)
+  int nconst = fForestJets.chargedN[i]+fForestJets.photonN[i]+fForestJets.neutralN[i]+fForestJets.eN[i]+fForestJets.muN[i];
+  if(abs(fForestJets.jteta[i])<=3.) {
+    if(fForestJets.neutralSum[i]/fForestJets.rawpt[i] > 0.9) return false;
+    if(fForestJets.eSum[i]/fForestJets.rawpt[i] > 0.9) return false;
+    if(nconst < 2) return false;
+    if(fForestJets.muSum[i]/fForestJets.rawpt[i] > 0.8) return false;
+
+    if(abs(fForestJets.jteta[i])<=2.4) {
+      if(fForestJets.chargedSum[i]/fForestJets.rawpt[i] < 0.01) return false;
+      if(fForestJets.chargedN[i]<1) return false;
+    }
+  } else {
+    if(fForestJets.eSum[i]/fForestJets.rawpt[i] > 0.9) return false;
+    if(fForestJets.neutralN[i]<5) return false;
+  }
+  return true;
 }

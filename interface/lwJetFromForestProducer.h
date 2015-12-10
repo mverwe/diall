@@ -29,17 +29,22 @@ class lwJetFromForestProducer : public inputBase {
   void        SetGenJetContName(TString n) { flwGenJetContName = n ; }
   void        SetRadius(Double_t r)        { fRadius        = r ; }
 
+  void        DoPFJetID(bool b)            { fDoPFJetID = b; }
+  
   const char* GetJetContName()    const { return flwJetContName.Data()    ; }
   const char* GetGenJetContName() const { return flwGenJetContName.Data() ; }
   Double_t    GetRadius()         const { return fRadius                  ; }
   
  protected:
+  bool                         IsGoodPFJet(int i) const;
+  
   TString                      flwJetContName;      // name of jet container
   lwJetContainer              *flwJetContainer;     //!lwJetContainer
   TString                      flwGenJetContName;   // name of gen jet container
   lwJetContainer              *flwGenJetContainer;  //!lwGenJetContainer
   ForestJets                   fForestJets;         //!jets in forest tree
   Double_t                     fRadius;             // the R parameter to use
+  bool                         fDoPFJetID;          // do PF jet quality selection
 
  private:
   lwJetFromForestProducer(const lwJetFromForestProducer& obj); // copy constructor

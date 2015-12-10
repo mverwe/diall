@@ -8,10 +8,11 @@
 <use name="FWCore/ParameterSet"/>
 <use name="UserCode/diall"/>
 <environment>
-  <bin name="runExample"             file="runExample.cc"></bin>
-  <bin name="runPuppiAna"            file="runPuppiAna.cc"></bin>
-  <bin name="runPFCandAna"           file="runPFCandAna.cc"></bin>
-  <bin name="runPFvsCaloJetAna"      file="runPFvsCaloJetAna.cc"></bin>
+  <bin name="runExample"              file="runExample.cc"></bin>
+  <bin name="runPuppiAna"             file="runPuppiAna.cc"></bin>
+  <bin name="runPFCandAna"            file="runPFCandAna.cc"></bin>
+  <bin name="runPFCandAna13TeVMC"     file="runPFCandAna13TeVMC.cc"></bin>
+  <bin name="runPFvsCaloJetAna"       file="runPFvsCaloJetAna.cc"></bin>
   <bin name="runPFvsCaloJetAnappData" file="runPFvsCaloJetAnappData.cc"></bin>
   <bin name="runGenvsCaloJetAna"      file="runGenvsCaloJetAna.cc"></bin>
   <bin name="runZToMuMu"              file="runZToMuMu.cc"></bin>
