@@ -25,6 +25,7 @@
 #include "UserCode/diall/interface/LWJetProducer.h"
 
 #include "UserCode/diall/interface/anaBaseTask.h"
+#include "UserCode/diall/interface/anaHadronIsolation.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
 #include "UserCode/diall/interface/anaJetQA.h"
 #include "UserCode/diall/interface/anaMET.h"
@@ -71,6 +72,7 @@
 #pragma link C++ class LWJetProducer;
 
 #pragma link C++ class anaBaseTask;
+#pragma link C++ class anaHadronIsolation;
 #pragma link C++ class anaJetMatching;
 #pragma link C++ class anaJetQA;
 #pragma link C++ class anaMET;
