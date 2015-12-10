@@ -32,14 +32,22 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
     elif dir.find('srm')>=0 :
         print 'Will use lcg-ls to query (make sure your proxy is initiated)'
         prefix='root://cmsxrootd.fnal.gov//'
-        lscommand = 'lcg-ls -D srmv2 -b %s'%dir
-        print lscommand
+        #lscommand = 'lcg-ls -D srmv2 -b %s'%dir
+        lscommand = 'lcg-ls %s' % dir
+  	#print lscommand
         lsout = commands.getstatusoutput(lscommand)[1].split()
-        for l in lsout : 
+        for l in lsout :
+	    #print l 
             if l.find('.root')<0 : continue
-            if l.find('step3')<0 : continue #RECO files
-            xrootdName=prefix+l
-            xrootdName=xrootdName.replace('/eos/uscms/','')
+            #if l.find('step3')<0 : continue #RECO files
+            #if(l.find('/mnt/hadoop/cms')>=0) : #/mnt/hadoop/cms 
+	    newl = l.replace('/mnt/hadoop/cms','')
+            xrootdName=prefix+newl
+            #xrootdName=xrootdName.replace('/eos/uscms/','')
+	    #print 'prefix'
+	    #print prefix
+	    print 'xrootdName: %s' % xrootdName
+	    print l
             localdataset.extend( [ xrootdName ] )
         return localdataset
     elif dir.find('/store/')==0:
