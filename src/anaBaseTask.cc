@@ -13,8 +13,8 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fOutput(0),
   fEvtName(""),
   fHiEvent(),
-  fCollSel(1),
-  fHBHENoise(1),
+  fCollSel(0),
+  fHBHENoise(0),
   fCentMin(-999),
   fCentMax(999),
   fPFJet80(0),
@@ -84,31 +84,31 @@ bool anaBaseTask::SelectEvent() const {
   bool accept = true;
   
   if(fHiEvent) {
-    //if(fCollSel && !fHiEvent->GetColl()) { accept = false;
+    if(fCollSel && !fHiEvent->GetColl()) accept = false;
     //  printf("accept 1 %d %d %d\n", accept, fCollSel, !fHiEvent->GetColl()); }
-    // if(fHBHENoise && !fHiEvent->GetHBHENoise()) { accept = false;
+    if(fHBHENoise && !fHiEvent->GetHBHENoise()) accept = false;
     //  printf("accept 2 %d %d %d\n", accept, fHBHENoise, !fHiEvent->GetHBHENoise()); }
     if(fCentMin>-1) {
       double cent = fHiEvent->GetCentrality();
-      if(cent<fCentMin && cent>fCentMax) { accept = false;
-	printf("accept 3 %d %f %d\n", accept, cent, !fHiEvent->GetCentrality()); }
+      if(cent<fCentMin && cent>fCentMax) accept = false;
+//	printf("accept 3 %d %f %d\n", accept, cent, !fHiEvent->GetCentrality()); }
     }
     
     if(fPFJet80 && !fHiEvent->GetPFJet80()) { accept = false;
-      printf("accept 4 %d %d %d\n", accept, fPFJet80, !fHiEvent->GetPFJet80() );
+  //    printf("accept 4 %d %d %d\n", accept, fPFJet80, !fHiEvent->GetPFJet80() );
     }
     if(fPhoton30 && !fHiEvent->GetPhoton30()) { accept = false;
-      printf("accept 5 %d %d %d\n", accept, fPhoton30, !fHiEvent->GetPhoton30() );
+    //  printf("accept 5 %d %d %d\n", accept, fPhoton30, !fHiEvent->GetPhoton30() );
     }
-    if(fTrk24 && !fHiEvent->GetTrk24()) { accept = false;
-      printf("accept 6 %d %d %d\n", accept, fTrk24, !fHiEvent->GetTrk24()); }
+    if(fTrk24 && !fHiEvent->GetTrk24()) accept = false;
+     // printf("accept 6 %d %d %d\n", accept, fTrk24, !fHiEvent->GetTrk24()); }
     if(fTrk45 && !fHiEvent->GetTrk45()) { accept = false;
-      printf("accept 7 %d %d %d\n", accept, fTrk45, !fHiEvent->GetTrk45() );
+     // printf("accept 7 %d %d %d\n", accept, fTrk45, !fHiEvent->GetTrk45() );
     }
 
     //special for express stream
     if(fPhoton30Excl && fHiEvent->GetPhoton30()) { accept = false;
-      printf("accept 8 %d %d %d\n", accept, fPhoton30Excl, !fHiEvent->GetPhoton30() );
+ //     printf("accept 8 %d %d %d\n", accept, fPhoton30Excl, !fHiEvent->GetPhoton30() );
     }
   }
 

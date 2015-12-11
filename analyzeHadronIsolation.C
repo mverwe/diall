@@ -124,6 +124,8 @@ void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname =
   hadronIsoRaw->SetIsolationType(anaHadronIsolation::kRaw);
   hadronIsoRaw->SetJetRecoName("akt4PF");
   hadronIsoRaw->DoPFJet80(true);
+  hadronIsoRaw->DoCollionEventSel(true);
+  hadronIsoRaw->DoHBHENoiseFilter(true);
   handler->Add(hadronIsoRaw);
 
   anaHadronIsolation *hadronIsoRawCaloJet = new anaHadronIsolation("hadronIsoRawCaloJet","hadronIsoRawCaloJet");
@@ -133,6 +135,8 @@ void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname =
   hadronIsoRawCaloJet->SetIsolationType(anaHadronIsolation::kRaw);
   hadronIsoRawCaloJet->SetJetRecoName("akt4Calo");
   hadronIsoRawCaloJet->DoPFJet80(true);
+  hadronIsoRawCaloJet->DoCollionEventSel(true);
+  hadronIsoRawCaloJet->DoHBHENoiseFilter(true);
   handler->Add(hadronIsoRawCaloJet);
 	  
 	  
