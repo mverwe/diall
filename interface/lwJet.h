@@ -21,7 +21,7 @@ class lwJet : public particleBase {
 
   Double_t    GetArea()                 const { return fArea           ; }
   float       GetRawPt()                const { return fRawPt          ; }
-  
+  float       GetRefPt()                const { return fRefPt          ; }  
   
   Int_t       GetNConstituents()        const { return fConstIds.size(); }
   Int_t       GetConstituentId(Int_t i) const { return fConstIds[i]    ; }
@@ -51,6 +51,8 @@ class lwJet : public particleBase {
   
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
+  void        SetRefPt(Double_t pt)        { fRefPt = pt; }
+
   void        AddConstituent(Int_t i )     { fConstIds.push_back(i); }
   void        SetRefToParton(Int_t i)      { fRefParton = i;}
   void        SetRefToPartonForB(Int_t i)  { fRefPartonForB = i; }
@@ -70,6 +72,7 @@ class lwJet : public particleBase {
   Int_t             fRefPartonForB; //ref to parton for b
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
   float             fRawPt;
+  float             fRefPt;
   float             fChargedMax;
   float             fChargedSum;
   int               fChargedN;
@@ -89,6 +92,6 @@ class lwJet : public particleBase {
   float             fMuSum;
   int               fMuN;
     
-  ClassDef(lwJet,2)
+  ClassDef(lwJet,3)
 };
 #endif

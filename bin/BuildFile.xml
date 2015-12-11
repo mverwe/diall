@@ -16,5 +16,6 @@
   <bin name="runPFvsCaloJetAnappData" file="runPFvsCaloJetAnappData.cc"></bin>
   <bin name="runGenvsCaloJetAna"      file="runGenvsCaloJetAna.cc"></bin>
   <bin name="runZToMuMu"              file="runZToMuMu.cc"></bin>
+  <bin name="runHadronIsolation"      file="runHadronIsolation.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

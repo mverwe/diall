@@ -11,8 +11,9 @@ ClassImp(anaHadronIsolation)
 anaHadronIsolation::anaHadronIsolation(const char *name, const char *title) 
 :anaBaseTask(name,title),
   fIsolationType(kRaw),
-  fConeRadius(0.3),
+  fConeRadius(0.5),
   fOffset(0.05),
+  fPtMinProbe(40.),
   fRandom(new TRandom3(0)),
   fCentBin(-1),
   fPFParticlesName(""),
@@ -21,15 +22,19 @@ anaHadronIsolation::anaHadronIsolation(const char *name, const char *title)
   fRhoMap(),
   fRhoMMapName(""),
   fRhoMMap(),
-  fJetContainerName(""),
-  fJetContainer(),
+  fJetContRecoName(""),
+  fJetContReco(),
+  fJetContGenName(""),
+  fJetContGen(),
   fh2CentIso(),
   fh2IsoZCone(),
   fh2PtRecoIso(),
   fh3PtProbeIsoPtJet(),
   fh3ResIsoZlead(),
   fh3PtProbeResIso(),
-  fh3PtJetResIso()
+  fh3PtJetResIso(),
+  fh3PtProbeResRawIso(),
+  fh3PtJetResRawIso()
 {
 
   fh2IsoZCone = new TH2F*[4];
@@ -38,13 +43,12 @@ anaHadronIsolation::anaHadronIsolation(const char *name, const char *title)
     fh2IsoZCone[i] = 0;
     fh2PtRecoIso[i] = 0;
   }
-
 }
 
 //________________________________________________________________________
 anaHadronIsolation::~anaHadronIsolation() {
   // Destructor
-  delete fRandom;
+  if(fRandom) { delete fRandom; fRandom = 0x0; }
 }
 
 //----------------------------------------------------------
@@ -66,12 +70,16 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
    }
    if(!fPFParticles) return;
 
-   //Get jets
-   if(!fJetContainer && !fJetContainerName.IsNull()) {
-     fJetContainer = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetContainerName.Data()));
+   //Get det-level jets
+   if(!fJetContReco && !fJetContRecoName.IsNull()) {
+     fJetContReco = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetContRecoName.Data()));
    }
 
-
+   //Get particle-level jets
+   if(!fJetContGen && !fJetContGenName.IsNull()) {
+     fJetContGen = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetContGenName.Data()));
+   }
+   
    //Determine centrality bin
    Double_t cent = 1;
    fCentBin = 0;
@@ -88,7 +96,7 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
    for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
      pfParticle *pfProbe = static_cast<pfParticle*>(fPFParticles->At(i));
      if(!pfProbe) continue;
-     if(pfProbe->Pt()<40. || abs(pfProbe->Eta())>2. || pfProbe->GetId()!=1) continue;
+     if(pfProbe->Pt()<fPtMinProbe || abs(pfProbe->Eta())>2. || pfProbe->GetId()!=1) continue;
 
      partInCone.clear();
      Double_t conePt = 0.;
@@ -117,7 +125,7 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
          conePt+=pt;
          if(pt>ptlead) ptlead = pt;
        }
-     }//pfParticle loop
+     }//pfParticle in cone loop
 
      if(fIsolationType==kArea) {
        if(fRhoMap)
@@ -138,11 +146,11 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
        fh2IsoZCone[fCentBin]->Fill(iso,zlead);
        fh2PtRecoIso[fCentBin]->Fill(pfProbe->Pt(),iso);
 
-       //correlate to jet
+       //correlate to det-level jet
        Double_t drmin = 999.;
        int jetId = -1;
-       for (int k = 0; k < fJetContainer->GetNJets(); k++) {
-         lwJet *jet = fJetContainer->GetJet(k);
+       for (int k = 0; k < fJetContReco->GetNJets(); k++) {
+         lwJet *jet = fJetContReco->GetJet(k);
          if(!jet) continue;
          Double_t dr = pfProbe->DeltaR(jet);
          if(dr<drmin) {
@@ -150,16 +158,24 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
            jetId = k;
          }
        }
-       //store
-       // - ptprobe vs iso vs ptjet
-       // - ptprobe/ptjet vs iso vs zlead
-       lwJet *jet = fJetContainer->GetJet(jetId);
+
+       //fill histograms
+       lwJet *jet = fJetContReco->GetJet(jetId);
+       //int idm = jet->GetMatchId1();
+       //lwJet *jetp = jet->GetJet(idm);
        double res = -999.;
+       double resRaw = -999.;
+       //if(jetp->Pt()>0.) res = jet->Pt()/jetp->Pt();
+       //if(jet->GetRefPt()>0.) res = jet->Pt()/jet->GetRefPt();
        if(jet->Pt()>0.) res = pfProbe->Pt()/jet->Pt();
+       if(jet->GetRawPt()>0.) resRaw = pfProbe->Pt()/jet->GetRawPt();
        fh3PtProbeIsoPtJet->Fill(pfProbe->Pt(),iso,jet->Pt());
        fh3ResIsoZlead->Fill(res,iso,zlead);
        fh3PtProbeResIso->Fill(pfProbe->Pt(),res,iso);
-       fh3PtProbeResIso->Fill(jet->Pt(),res,iso);
+       fh3PtJetResIso->Fill(jet->Pt(),res,iso);
+
+       fh3PtProbeResRawIso->Fill(pfProbe->Pt(),resRaw,iso);
+       fh3PtJetResRawIso->Fill(jet->Pt(),resRaw,iso);
      }
    }//probe hadron loop
 }
@@ -307,35 +323,44 @@ void anaHadronIsolation::CreateOutputObjects() {
   for(Int_t i = 0; i<4; i++) {
     histName = Form("fh2IsoZCone_%d",i);
     histTitle = Form("%s;p_{T,cone}/p_{T,probe};z_{lead,cone}",histName.Data());
-    fh2IsoZCone[i] = new TH2F(histName.Data(),histTitle.Data(),400,-3,5,100,0,1.);
+    fh2IsoZCone[i] = new TH2F(histName.Data(),histTitle.Data(),250,0,5,100,0,1.);
     fOutput->Add(fh2IsoZCone[i]);
 
     histName = Form("fh2PtRecoIso_%d",i);
     histTitle = Form("%s;p_{T,probe,reco};iso",histName.Data());
-    fh2PtRecoIso[i] = new TH2F(histName.Data(),histTitle.Data(),100,0.,100.,400,-3,5);
+    fh2PtRecoIso[i] = new TH2F(histName.Data(),histTitle.Data(),100,0.,100.,250,0,5);
     fOutput->Add(fh2PtRecoIso[i]);
   }
 
   histName = Form("fh3PtProbeIsoPtJet");
   histTitle = Form("%s;p_{T,probe};p_{T,cone}/p_{T,probe};p_{T,jet}",histName.Data());
-  fh3PtProbeIsoPtJet = new TH3F(histName.Data(),histTitle.Data(),100,0.,200.,400,-3,5,50,0.,500.);
+  fh3PtProbeIsoPtJet = new TH3F(histName.Data(),histTitle.Data(),100,0.,200.,250,0,5,50,0.,500.);
   fOutput->Add(fh3PtProbeIsoPtJet);
   
   histName = Form("fh3ResIsoZlead");
   histTitle = Form("%s;p_{T,probe}/p_{T,jet};p_{T,cone}/p_{T,probe};z_{lead}",histName.Data());
-  fh3ResIsoZlead = new TH3F(histName.Data(),histTitle.Data(),300,0.,3.,200,-3,5,100,0.,1.);
+  fh3ResIsoZlead = new TH3F(histName.Data(),histTitle.Data(),300,0.,3.,125,0,5,100,0.,1.);
   fOutput->Add(fh3ResIsoZlead);
 
   histName = Form("fh3PtProbeResIso");
   histTitle = Form("%s;p_{T,probe};p_{T,probe}/p_{T,jet};p_{T,cone}/p_{T,probe}",histName.Data());
-  fh3PtProbeResIso = new TH3F(histName.Data(),histTitle.Data(),100,0.,200.,300,0,3,200,-3.,5.);
+  fh3PtProbeResIso = new TH3F(histName.Data(),histTitle.Data(),100,0.,200.,300,0,3,125,0.,5.);
   fOutput->Add(fh3PtProbeResIso);
 
   histName = Form("fh3PtJetResIso");
   histTitle = Form("%s;p_{T,jet};p_{T,probe}/p_{T,jet};p_{T,cone}/p_{T,probe}",histName.Data());
-  fh3PtJetResIso = new TH3F(histName.Data(),histTitle.Data(),50,0.,500.,300,0,3,200,-3.,5.);
+  fh3PtJetResIso = new TH3F(histName.Data(),histTitle.Data(),50,0.,500.,300,0,3,125,0.,5.);
   fOutput->Add(fh3PtJetResIso);
 
+  histName = Form("fh3PtProbeResRawIso");
+  histTitle = Form("%s;p_{T,probe};p_{T,probe}/p_{T,jet};p_{T,cone}/p_{T,probe}",histName.Data());
+  fh3PtProbeResRawIso = new TH3F(histName.Data(),histTitle.Data(),100,0.,200.,300,0,3,125,0.,5.);
+  fOutput->Add(fh3PtProbeResRawIso);
+
+  histName = Form("fh3PtJetResRawIso");
+  histTitle = Form("%s;p_{T,jet};p_{T,probe}/p_{T,jet};p_{T,cone}/p_{T,probe}",histName.Data());
+  fh3PtJetResRawIso = new TH3F(histName.Data(),histTitle.Data(),50,0.,500.,300,0,3,125,0.,5.);
+  fOutput->Add(fh3PtJetResRawIso);
   
   
 }
