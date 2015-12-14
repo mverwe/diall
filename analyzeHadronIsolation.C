@@ -25,7 +25,7 @@
 
 using namespace std;
 
-void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
+void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int isData = 1) {
 
   std::cout << "nfiles: " << urls.size() << std::endl;
   // for (auto i = urls.begin(); i != urls.end(); ++i)
@@ -67,7 +67,6 @@ void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname =
   TChain *caloJetTree = new TChain("ak4CaloJetAnalyzer/t");//akPu4CaloJetAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) caloJetTree->Add(urls[i].c_str());
   Printf("caloJetTree done");
-
 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
@@ -123,9 +122,11 @@ void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname =
   hadronIsoRaw->SetPFPartName("pfParticles");
   hadronIsoRaw->SetIsolationType(anaHadronIsolation::kRaw);
   hadronIsoRaw->SetJetRecoName("akt4PF");
-  hadronIsoRaw->DoPFJet80(true);
-  hadronIsoRaw->DoCollionEventSel(true);
-  hadronIsoRaw->DoHBHENoiseFilter(true);
+  if(isData) {
+    hadronIsoRaw->DoPFJet80(true);
+    hadronIsoRaw->DoCollionEventSel(true);
+    hadronIsoRaw->DoHBHENoiseFilter(true);
+  }
   handler->Add(hadronIsoRaw);
 
   anaHadronIsolation *hadronIsoRawCaloJet = new anaHadronIsolation("hadronIsoRawCaloJet","hadronIsoRawCaloJet");
@@ -134,20 +135,22 @@ void analyzeHadronIsolation(std::vector<std::string> urls, const char *outname =
   hadronIsoRawCaloJet->SetPFPartName("pfParticles");
   hadronIsoRawCaloJet->SetIsolationType(anaHadronIsolation::kRaw);
   hadronIsoRawCaloJet->SetJetRecoName("akt4Calo");
-  hadronIsoRawCaloJet->DoPFJet80(true);
-  hadronIsoRawCaloJet->DoCollionEventSel(true);
-  hadronIsoRawCaloJet->DoHBHENoiseFilter(true);
+  if(isData) {
+    hadronIsoRawCaloJet->DoPFJet80(true);
+    hadronIsoRawCaloJet->DoCollionEventSel(true);
+    hadronIsoRawCaloJet->DoHBHENoiseFilter(true);
+  }
   handler->Add(hadronIsoRawCaloJet);
 	  
 	  
   //---------------------------------------------------------------
   //output tree
   Long64_t entries_tot =  chain->GetEntries(); //93064
-  if(nentries<0) nentries = chain->GetEntries();
+  if(nentries<0) lastEvent = chain->GetEntries();
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
   for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
-
+   if(jentry%10000==0) cout << "entry: "<< jentry << endl;
     //Run producers
     //    p_evt->Run(jentry);   //hi event properties
     p_pf->Run(jentry);    //pf particles

@@ -37,6 +37,10 @@ int main(int argc, char* argv[])
   Int_t firstEvent = 0;
   if(argc>3)
     firstEvent = atoi(argv[4]);
+
+  int isData = 1;
+  if(argc>4)
+    isData = atoi(argv[5]);
   
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
@@ -54,7 +58,7 @@ int main(int argc, char* argv[])
   // std::string outname = runProcess.getParameter<std::string>("output");
   int maxEvts = runProcess.getParameter<int>("maxEvents");
    
-  analyzeHadronIsolation(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent);
+  analyzeHadronIsolation(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
   
   cout << "Results have been stored in " << outname << endl;
 }
