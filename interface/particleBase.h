@@ -29,6 +29,7 @@ class particleBase : public TObject {
   Int_t          GetMatchId1()      const { return fMatchId1; }
   Int_t          GetMatchId2()      const { return fMatchId2; }
 
+  double         DeltaPhi(const particleBase* part) const;
   Double_t       DeltaR(const particleBase* part) const;
   Double_t       DeltaRSquared(const particleBase* part) const;
   Double_t       DeltaRSquared(const particleBase part) const;

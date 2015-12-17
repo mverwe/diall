@@ -66,6 +66,15 @@ particleBase &particleBase::operator=(const particleBase &other)
 }
 
 //______________________________________________________________________________
+double particleBase::DeltaPhi(const particleBase* part) const
+{
+  // Helper function to calculate the squared distance between two particleBase objects
+  double dPhi = Phi() - part->Phi();
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  return dPhi;
+}
+
+//______________________________________________________________________________
 Double_t particleBase::DeltaR(const particleBase* part) const
 {
   // Helper function to calculate the distance between two particleBase objects

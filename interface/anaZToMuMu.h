@@ -23,6 +23,7 @@ public:
    void CreateOutputObjects();
 
    void SetMuonsName(TString name)     { fMuonsName = name ; }
+   void SetZsName(TString name)        { fZsName = name; }
    void SetCheckPid(Bool_t b)          { fCheckPid = b; }
    
  protected:

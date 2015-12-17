@@ -56,6 +56,7 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
 {
    //printf("anaHadronIsolation executing\n");
    if(!fInitOutput) CreateOutputObjects();
+   if(!SelectEvent()) return;
 
    //Get objects from event
    if(!fRhoMap && !fRhoMapName.IsNull())

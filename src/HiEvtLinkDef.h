@@ -1,10 +1,13 @@
 #include "UserCode/diall/interface/diParticle.h"
 #include "UserCode/diall/interface/ForestMuons.h"
 #include "UserCode/diall/interface/ForestPFs.h"
+#include "UserCode/diall/interface/ForestGenParticles.h"
+#include "UserCode/diall/interface/ForestGenParticlesOld.h"
 #include "UserCode/diall/interface/ForestJets.h"
 #include "UserCode/diall/interface/ForestTracks.h"
 #include "UserCode/diall/interface/genParticle.h"
 #include "UserCode/diall/interface/genParticleProducer.h"
+#include "UserCode/diall/interface/genParticleProducerOld.h"
 #include "UserCode/diall/interface/hiEventContainer.h"
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/inputBase.h"
@@ -36,6 +39,7 @@
 #include "UserCode/diall/interface/anaPuppiParticles.h"
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaRhoProducer.h"
+#include "UserCode/diall/interface/anaZJetMCResponse.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
 
 #ifdef __CINT__
@@ -49,10 +53,13 @@
 #pragma link C++ class diParticle;
 #pragma link C++ class ForestMuons;
 #pragma link C++ class ForestPFs;
+#pragma link C++ class ForestGenParticles;
+#pragma link C++ class ForestGenParticlesOld;
 #pragma link C++ class ForestJets;
 #pragma link C++ class ForestTracks;
 #pragma link C++ class genParticle;
 #pragma link C++ class genParticleProducer;
+#pragma link C++ class genParticleProducerOld;
 #pragma link C++ class hiEventContainer;
 #pragma link C++ class hiEventProducer;
 #pragma link C++ class inputBase;
@@ -83,6 +90,7 @@
 #pragma link C++ class anaPuppiParticles;
 #pragma link C++ class anaPuppiProducer;
 #pragma link C++ class anaRhoProducer;
+#pragma link C++ class anaZJetMCResponse;
 #pragma link C++ class anaZToMuMu;
 
 #endif

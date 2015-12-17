@@ -51,17 +51,18 @@ void anaZToMuMu::Exec(Option_t * /*option*/)
 
    Double_t cent = fHiEvent->GetCentrality();
    Int_t nmuons = fMuons->GetEntriesFast();
-   Printf("nmuons: %d",nmuons);
+   //Printf("nmuons: %d",nmuons);
    fh1NMuons->Fill(nmuons);
    if(nmuons<2) return;
 
-   Printf("muon loop %d\n", fMuons->GetEntriesFast()-1);
+   //Printf("muon loop %d\n", fMuons->GetEntriesFast()-1);
    for (int i = 0; i < fMuons->GetEntriesFast()-1; i++) {
      particleBase *mu1 = static_cast<particleBase*>(fMuons->At(i));
      if(!mu1) {
        Printf("%s ERROR: couldn't get muon",GetName());
        continue;
      }
+     if(fabs(mu1->Eta())>2.4 && mu1->Pt()<20.) continue;
      if(fCheckPid)
        if(!CheckPid(mu1)) continue;
      //Printf("i: %d",i);
@@ -72,13 +73,17 @@ void anaZToMuMu::Exec(Option_t * /*option*/)
          Printf("%s ERROR: couldn't get muon",GetName());
          continue;
        }
-
+       if(fabs(mu2->Eta())>2.4 && mu2->Pt()<20.) continue;
+       
        TLorentzVector l1 = mu1->GetLorentzVector();
        TLorentzVector l2 = mu2->GetLorentzVector();
        TLorentzVector dimu = l1 + l2;
-       
+      
+       if(dimu.M()<80. || dimu.M()>120.) continue;
+ 
        //muons should be of opposite sign
-       if(mu1->GetCharge()*mu2->GetCharge()>0) {
+       //Printf("charge: %d %d",mu1->GetCharge(),mu2->GetCharge());
+       if(mu1->GetCharge()*mu2->GetCharge()<0) {
 
          if(fCheckPid)
            if(!CheckPid(mu2)) continue;
@@ -87,6 +92,7 @@ void anaZToMuMu::Exec(Option_t * /*option*/)
          
          //Store Z candidates in event
          if(fZs) {
+           //Printf("Create Z branch");
            diParticle *pPart = new ((*fZs)[count])
              diParticle(dimu.Pt(),
                         dimu.Eta(),
@@ -112,6 +118,7 @@ Bool_t anaZToMuMu::CheckPid(particleBase *p) {
   //check if generated particle is muon
   genParticle *gp = dynamic_cast<genParticle*>(p);
   if(!gp) return kFALSE;
+  //if(fabs(gp->GetPID())==13) Printf("anaZToMuMu pdg: %d charge: %d",gp->GetPID(),gp->GetCharge());
   if(abs(gp->GetPID())==13) return kTRUE;
   return kFALSE;
 }

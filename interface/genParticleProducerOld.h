@@ -1,5 +1,5 @@
-#ifndef genParticleProducer_h
-#define genParticleProducer_h
+#ifndef genParticleProducerOld_h
+#define genParticleProducerOld_h
 
 //
 // generated particles producer
@@ -11,13 +11,13 @@
 #include <TClonesArray.h>
 
 #include "UserCode/diall/interface/inputBase.h"
-#include <UserCode/diall/interface/ForestGenParticles.h>
+#include <UserCode/diall/interface/ForestGenParticlesOld.h>
 
-class genParticleProducer : public inputBase {
+class genParticleProducerOld : public inputBase {
  public:
-  genParticleProducer();
-  genParticleProducer(const char *name);
-  virtual ~genParticleProducer() {;}
+  genParticleProducerOld();
+  genParticleProducerOld(const char *name);
+  virtual ~genParticleProducerOld() {;}
 
   Bool_t   Init();
   Long64_t LoadTree(Long64_t entry);
@@ -35,14 +35,14 @@ class genParticleProducer : public inputBase {
   
   TString                      fGenParticlesName;// name of generated particles branch
   TClonesArray                *fGenParticles;    //!generated particles
-  ForestGenParticles           fFGenParts;       //! generated particles in forest tree
+  ForestGenParticlesOld        fFGenParts;       //! generated particles in forest tree
   Int_t                        fStatus;          // required status
   Int_t                        fSube;            // required subevent
   
  private:
-  genParticleProducer(const genParticleProducer& obj); // copy constructor
-  genParticleProducer& operator=(const genParticleProducer& other); // assignment
+  genParticleProducerOld(const genParticleProducerOld& obj); // copy constructor
+  genParticleProducerOld& operator=(const genParticleProducerOld& other); // assignment
   
-  ClassDef(genParticleProducer,2)
+  ClassDef(genParticleProducerOld,1)
 };
 #endif

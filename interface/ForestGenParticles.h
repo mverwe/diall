@@ -3,6 +3,8 @@
 
 #define maxGenParticles 20000
 
+#include <iostream>
+#include <vector>
 #include "TBranch.h"
 
 class ForestGenParticles {
@@ -22,40 +24,18 @@ public :
    Float_t         ptav[3];
    Int_t           mult;
 
-   //new version
-   /* std::vector<float>   *pt; */
-   /* std::vector<float>   *eta; */
-   /* std::vector<float>   *phi; */
-   /* std::vector<int>     *pdg; */
-   /* std::vector<int>     *chg; */
-   /* std::vector<int>     *sube; */
-
-   std::vector<float>   *pt;
-   std::vector<float>   *eta;
-   std::vector<float>   *phi;
-   std::vector<int>     *pdg;
-   std::vector<int>     *chg;
-   std::vector<int>     *sube;
-   std::vector<int>     *sta;
-
-
-   
-   /* std::vector<int>     *matchingID; */
-   /* std::vector<int>     *nMothers; */
-   /* std::vector<std::vector<int> > *motherIdx; */
-   /* std::vector<int>     *nDaughters; */
-   /* std::vector<std::vector<int> > *daughterIdx; */
-   
-   //old version
-   /*
-   Float_t         pt[maxGenParticles];   //[mult]
-   Float_t         eta[maxGenParticles];   //[mult]
-   Float_t         phi[maxGenParticles];   //[mult]
-   Int_t           pdg[maxGenParticles];   //[mult]
-   Int_t           chg[maxGenParticles];   //[mult]
-   Int_t           sta[maxGenParticles];   //[mult]
-   Int_t           sube[maxGenParticles];   //[mult]
-   */
+   std::vector<float>   *pt=0;
+   std::vector<float>   *eta=0;
+   std::vector<float>   *phi=0;
+   std::vector<int>     *pdg=0;
+   std::vector<int>     *chg=0;
+   std::vector<int>     *matchingID=0;
+   std::vector<int>     *nMothers=0;
+   std::vector<std::vector<int> > *motherIdx=0;
+   std::vector<int>     *nDaughters=0;
+   std::vector<std::vector<int> > *daughterIdx=0;
+   std::vector<int>     *sube=0;
+  
    Float_t         vx;
    Float_t         vy;
    Float_t         vz;
@@ -77,7 +57,6 @@ public :
    TBranch        *b_phi;   //!
    TBranch        *b_pdg;   //!
    TBranch        *b_chg;   //!
-   TBranch        *b_sta;   //!
    TBranch        *b_sube;   //!
    TBranch        *b_vx;   //!
    TBranch        *b_vy;   //!
