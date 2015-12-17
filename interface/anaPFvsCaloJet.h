@@ -21,8 +21,9 @@ public:
    void Exec(Option_t *option="");
    void CreateOutputObjects();
 
-   void SetPFJetsName(TString name)   { fJetsName = name ; }
-   void SetCaloJetsName(TString name) { fJets2Name = name ; } 
+   void SetPFJetsName(TString name)   { fJetsName = name ;  }
+   void SetCaloJetsName(TString name) { fJets2Name = name ; }
+   void SetStoreTree(bool b)          { fStoreTree = b;     }
    
  protected:
    TString           fJetsName;       //name of jet container
@@ -59,6 +60,7 @@ public:
    int        fNConst[200];
    float      fJetPtMatch[200];
    float      fDeltaR[200];
+   bool       fStoreTree;
    TTree     *fTreeOut;
    
    TH1F      *fhEventSel;

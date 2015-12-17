@@ -26,6 +26,7 @@ anaPFvsCaloJet::anaPFvsCaloJet(const char *name, const char *title)
   // fNConst(0),
   // fJetPtMatch(0.),
   // fDeltaR(0.),
+  fStoreTree(false),
   fTreeOut(0x0),
   fhEventSel(),
   fhCentrality(),
@@ -51,7 +52,7 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
 {
  
   anaBaseTask::Exec();
-  //if(!SelectEvent()) return;
+  if(!SelectEvent()) return;
 
 
   //printf("anaPFvsCaloJet executing\n");
@@ -211,7 +212,7 @@ void anaPFvsCaloJet::Exec(Option_t * /*option*/)
 
      if(saveJet) fNjet++;
    }
-   fTreeOut->Fill();
+   if(fStoreTree) fTreeOut->Fill();
 
 
 }
@@ -225,38 +226,40 @@ void anaPFvsCaloJet::CreateOutputObjects() {
     return;
   }
 
-  fTreeOut = new TTree(Form("%sTree",GetName()),"jet matching tree");
-  fTreeOut->Branch("run",	&fRun,	"run/I");
-  fTreeOut->Branch("lumi",	&fLumi,	"lumi/I");
-  fTreeOut->Branch("event",	&fEvent, "event/I");
-  fTreeOut->Branch("njet",	&fNjet,	"njet/I");
-  fTreeOut->Branch("jetpt",	&fJetPt,	"jetpt[njet]/F");
-  fTreeOut->Branch("jetrawpt",	&fJetRawPt,	"jetrawpt[njet]/F");
-  fTreeOut->Branch("jeteta",	&fJetEta,	"jeteta[njet]/F");
-  fTreeOut->Branch("jetphi",	&fJetPhi,	"jetphi[njet]/F");
-  fTreeOut->Branch("chargedSum",&fChargedSum,	"chargedSum[njet]/F");
-  fTreeOut->Branch("chargedMax",&fChargedMax,	"chargedMax[njet]/F");
-  fTreeOut->Branch("chargedN",  &fChargedN,	"chargedN[njet]/I");
-  fTreeOut->Branch("chargedHardSum",&fChargedHardSum,	"chargedHardSum[njet]/F");
-  fTreeOut->Branch("chargedHardMax",&fChargedHardMax,	"chargedHardMax[njet]/F");
-  fTreeOut->Branch("chargedHardN",  &fChargedHardN,	"chargedHardN[njet]/I");
-  fTreeOut->Branch("photonSum", &fPhotonSum,	"photonSum[njet]/F");
-  fTreeOut->Branch("photonMax", &fPhotonMax,	"photonMax[njet]/F");
-  fTreeOut->Branch("photonN",   &fPhotonN,	"photonN[njet]/I");
-  fTreeOut->Branch("neutralSum",&fNeutralSum,	"neutralSum[njet]/F");
-  fTreeOut->Branch("neutralMax",&fNeutralMax,	"neutralMax[njet]/F");
-  fTreeOut->Branch("neutralN",  &fNeutralN,	"neutralN[njet]/I");
-  fTreeOut->Branch("emSum",     &fEmSum,	"emSum[njet]/F");
-  fTreeOut->Branch("emMax",     &fEmMax,	"emMax[njet]/F");
-  fTreeOut->Branch("emN",       &fEmN,	        "emN[njet]/I");
-  fTreeOut->Branch("muSum",     &fMuSum,	"muSum[njet]/F");
-  fTreeOut->Branch("muMax",     &fMuMax,	"muMax[njet]/F");
-  fTreeOut->Branch("muN",       &fMuN,	        "muN[njet]/I");
-  fTreeOut->Branch("nconst",   &fNConst,	"nconst[njet]/I");
-  fTreeOut->Branch("jetptmatch",&fJetPtMatch,	"jetptmatch[njet]/F");
-  fTreeOut->Branch("deltaR",	&fDeltaR,	"deltaR[njet]/F");
+  if(fStoreTree) {
+    fTreeOut = new TTree(Form("%sTree",GetName()),"jet matching tree");
+    fTreeOut->Branch("run",	&fRun,	"run/I");
+    fTreeOut->Branch("lumi",	&fLumi,	"lumi/I");
+    fTreeOut->Branch("event",	&fEvent, "event/I");
+    fTreeOut->Branch("njet",	&fNjet,	"njet/I");
+    fTreeOut->Branch("jetpt",	&fJetPt,	"jetpt[njet]/F");
+    fTreeOut->Branch("jetrawpt",	&fJetRawPt,	"jetrawpt[njet]/F");
+    fTreeOut->Branch("jeteta",	&fJetEta,	"jeteta[njet]/F");
+    fTreeOut->Branch("jetphi",	&fJetPhi,	"jetphi[njet]/F");
+    fTreeOut->Branch("chargedSum",&fChargedSum,	"chargedSum[njet]/F");
+    fTreeOut->Branch("chargedMax",&fChargedMax,	"chargedMax[njet]/F");
+    fTreeOut->Branch("chargedN",  &fChargedN,	"chargedN[njet]/I");
+    fTreeOut->Branch("chargedHardSum",&fChargedHardSum,	"chargedHardSum[njet]/F");
+    fTreeOut->Branch("chargedHardMax",&fChargedHardMax,	"chargedHardMax[njet]/F");
+    fTreeOut->Branch("chargedHardN",  &fChargedHardN,	"chargedHardN[njet]/I");
+    fTreeOut->Branch("photonSum", &fPhotonSum,	"photonSum[njet]/F");
+    fTreeOut->Branch("photonMax", &fPhotonMax,	"photonMax[njet]/F");
+    fTreeOut->Branch("photonN",   &fPhotonN,	"photonN[njet]/I");
+    fTreeOut->Branch("neutralSum",&fNeutralSum,	"neutralSum[njet]/F");
+    fTreeOut->Branch("neutralMax",&fNeutralMax,	"neutralMax[njet]/F");
+    fTreeOut->Branch("neutralN",  &fNeutralN,	"neutralN[njet]/I");
+    fTreeOut->Branch("emSum",     &fEmSum,	"emSum[njet]/F");
+    fTreeOut->Branch("emMax",     &fEmMax,	"emMax[njet]/F");
+    fTreeOut->Branch("emN",       &fEmN,	        "emN[njet]/I");
+    fTreeOut->Branch("muSum",     &fMuSum,	"muSum[njet]/F");
+    fTreeOut->Branch("muMax",     &fMuMax,	"muMax[njet]/F");
+    fTreeOut->Branch("muN",       &fMuN,	        "muN[njet]/I");
+    fTreeOut->Branch("nconst",   &fNConst,	"nconst[njet]/I");
+    fTreeOut->Branch("jetptmatch",&fJetPtMatch,	"jetptmatch[njet]/F");
+    fTreeOut->Branch("deltaR",	&fDeltaR,	"deltaR[njet]/F");
   
-  fOutput->Add(fTreeOut);
+    fOutput->Add(fTreeOut);
+  }
 
   TString histTitle;
   TString histName;
@@ -264,34 +267,50 @@ void anaPFvsCaloJet::CreateOutputObjects() {
   const Int_t nBinsPtDet  = 200;
   const Double_t minPtDet =  0.;
   const Double_t maxPtDet = 400.;
+  double *binsPtDet = new double[nBinsPtDet+1];
+  for(int i=0; i<=nBinsPtDet; ++i) binsPtDet[i]=(double)minPtDet + (maxPtDet-minPtDet)/nBinsPtDet*(double)i ;
 
   const Int_t nBinsPtPart  = 200;
   const Double_t minPtPart = 0.;
   const Double_t maxPtPart = 400.;
+  double *binsPtPart = new double[nBinsPtPart+1];
+  for(int i=0; i<=nBinsPtPart; ++i) binsPtPart[i]=(double)minPtPart + (maxPtPart-minPtPart)/nBinsPtPart*(double)i ;
 
   const Int_t nBinsDPt  = 200;
   const Double_t minDPt = -100.;
   const Double_t maxDPt = 100.;
+  double *binsDPt = new double[nBinsDPt+1];
+  for(int i=0; i<=nBinsDPt; ++i) binsDPt[i]=(double)minDPt + (maxDPt-minDPt)/nBinsDPt*(double)i ;
 
   const Int_t nBinsDPtRel  = 600;
   const Double_t minDPtRel = -3.;
   const Double_t maxDPtRel = 3.;
+  double *binsDPtRel = new double[nBinsDPtRel+1];
+  for(int i=0; i<=nBinsDPtRel; ++i) binsDPtRel[i]=(double)minDPtRel + (maxDPtRel-minDPtRel)/nBinsDPtRel*(double)i ;
 
   const Int_t nBinsScalePt  = 300;
   const Double_t minScalePt = 0.;
   const Double_t maxScalePt = 3.;
+  double *binsScalePt = new double[nBinsScalePt+1];
+  for(int i=0; i<=nBinsScalePt; ++i) binsScalePt[i]=(double)minScalePt + (maxScalePt-minScalePt)/nBinsScalePt*(double)i ;
 
   const Int_t nBinsNPV = 100;
   const Double_t minNPV = 0.;
   const Double_t maxNPV = 100.;
-
-  const Int_t nBinsEta = 100;
-  const Double_t minEta = -5.;
-  const Double_t maxEta = 5.;
+  double *binsNPV = new double[nBinsNPV+1];
+  for(int i=0; i<=nBinsNPV; ++i) binsNPV[i]=(double)minNPV + (maxNPV-minNPV)/nBinsNPV*(double)i ;
 
   const Int_t nBinsPhi = 72;
   const Double_t minPhi = -TMath::Pi();
   const Double_t maxPhi = TMath::Pi();
+  double *binsPhi = new double[nBinsPhi+1];
+  for(int i=0; i<=nBinsPhi; ++i) binsPhi[i]=(double)minPhi + (maxPhi-minPhi)/nBinsPhi*(double)i ;
+  
+  const int nBinsEta = 30;
+  double etaEdge[nBinsEta+1] = {-5.191, -3.139, -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -1.930, -1.653, -1.305, -1.044, -0.783, -0.522, -0.261, 0.000, 0.261, 0.522, 0.783, 1.044, 1.305, 1.653, 1.930, 2.172, 2.322, 2.500, 2.650, 2.853, 2.964, 3.139, 5.191};
+  double *binsEta = new double[nBinsEta];
+  for(int i = 0; i<=nBinsEta; ++i)
+    binsEta[i] = etaEdge[i];
 
   fhEventSel = new TH1F("fhEventSel","fhEventSel",10,0,10);
   fOutput->Add(fhEventSel);
@@ -304,57 +323,66 @@ void anaPFvsCaloJet::CreateOutputObjects() {
 
   histName = "fh2PtEtaNoMatching";
   histTitle = Form("%s;#it{p}_{T,PF};#eta;",histName.Data());
-  fh2PtEtaNoMatching = new TH2F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta);
+  fh2PtEtaNoMatching = new TH2F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,binsEta);
   fOutput->Add(fh2PtEtaNoMatching);
 
   histName = "fh3PtEtaPhiNotMatched";
   histTitle = Form("%s;#it{p}_{T,PF};#eta;",histName.Data());
-  fh3PtEtaPhiNotMatched = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3PtEtaPhiNotMatched = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsPhi,binsPhi);
   fOutput->Add(fh3PtEtaPhiNotMatched);
 
   histName = "fh3PtEtaPhiMatched";
   histTitle = Form("%s;#it{p}_{T,PF};#eta;",histName.Data());
-  fh3PtEtaPhiMatched = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3PtEtaPhiMatched = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsPhi,binsPhi);
   fOutput->Add(fh3PtEtaPhiMatched);
   
   histName = Form("fh3PtTrueNPVDeltaPt");
   histTitle = Form("%s;#it{p}_{T,PF};NPV;#it{p}_{T,calo}-#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueNPVDeltaPt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsNPV,minNPV,maxNPV,nBinsDPt,minDPt,maxDPt);
+  fh3PtTrueNPVDeltaPt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsNPV,binsNPV,nBinsDPt,binsDPt);
   fOutput->Add(fh3PtTrueNPVDeltaPt);
 
   histName = Form("fh3PtTrueNPVDeltaPtRel");
   histTitle = Form("%s;#it{p}_{T,PF};NPV;(#it{p}_{T,calo}-#it{p}_{T,PF})/#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueNPVDeltaPtRel = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsNPV,minNPV,maxNPV,nBinsDPtRel,minDPtRel,maxDPtRel);
+  fh3PtTrueNPVDeltaPtRel = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsNPV,binsNPV,nBinsDPtRel,binsDPtRel);
   fOutput->Add(fh3PtTrueNPVDeltaPtRel);
 
   histName = Form("fh3PtTrueNPVScalePt");
   histTitle = Form("%s;#it{p}_{T,PF};NPV;#it{p}_{T,calo}/#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueNPVScalePt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsNPV,minNPV,maxNPV,nBinsScalePt,minScalePt,maxScalePt);
+  fh3PtTrueNPVScalePt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsNPV,binsNPV,nBinsScalePt,binsScalePt);
   fOutput->Add(fh3PtTrueNPVScalePt);
 
   histName = Form("fh3PtTruePtSubNPV");
   histTitle = Form("%s;#it{p}_{T,PF};#it{p}_{T,calo};NPV",histName.Data());
-  fh3PtTruePtSubNPV = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsPtDet,minPtDet,maxPtDet,nBinsNPV,minNPV,maxNPV);
+  fh3PtTruePtSubNPV = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsPtDet,binsPtDet,nBinsNPV,binsNPV);
   fOutput->Add(fh3PtTruePtSubNPV);
 
   histName = Form("fh3PtTrueEtaDeltaPt");
   histTitle = Form("%s;#it{p}_{T,PF};Eta;#it{p}_{T,calo}-#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueEtaDeltaPt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta,nBinsDPt,minDPt,maxDPt);
+  fh3PtTrueEtaDeltaPt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsDPt,binsDPt);
   fOutput->Add(fh3PtTrueEtaDeltaPt);
 
   histName = Form("fh3PtTrueEtaDeltaPtRel");
   histTitle = Form("%s;#it{p}_{T,PF};Eta;(#it{p}_{T,calo}-#it{p}_{T,PF})/#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueEtaDeltaPtRel = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta,nBinsDPtRel,minDPtRel,maxDPtRel);
+  fh3PtTrueEtaDeltaPtRel = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsDPtRel,binsDPtRel);
   fOutput->Add(fh3PtTrueEtaDeltaPtRel);
 
   histName = Form("fh3PtTrueEtaScalePt");
   histTitle = Form("%s;#it{p}_{T,PF};Eta;#it{p}_{T,calo}/#it{p}_{T,PF}",histName.Data());
-  fh3PtTrueEtaScalePt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsEta,minEta,maxEta,nBinsScalePt,minScalePt,maxScalePt);
+  fh3PtTrueEtaScalePt = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsScalePt,binsScalePt);
   fOutput->Add(fh3PtTrueEtaScalePt);
 
   histName = Form("fh3PtTruePtSubEta");
   histTitle = Form("%s;#it{p}_{T,PF};#it{p}_{T,calo};Eta",histName.Data());
-  fh3PtTruePtSubEta = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsPtDet,minPtDet,maxPtDet,nBinsEta,minEta,maxEta);
+  fh3PtTruePtSubEta = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsPtDet,binsPtDet,nBinsEta,binsEta);
   fOutput->Add(fh3PtTruePtSubEta);
-  
+
+  if(binsPhi)               delete [] binsPhi;
+  if(binsEta)               delete [] binsEta;
+  if(binsPtPart)            delete [] binsPtPart;
+  if(binsPtDet)             delete [] binsPtDet;
+  if(binsDPt)               delete [] binsDPt;
+  if(binsDPtRel)            delete [] binsDPtRel;
+  if(binsScalePt)           delete [] binsScalePt;
+  if(binsNPV)               delete [] binsNPV;
+
 }

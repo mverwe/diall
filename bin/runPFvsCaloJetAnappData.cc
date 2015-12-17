@@ -35,7 +35,15 @@ int main(int argc, char* argv[])
     firstFile = atoi(argv[2]);
     lastFile = atoi(argv[3]);
   }
-  
+
+  Int_t firstEvent = 0;
+  if(argc>3)
+    firstEvent = atoi(argv[4]);
+ 
+  int isData = 1;
+  if(argc>4)
+    isData = atoi(argv[5]);
+ 
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
@@ -52,7 +60,7 @@ int main(int argc, char* argv[])
   // std::string outname = runProcess.getParameter<std::string>("output");
   int maxEvts = runProcess.getParameter<int>("maxEvents");
    
-  analyzePFvsCaloJetsppData(urls,outname.c_str(),maxEvts,firstFile,lastFile);
+  analyzePFvsCaloJetsppData(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
   
   cout << "Results have been stored in " << outname << endl;
 }

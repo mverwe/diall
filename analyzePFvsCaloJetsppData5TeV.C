@@ -28,15 +28,15 @@
 
 using namespace std;
 
-void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
+void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int isData = 1) {
 
   // std::vector<std::string> urls = CollectFiles(list);
 
   // Printf("anaFile: %d",anaFile);
   
   std::cout << "nfiles: " << urls.size() << std::endl;
-  for (auto i = urls.begin(); i != urls.end(); ++i)
-    std::cout << *i << std::endl;
+  //for (auto i = urls.begin(); i != urls.end(); ++i)
+  //  std::cout << *i << std::endl;
 
   size_t firstFile = 0;
   size_t lastFile = urls.size();
@@ -52,7 +52,8 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
     lastEvent = firstEvent + nentries;
   }
   std::cout << "firstEvent: " << firstEvent << std::endl;
-  
+  std::cout << "isData: " << isData << std::endl;  
+
   //add files to chain
   TChain *chain = NULL;
   chain = new TChain("hltanalysis/HltTree");
@@ -157,27 +158,37 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   matchingPFCaloJet->SetJetsNameBase("akt4PF");
   matchingPFCaloJet->SetJetsNameTag("akt4Calo");
   matchingPFCaloJet->SetNCentBins(1);
-  matchingPFCaloJet->SetMatchingType(1);
+  matchingPFCaloJet->SetMatchingType(0);
   handler->Add(matchingPFCaloJet);  
   
   anaPFvsCaloJet *anaPFCaloJet = new anaPFvsCaloJet("anaPFvsCaloJet","anaPFvsCaloJet");
   anaPFCaloJet->ConnectEventObject(fEventObjects);
   anaPFCaloJet->SetHiEvtName("hiEventContainer");
-  anaPFCaloJet->DoPFJet80(true);
-  anaPFCaloJet->DoExcludePhoton30(false);//true);
+  //anaPFCaloJet->DoPFJet80(true);
+  //anaPFCaloJet->DoExcludePhoton30(false);//true);
   anaPFCaloJet->SetPFJetsName("akt4PF");
   anaPFCaloJet->SetCaloJetsName("akt4Calo");
-  anaPFCaloJet->DoCollionEventSel(false);
-  anaPFCaloJet->DoHBHENoiseFilter(false);
+  //anaPFCaloJet->DoCollionEventSel(false);
+  //anaPFCaloJet->DoHBHENoiseFilter(false);
+  if(isData) {
+    anaPFCaloJet->DoPFJet80(true);
+    anaPFCaloJet->DoCollionEventSel(true);
+    anaPFCaloJet->DoHBHENoiseFilter(true);
+  }
   handler->Add(anaPFCaloJet);
 
   anaPFvsCaloJet *anaCaloPFJet = new anaPFvsCaloJet("anaCalovsPFJet","anaCalovsPFJet");
   anaCaloPFJet->ConnectEventObject(fEventObjects);
   anaCaloPFJet->SetHiEvtName("hiEventContainer");
-  anaCaloPFJet->DoPFJet80(true);
-  anaCaloPFJet->DoExcludePhoton30(false);//true);
+  //  anaCaloPFJet->DoPFJet80(true);
+  //  anaCaloPFJet->DoExcludePhoton30(false);//true);
   anaCaloPFJet->SetPFJetsName("akt4Calo");
   anaCaloPFJet->SetCaloJetsName("akt4PF");
+  if(isData) {
+    anaCaloPFJet->DoPFJet80(true);
+    anaCaloPFJet->DoCollionEventSel(true);
+    anaCaloPFJet->DoHBHENoiseFilter(true);
+  }
   handler->Add(anaCaloPFJet);
 
   /*
@@ -202,12 +213,12 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   //Event loop
   //---------------------------------------------------------------	  
   Long64_t entries_tot =  chain->GetEntriesFast(); //93064
-  if(nentries<0) nentries = chain->GetEntries();
+  if(nentries<0) lastEvent = chain->GetEntries();  
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
   for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
     //  for (Long64_t jentry=0; jentry<nentries;jentry++) {
-    if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(nentries));
+    if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(lastEvent));
     //Run producers
     // Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
