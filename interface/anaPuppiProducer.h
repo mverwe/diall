@@ -33,10 +33,12 @@ public:
    void Exec(Option_t *option="");
    void CreateOutputObjects();
 
-   void SetHiEvtName(TString name)    { fEvtName  = name ; }
+   //void SetHiEvtName(TString name)    { fEvtName  = name ; }
    void SetPFPartName(TString name)   { fPFParticlesName = name ; }
    void SetJetsName(TString name)     { fJetsName = name ; }
    void SetPuppiPartName(TString name)   { fPuppiParticlesName = name ; }
+
+   void SetPtMinParticle(double min)       { fPtMinParticle = min; }
 
    void SetConeRadius(Double_t r)          { fConeRadius = r; }
    void SetNExLJ(Int_t i)                  { fNExLJ      = i; }
@@ -52,8 +54,9 @@ public:
    Double_t          fMinPtExLJ;        //pt min to qualify as signal jet
    Double_t          fdRMaxJet;         //minimum distance to signal jet
    addMetricType     fAddMetricType;    //type of additional metric
-   TString           fEvtName;          //name of hi event container
-   hiEventContainer *fHiEvent;          //!event container
+   //TString           fEvtName;          //name of hi event container
+   //hiEventContainer *fHiEvent;          //!event container
+   double            fPtMinParticle;    //pt min for pf particles
    TString           fPFParticlesName;  //name of array with pf candidates
    TClonesArray     *fPFParticles;      //!pf candidates array
    TString           fJetsName;         //name of jet array
@@ -67,6 +70,6 @@ public:
    TH2F             *fh2CentMedianMetric2; //!centrality vs median metric2
    TH2F             *fh2CentRMSMetric2;    //!centrality vs median metric2
    
-   ClassDef(anaPuppiProducer,3)
+   ClassDef(anaPuppiProducer,4)
 };
 #endif

@@ -19,6 +19,7 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fMinPtExLJ(20.),
   fdRMaxJet(0.4),
   fAddMetricType(kSumPt),
+  fPtMinParticle(0.),
   fPFParticlesName(""),
   fPFParticles(0x0),
   fJetsName(""),
@@ -112,15 +113,28 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    //pf candidate loop to calculate alpha for each particle
 
    //plan: apply pt cut to particles, put particles passing in std::vector and work with those for the rest of the algo
-
+   std::vector<pfParticle*> fSelPFParticles;
    for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
      pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+     if(!p1) continue;
+     if(p1->Pt()<fPtMinParticle) continue;
+     fSelPFParticles.push_back(p1);
+   }
+
+   //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
+     //pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+   for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
+     pfParticle *p1 = fSelPFParticles[i];
+     if(!p1) continue;
      Double_t var = 0.;
      Double_t var2 = 0.;
      TLorentzVector lsum(0.,0.,0.,0.);
-     for (int j = 0; j < fPFParticles->GetEntriesFast(); j++) {
+     //for (int j = 0; j < fPFParticles->GetEntriesFast(); j++) {
+     for (unsigned int j = 0; j < fSelPFParticles.size(); j++) {
        if(i==j) continue;
-       pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
+       pfParticle *p2 = fSelPFParticles[j];
+       if(!p2) continue;
+       //pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
        Double_t dr = p1->DeltaR(p2);
        if(dr>fConeRadius) continue;
        var += p2->Pt() /dr/dr;
@@ -150,10 +164,12 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t etaMin = fMapEtaRanges.at(ieta)+fConeRadius;
      Double_t etaMax = fMapEtaRanges.at(ieta+1)-fConeRadius;
      
-     for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
-       pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
-       if(!p1) continue;
-       
+     //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
+     //  pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+     //  if(!p1) continue;
+     for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
+       pfParticle *p1 = fSelPFParticles[i];
+       if(!p1) continue; 
        if(p1->Eta()>=etaMin && p1->Eta()<etaMax) {       
          //check distance to closest signal jet
          Double_t drDet = 999.;
@@ -223,8 +239,11 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      
    //Set puppi weight for each particle
    Int_t npup = 0;
-   for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
-     pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+   //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
+   //  pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+   for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
+     pfParticle *p1 = fSelPFParticles[i];
+     if(!p1) continue;
      Double_t prob = 1.;
      Int_t etaBin = -1;
      for(Int_t ieta = 1; ieta<neta; ++ieta) {
