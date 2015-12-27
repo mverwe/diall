@@ -71,7 +71,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
     for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
       lwJet *jet = fJetsCont->GetJet(ij);
       if(!jet) continue;
-      if(jet->GetRefPt()<10. || abs(jet->Eta())>2.) continue; //only select true jets
+      if(jet->GetRefPt()<25. || abs(jet->Eta())>2.) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
       double mindphi = 2*3.14159/3.;
@@ -97,10 +97,10 @@ void anaZJetMCResponse::CreateOutputObjects() {
   fh1ZPt = new TH1F("fh1ZPt","fh1ZPt;p_{T,Z}",200,0,200.);
   fOutput->Add(fh1ZPt);
 
-  fh3ZJetPtRecGen = new TH3F("fh3ZJetPtRecGen","fh3JetPtRecGen;;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,200,0,200,200,0,200);
+  fh3ZJetPtRecGen = new TH3F("fh3ZJetPtRecGen","fh3JetPtRecGen;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,200,0,200,200,0,200);
   fOutput->Add(fh3ZJetPtRecGen);
 
-  fh3ZJetXJZRecGen = new TH3F("fh3ZJetXJZRecGen","fh3JetPtRecGen;;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,200,0,200,200,0,200);
+  fh3ZJetXJZRecGen = new TH3F("fh3ZJetXJZRecGen","fh3JetPtRecGen;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,40,0,2,40,0,2);
   fOutput->Add(fh3ZJetXJZRecGen);
 
 }

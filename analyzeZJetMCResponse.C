@@ -80,9 +80,7 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   //chain->AddFriend(genTree);
   Printf("genTree done: %d",(int)genTree->GetEntries());
 
-  genTree->Print();
   TList *fEventObjects = new TList();
-
 
   //---------------------------------------------------------------
   // producers
@@ -142,7 +140,7 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
   for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
-     if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(nentries));
+     if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(lastEvent));
     //Run producers
     // Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
