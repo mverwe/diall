@@ -16,6 +16,7 @@ anaPuppiParticles::anaPuppiParticles(const char *name, const char *title)
   fJetsName(""),
   fJetsCont(0x0),
   fMinPt(0.),
+  fh3CentPtPtW(),
   fh2AlphaCentAll(),
   fh2AlphaCentUE(),
   fh2AlphaCentJet(),
@@ -92,6 +93,8 @@ void anaPuppiParticles::Exec(Option_t * /*option*/)
      //only QA particle at midrapidity for now. TODO
      if(abs(p->Eta())>2.1) continue;
 
+     fh3CentPtPtW->Fill(cent,p->Pt(),p->GetPuppiWeight()*p->Pt());
+
      //check distance to closest signal jet
      Double_t drMin = 999.;
      Bool_t isInUE = kTRUE;
@@ -151,6 +154,9 @@ void anaPuppiParticles::CreateOutputObjects() {
     return;
   }
 
+  fh3CentPtPtW = new TH3F("fh3CentPtPtW","fh3CentPtPtW;centrality;p_{T};w*p_{T}",100,0,100,200,0,40,200,0,40);
+  fOutput->Add(fh3CentPtPtW);
+  
   fh2AlphaCentAll = new TH2F("fh2AlphaCentAll","fh2AlphaCentAll;centrality;#alpha",100,0,100,40,0,20.);
   fOutput->Add(fh2AlphaCentAll);
   

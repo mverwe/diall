@@ -28,6 +28,7 @@
 using namespace std;
 
 Bool_t doPuppi         = kTRUE;//kFALSE;
+double ptMinPuppi       = 1.;
 
 void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
@@ -122,7 +123,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetPuppiPartName("puppiParticles");
   pupProd->SetJetsName("aktPUR040");
   pupProd->SetAddMetricType(anaPuppiProducer::kMass);
-  pupProd->SetPtMinParticle(1.);
+  pupProd->SetPtMinParticle(ptMinPuppi);//1.);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0
@@ -135,28 +136,6 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   lwjakt->SetParticlesName("puppiParticles");
   lwjakt->SetJetContName("JetsAKTR040Puppi");
   if(doPuppi) handler->Add(lwjakt);
-
-  //anti-kt jet finder on reconstructed PUPPI particles ptmin=1
-  LWJetProducer *lwjaktpt100 = new LWJetProducer("LWJetProducerAKTR040PuppiPtMin100","LWJetProducerAKTR040PuppiPtMin100");
-  lwjaktpt100->ConnectEventObject(fEventObjects);
-  lwjaktpt100->SetJetType(LWJetProducer::kAKT);
-  lwjaktpt100->SetRadius(0.4);
-  lwjaktpt100->SetGhostArea(0.005);
-  lwjaktpt100->SetPtMinConst(1.);
-  lwjaktpt100->SetParticlesName("puppiParticles");
-  lwjaktpt100->SetJetContName("JetsAKTR040PuppiPtMin100");
-  //if(doPuppi) handler->Add(lwjaktpt100);
-
-  //anti-kt jet finder on reconstructed PUPPI particles ptmin=2
-  LWJetProducer *lwjaktpt200 = new LWJetProducer("LWJetProducerAKTR040PuppiPtMin200","LWJetProducerAKTR040PuppiPtMin200");
-  lwjaktpt200->ConnectEventObject(fEventObjects);
-  lwjaktpt200->SetJetType(LWJetProducer::kAKT);
-  lwjaktpt200->SetRadius(0.4);
-  lwjaktpt200->SetGhostArea(0.005);
-  lwjaktpt200->SetPtMinConst(2.);
-  lwjaktpt200->SetParticlesName("puppiParticles");
-  lwjaktpt200->SetJetContName("JetsAKTR040PuppiPtMin200");
-  //if(doPuppi) handler->Add(lwjaktpt200);
 
   //anti-kt jet finder on generated particles
   LWJetProducer *lwjaktGen = new LWJetProducer("LWGenJetProducerAKTR040","LWGenJetProducerAKTR040");
@@ -185,20 +164,6 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   match->SetJetsNameTag("akt4Gen");//GenJetsAKTR040");
   if(doPuppi) handler->Add(match);
 
-  anaJetMatching *matchGen = new anaJetMatching("jetMatchingGenGen","jetMatchingGenGen");
-  matchGen->ConnectEventObject(fEventObjects);
-  matchGen->SetHiEvtName("hiEventContainer");
-  matchGen->SetJetsNameBase("GenJetsAKTR040");
-  matchGen->SetJetsNameTag("akt4Gen");
-  if(doPuppi) handler->Add(matchGen);
-
-  anaJetMatching *matchPt200 = new anaJetMatching("jetMatchingPtMin200","jetMatchingPtMin200");
-  matchPt200->ConnectEventObject(fEventObjects);
-  matchPt200->SetHiEvtName("hiEventContainer");
-  matchPt200->SetJetsNameBase("JetsAKTR040PuppiPtMin200");
-  matchPt200->SetJetsNameTag("GenJetsAKTR040");
-  //if(doPuppi) handler->Add(matchPt200);
- 
   anaJetEnergyScale *anajes = new anaJetEnergyScale("anaJES","anaJES");
   anajes->ConnectEventObject(fEventObjects);
   anajes->SetHiEvtName("hiEventContainer");
@@ -206,6 +171,21 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   anajes->SetRecJetsName("JetsAKTR040Puppi");
   anajes->SetNCentBins(4);
   if(doPuppi) handler->Add(anajes);
+  
+  anaJetMatching *matchGen = new anaJetMatching("jetMatchingGenGen","jetMatchingGenGen");
+  matchGen->ConnectEventObject(fEventObjects);
+  matchGen->SetHiEvtName("hiEventContainer");
+  matchGen->SetJetsNameBase("GenJetsAKTR040");
+  matchGen->SetJetsNameTag("akt4Gen");
+  if(doPuppi) handler->Add(matchGen);
+ 
+  anaJetEnergyScale *anajesgen = new anaJetEnergyScale("anajesgen","anajesgen");
+  anajesgen->ConnectEventObject(fEventObjects);
+  anajesgen->SetHiEvtName("hiEventContainer");
+  anajesgen->SetGenJetsName("akt4Gen");
+  anajesgen->SetRecJetsName("GenJetsAKTR040");
+  anajesgen->SetNCentBins(4);
+  if(doPuppi) handler->Add(anajesgen);
  
   //---------------------------------------------------------------
   //Event loop
