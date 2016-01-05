@@ -36,6 +36,8 @@ public:
   lwJetContainer   *fJetsCont;             //!jet container
   Float_t           fMinPt;                //minimum pT of particles
 
+  TH3F             *fh3CentPtPtW;          //!cent vs pt vs pt-weighted
+
   TH2F             *fh2AlphaCentAll;       //!alpha vs centrality
   TH2F             *fh2AlphaCentUE;        //!alpha vs centrality
   TH2F             *fh2AlphaCentJet;       //!alpha vs centrality
@@ -59,6 +61,6 @@ public:
   TH3F             *fh3AlphaMetric2CentUE;      //!alpha vs metric2 vs centrality
   TH3F             *fh3AlphaMetric2CentJet;     //!alpha vs metric2 vs centrality
   
-  ClassDef(anaPuppiParticles,1)
+  ClassDef(anaPuppiParticles,2)
 };
 #endif
