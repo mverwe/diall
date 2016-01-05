@@ -45,6 +45,7 @@ anaPuppiParticles::anaPuppiParticles(const char *name, const char *title)
 void anaPuppiParticles::Exec(Option_t * /*option*/)
 {
    //printf("anaPuppiParticles executing\n");
+   anaBaseTask::Exec();
    if(!fInitOutput) CreateOutputObjects();
 
    //Get objects from event

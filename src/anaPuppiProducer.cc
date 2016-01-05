@@ -54,6 +54,7 @@ anaPuppiProducer::~anaPuppiProducer() {
 void anaPuppiProducer::Exec(Option_t * /*option*/)
 {
   // printf("anaPuppiProducer executing\n");
+  anaBaseTask::Exec();
    if(!fInitOutput) CreateOutputObjects();
 
    if(!fEventObjects) {
@@ -66,7 +67,10 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    //Get jet container
    if(!fJetsCont && !fJetsName.IsNull())
      fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
-   if(!fJetsCont) return;
+   if(!fJetsCont) {
+     Printf("%s: Jets not found %s",GetName(),fJetsName.Data());
+     return;
+   }
    TClonesArray *jets = fJetsCont->GetJets();
    if(!jets) return;
       
@@ -87,13 +91,17 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    if(fPuppiParticles) fPuppiParticles->Delete();
 
    //Determine centrality bin
-   Double_t cent = fHiEvent->GetCentrality();
+   double cent = 0.;
+   if(!fHiEvent) Printf("%s: couldn't locate fHiEvent",GetName());
+   else {
+     cent = fHiEvent->GetCentrality();
+   }
    if(cent>=0. && cent<10.)       fCentBin = 0;
    else if(cent>=10. && cent<30.) fCentBin = 1;
    else if(cent>=30. && cent<50.) fCentBin = 2;
    else if(cent>=50. && cent<80.) fCentBin = 3;
    else fCentBin = -1;
-
+   
    //Find signal jets at detector level
    Int_t nSignalJetsDet = 0;
    // Int_t sigDetIds[999];

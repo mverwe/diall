@@ -33,7 +33,7 @@ anaJetMatching::anaJetMatching(const char *name, const char *title)
 void anaJetMatching::Exec(Option_t * /*option*/)
 {
 
-	  anaBaseTask::Exec();
+  anaBaseTask::Exec();
 
   // printf("anaJetMatching executing\n");
   if(!fInitOutput) CreateOutputObjects();

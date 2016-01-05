@@ -6,6 +6,7 @@
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
 #include "UserCode/diall/interface/anaBaseTask.h"
+#include "UserCode/diall/interface/anaJetEnergyScale.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
 #include "UserCode/diall/interface/anaJetQA.h"
 #include "UserCode/diall/interface/anaRhoProducer.h"
@@ -28,7 +29,7 @@ using namespace std;
 
 Bool_t doPuppi         = kTRUE;//kFALSE;
 
-void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1) {
+void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
   // std::vector<std::string> urls = CollectFiles(list);
 
@@ -46,6 +47,12 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     lastFile = (size_t)lastF;
   }
   std::cout << "firstFile: " << firstFile << "  lastFile: " << lastFile << std::endl;
+
+  Int_t lastEvent = nentries;
+  if(firstEvent>0) {
+    lastEvent = firstEvent + nentries;
+  }
+  std::cout << "firstEvent: " << firstEvent << std::endl;
   
   //add files to chain
   TChain *chain = NULL;
@@ -63,8 +70,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   // chain->AddFriend(muTree);
   // Printf("muTree done");
 
-  //TChain *jetTree = new TChain("akPu3PFJetAnalyzer/t");
-  TChain *jetTree = new TChain("akPu2PFJetAnalyzer10/t");
+  TChain *jetTree = new TChain("akPu4PFJetAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   chain->AddFriend(jetTree);
   Printf("jetTree done");
@@ -75,7 +81,6 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   Printf("genTree done");
   
   TList *fEventObjects = new TList();
-
 
   //---------------------------------------------------------------
   // producers
@@ -97,9 +102,10 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
 
   lwJetFromForestProducer *p_PUJet = new lwJetFromForestProducer("lwJetForestProd");
   p_PUJet->SetInput(chain);
-  p_PUJet->SetJetContName("aktPUR030");
+  p_PUJet->SetJetContName("aktPUR040");
+  p_PUJet->SetGenJetContName("akt4Gen");
   p_PUJet->SetEventObjects(fEventObjects);
-  p_PUJet->SetRadius(0.3);
+  p_PUJet->SetRadius(0.4);
   
   //---------------------------------------------------------------
   //analysis modules
@@ -114,52 +120,53 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetHiEvtName("hiEventContainer");
   pupProd->SetPFPartName("pfParticles");
   pupProd->SetPuppiPartName("puppiParticles");
-  pupProd->SetJetsName("aktPUR030");
+  pupProd->SetJetsName("aktPUR040");
   pupProd->SetAddMetricType(anaPuppiProducer::kMass);
+  pupProd->SetPtMinParticle(1.);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0
-  LWJetProducer *lwjakt = new LWJetProducer("LWJetProducerAKTR030Puppi","LWJetProducerAKTR030Puppi");
+  LWJetProducer *lwjakt = new LWJetProducer("LWJetProducerAKTR040Puppi","LWJetProducerAKTR040Puppi");
   lwjakt->ConnectEventObject(fEventObjects);
   lwjakt->SetJetType(LWJetProducer::kAKT);
-  lwjakt->SetRadius(0.3);
+  lwjakt->SetRadius(0.4);
   lwjakt->SetGhostArea(0.005);
   lwjakt->SetPtMinConst(0.);
   lwjakt->SetParticlesName("puppiParticles");
-  lwjakt->SetJetContName("JetsAKTR030Puppi");
+  lwjakt->SetJetContName("JetsAKTR040Puppi");
   if(doPuppi) handler->Add(lwjakt);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=1
-  LWJetProducer *lwjaktpt100 = new LWJetProducer("LWJetProducerAKTR030PuppiPtMin100","LWJetProducerAKTR030PuppiPtMin100");
+  LWJetProducer *lwjaktpt100 = new LWJetProducer("LWJetProducerAKTR040PuppiPtMin100","LWJetProducerAKTR040PuppiPtMin100");
   lwjaktpt100->ConnectEventObject(fEventObjects);
   lwjaktpt100->SetJetType(LWJetProducer::kAKT);
-  lwjaktpt100->SetRadius(0.3);
+  lwjaktpt100->SetRadius(0.4);
   lwjaktpt100->SetGhostArea(0.005);
   lwjaktpt100->SetPtMinConst(1.);
   lwjaktpt100->SetParticlesName("puppiParticles");
-  lwjaktpt100->SetJetContName("JetsAKTR030PuppiPtMin100");
-  if(doPuppi) handler->Add(lwjaktpt100);
+  lwjaktpt100->SetJetContName("JetsAKTR040PuppiPtMin100");
+  //if(doPuppi) handler->Add(lwjaktpt100);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=2
-  LWJetProducer *lwjaktpt200 = new LWJetProducer("LWJetProducerAKTR030PuppiPtMin200","LWJetProducerAKTR030PuppiPtMin200");
+  LWJetProducer *lwjaktpt200 = new LWJetProducer("LWJetProducerAKTR040PuppiPtMin200","LWJetProducerAKTR040PuppiPtMin200");
   lwjaktpt200->ConnectEventObject(fEventObjects);
   lwjaktpt200->SetJetType(LWJetProducer::kAKT);
-  lwjaktpt200->SetRadius(0.3);
+  lwjaktpt200->SetRadius(0.4);
   lwjaktpt200->SetGhostArea(0.005);
   lwjaktpt200->SetPtMinConst(2.);
   lwjaktpt200->SetParticlesName("puppiParticles");
-  lwjaktpt200->SetJetContName("JetsAKTR030PuppiPtMin200");
-  if(doPuppi) handler->Add(lwjaktpt200);
+  lwjaktpt200->SetJetContName("JetsAKTR040PuppiPtMin200");
+  //if(doPuppi) handler->Add(lwjaktpt200);
 
   //anti-kt jet finder on generated particles
-  LWJetProducer *lwjaktGen = new LWJetProducer("LWGenJetProducerAKTR030","LWGenJetProducerAKTR030");
+  LWJetProducer *lwjaktGen = new LWJetProducer("LWGenJetProducerAKTR040","LWGenJetProducerAKTR040");
   lwjaktGen->ConnectEventObject(fEventObjects);
   lwjaktGen->SetJetType(LWJetProducer::kAKT);
-  lwjaktGen->SetRadius(0.3);
+  lwjaktGen->SetRadius(0.4);
   lwjaktGen->SetGhostArea(0.005);
   lwjaktGen->SetPtMinConst(0.);
   lwjaktGen->SetParticlesName("genParticles");
-  lwjaktGen->SetJetContName("GenJetsAKTR030");
+  lwjaktGen->SetJetContName("GenJetsAKTR040");
   handler->Add(lwjaktGen);
  
   //Initialization of all analysis modules
@@ -167,52 +174,59 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupAna->ConnectEventObject(fEventObjects);
   pupAna->SetHiEvtName("hiEventContainer");
   pupAna->SetParticlesName("pfParticles");
-  pupAna->SetJetsName("aktPUR030");
+  pupAna->SetJetsName("aktPUR040");
   if(doPuppi) handler->Add(pupAna);
 
   //particle-detector-level jet matching
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
   match->ConnectEventObject(fEventObjects);
   match->SetHiEvtName("hiEventContainer");
-  match->SetJetsNameBase("JetsAKTR030Puppi");
-  match->SetJetsNameTag("GenJetsAKTR030");
+  match->SetJetsNameBase("JetsAKTR040Puppi");
+  match->SetJetsNameTag("akt4Gen");//GenJetsAKTR040");
   if(doPuppi) handler->Add(match);
 
-  anaJetMatching *matchPt100 = new anaJetMatching("jetMatchingPtMin100","jetMatchingPtMin100");
-  matchPt100->ConnectEventObject(fEventObjects);
-  matchPt100->SetHiEvtName("hiEventContainer");
-  matchPt100->SetJetsNameBase("JetsAKTR030PuppiPtMin100");
-  matchPt100->SetJetsNameTag("GenJetsAKTR030");
-  if(doPuppi) handler->Add(matchPt100);
+  anaJetMatching *matchGen = new anaJetMatching("jetMatchingGenGen","jetMatchingGenGen");
+  matchGen->ConnectEventObject(fEventObjects);
+  matchGen->SetHiEvtName("hiEventContainer");
+  matchGen->SetJetsNameBase("GenJetsAKTR040");
+  matchGen->SetJetsNameTag("akt4Gen");
+  if(doPuppi) handler->Add(matchGen);
 
   anaJetMatching *matchPt200 = new anaJetMatching("jetMatchingPtMin200","jetMatchingPtMin200");
   matchPt200->ConnectEventObject(fEventObjects);
   matchPt200->SetHiEvtName("hiEventContainer");
-  matchPt200->SetJetsNameBase("JetsAKTR030PuppiPtMin200");
-  matchPt200->SetJetsNameTag("GenJetsAKTR030");
-  if(doPuppi) handler->Add(matchPt200);
-  
+  matchPt200->SetJetsNameBase("JetsAKTR040PuppiPtMin200");
+  matchPt200->SetJetsNameTag("GenJetsAKTR040");
+  //if(doPuppi) handler->Add(matchPt200);
+ 
+  anaJetEnergyScale *anajes = new anaJetEnergyScale("anaJES","anaJES");
+  anajes->ConnectEventObject(fEventObjects);
+  anajes->SetHiEvtName("hiEventContainer");
+  anajes->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+  anajes->SetRecJetsName("JetsAKTR040Puppi");
+  anajes->SetNCentBins(4);
+  if(doPuppi) handler->Add(anajes);
+ 
   //---------------------------------------------------------------
   //Event loop
-  //---------------------------------------------------------------	  
+  //---------------------------------------------------------------
   Long64_t entries_tot =  chain->GetEntriesFast(); //93064
-  if(nentries<0) nentries = chain->GetEntries();
-  // Long64_t nentries = 20;//chain->GetEntriesFast();
+  if(nentries<0) lastEvent = chain->GetEntries();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
-  for (Long64_t jentry=0; jentry<nentries;jentry++) {
-
+  for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
+    if(jentry%10000==0) cout << "entry: "<< jentry << endl;
     //Run producers
-    Printf("produce hiEvent");
+    //Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
-    Printf("produce pf particles");
+    //Printf("produce pf particles");
     p_pf->Run(jentry);    //pf particles
-    Printf("produce gen particles");
+    //Printf("produce gen particles");
     p_gen->Run(jentry);   //generated particles
-    Printf("produce PU jets");
+    //Printf("produce PU jets");
     p_PUJet->Run(jentry); //forest jets
 	    
     //Execute all analysis tasks
-    // handler->ExecuteTask();
+    handler->ExecuteTask();
   }
     
   fEventObjects->Print();
