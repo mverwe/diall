@@ -269,6 +269,20 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      }
      p1->SetPuppiWeight(prob);
 
+     //weight metric2
+     Double_t medMetric2 = fMapMedianMetric2[etaBin];
+     Double_t rmsMetric2 = fMapRmsMetric2[etaBin];
+     Double_t prob2 = 1.;
+     Double_t prob3 = 1.;
+     if(rmsMetric2>0.) {
+       Double_t chiMetric2 = (p1->GetPuppiMetric2() - medMetric2) * fabs(p1->GetPuppiMetric2() - medMetric2) / rmsMetric2 / rmsMetric2;
+       Double_t chii = chiAlpha + chiMetric2;
+       prob2 = ROOT::Math::chisquared_cdf(chii,2.);
+       prob3 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
+     }
+     p1->SetPuppiWeight2(prob2);
+     p1->SetPuppiWeight3(prob3);
+     
      //put puppi weighted particles in array
      double ptpup = prob*p1->Pt();
      if(fPuppiParticles && ptpup>1e-4) {
@@ -279,21 +293,11 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
                     prob*p1->M(),
                     p1->GetId());
        pPart->SetCharge(p1->GetCharge());
+       pPart->SetPuppiWeight(prob);
+       pPart->SetPuppiWeight2(prob2);
+       pPart->SetPuppiWeight3(prob3);
        ++npup;
      }
-     
-     //weight metric2
-     Double_t medMetric2 = fMapMedianMetric2[etaBin];
-     Double_t rmsMetric2 = fMapRmsMetric2[etaBin];
-     Double_t prob2 = 1.;
-     if(rmsMetric2>0.) {
-       Double_t chiMetric2 = (p1->GetPuppiMetric2() - medMetric2) * fabs(p1->GetPuppiMetric2() - medMetric2) / rmsMetric2 / rmsMetric2;
-       Double_t chii = chiAlpha + chiMetric2;
-       prob = ROOT::Math::chisquared_cdf(chii,2.);
-       prob2= ROOT::Math::chisquared_cdf(chiMetric2,1.);
-     }
-     p1->SetPuppiWeight2(prob);
-     p1->SetPuppiWeight3(prob2);
    }
 }
 

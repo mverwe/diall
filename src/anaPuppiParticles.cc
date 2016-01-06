@@ -93,7 +93,9 @@ void anaPuppiParticles::Exec(Option_t * /*option*/)
      //only QA particle at midrapidity for now. TODO
      if(abs(p->Eta())>2.1) continue;
 
-     fh3CentPtPtW->Fill(cent,p->Pt(),p->GetPuppiWeight()*p->Pt());
+     double pt = p->Pt()/p->GetPuppiWeight();
+     double ptw = p->Pt();
+     fh3CentPtPtW->Fill(cent,pt,ptw);//p->Pt(),p->GetPuppiWeight()*p->Pt());
 
      //check distance to closest signal jet
      Double_t drMin = 999.;
