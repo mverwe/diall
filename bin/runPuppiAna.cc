@@ -37,6 +37,12 @@ int main(int argc, char* argv[])
   Int_t firstEvent = 0;
   if(argc>3)
     firstEvent = atoi(argv[4]);
+
+  int ptminType = 0;
+  if(argc>4) ptminType = atoi(argv[5]);
+
+  int jetSignalType = 0;
+  if(argc>5) jetSignalType = atoi(argv[6]);
   
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
@@ -61,7 +67,7 @@ int main(int argc, char* argv[])
   //      << maxEvts << " events will be processed" << std::endl
   //      << "Centrality bins : [" << minCentrality << "," << maxCentrality << "]" << std::endl;
   
-  analyzePuppi(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent);
+  analyzePuppi(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,ptminType,jetSignalType);
   
   //  topEvt *ana = new topEvt(urls,maxEvts,minCentrality,maxCentrality);
   //ana->Run(outname.c_str());

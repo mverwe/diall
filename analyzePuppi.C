@@ -28,10 +28,29 @@
 using namespace std;
 
 Bool_t doPuppi         = kTRUE;//kFALSE;
-double ptMinPuppi       = 1.;
 
-void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
+void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
 
+  /*
+    ptminType: minimum raw pt for particles used by puppi
+    0 : 0 GeV
+    1 : 1 GeV
+    2 : 2 GeV
+
+    jetSignalType: jets used to select jetty region in events
+    0 : detector-level jets (akPu4PF)
+    1 : particle-level jets (gen jets)
+   */
+
+  double ptMinPuppi = 0.;
+  if(ptminType==0) ptMinPuppi = 0.;
+  else if(ptminType==1) ptMinPuppi = 1.;
+  else if(ptminType==2) ptMinPuppi = 2.;
+
+  TString signalJets = "aktPUR040";
+  if(jetSignalType==0) signalJets = "aktPUR040";
+  else if(jetSignalType==1) signalJets = "akt4Gen";
+  
   // std::vector<std::string> urls = CollectFiles(list);
 
   // Printf("anaFile: %d",anaFile);
@@ -152,7 +171,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   anaPuppiParticles *pupAna = new anaPuppiParticles("pupAna","pupAna");
   pupAna->ConnectEventObject(fEventObjects);
   pupAna->SetHiEvtName("hiEventContainer");
-  pupAna->SetParticlesName("pfParticles");
+  pupAna->SetParticlesName("puppiParticles");
   pupAna->SetJetsName("aktPUR040");
   if(doPuppi) handler->Add(pupAna);
 
