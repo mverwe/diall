@@ -140,7 +140,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetHiEvtName("hiEventContainer");
   pupProd->SetPFPartName("pfParticles");
   pupProd->SetPuppiPartName("puppiParticles");
-  pupProd->SetJetsName("aktPUR040");
+  pupProd->SetJetsName(signalJets);
   pupProd->SetAddMetricType(anaPuppiProducer::kMass);
   pupProd->SetPtMinParticle(ptMinPuppi);//1.);
   if(doPuppi) handler->Add(pupProd);
