@@ -36,19 +36,19 @@ public:
    TH1F      *fhCentrality;
    TH1F      *fhNPV;
    
-   TH2F      **fh2PtEtaNoMatching;
-   TH3F      **fh3PtEtaPhiNotMatched;
-   TH3F      **fh3PtEtaPhiMatched;
+   TH2F      **fh2PtEtaNoMatching;    //!
+   TH3F      **fh3PtEtaPhiNotMatched; //!
+   TH3F      **fh3PtEtaPhiMatched;    //!
 
-   TH3F      **fh3PtTrueNPVDeltaPt;
-   TH3F      **fh3PtTrueNPVDeltaPtRel;
-   TH3F      **fh3PtTrueNPVScalePt;
-   TH3F      **fh3PtTruePtSubNPV;
+   TH3F      **fh3PtTrueNPVDeltaPt;   //!
+   TH3F      **fh3PtTrueNPVDeltaPtRel;//!
+   TH3F      **fh3PtTrueNPVScalePt;   //!
+   TH3F      **fh3PtTruePtSubNPV;     //!
 
-   TH3F      **fh3PtTrueEtaDeltaPt;
-   TH3F      **fh3PtTrueEtaDeltaPtRel;
-   TH3F      **fh3PtTrueEtaScalePt;
-   TH3F      **fh3PtTruePtSubEta;
+   TH3F      **fh3PtTrueEtaDeltaPt;   //!
+   TH3F      **fh3PtTrueEtaDeltaPtRel;//!
+   TH3F      **fh3PtTrueEtaScalePt;   //!
+   TH3F      **fh3PtTruePtSubEta;     //!
    
    ClassDef(anaJetEnergyScale,1)
 };

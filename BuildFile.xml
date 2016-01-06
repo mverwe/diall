@@ -6,6 +6,7 @@
 <use name="fastjet-contrib"/>
 <use name="roostats"/>
 <use name="boost"/>
+<use name="CondFormats/JetMETObjects"/>
 <export>
   <lib name="1"/>
 </export>

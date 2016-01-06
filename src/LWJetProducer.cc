@@ -9,6 +9,8 @@
 #include <UserCode/diall/interface/lwJetContainer.h>
 #include <UserCode/diall/interface/lwJet.h>
 
+#include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
+
 using namespace std;
 
 ClassImp(LWJetProducer)
@@ -35,7 +37,12 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   fRhoMMapName(""),
   fRhoMMap(),
   flwCSJetContainer(),
-  flwCSJetContName("")
+  flwCSJetContName(""),
+  fJetCorrector(0),
+  fL1Fastjet(""),
+  fL2Relative(""),
+  fL3Absolute(""),
+  fL2L3Residual("")
 {
   //default constructor
 }
@@ -62,7 +69,12 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   fRhoMMapName(""),
   fRhoMMap(),
   flwCSJetContainer(),
-  flwCSJetContName("")
+  flwCSJetContName(""),
+  fJetCorrector(0),
+  fL1Fastjet(""),
+  fL2Relative(""),
+  fL3Absolute(""),
+  fL2L3Residual("")
 {
   //standard constructor
 }
@@ -136,6 +148,24 @@ Bool_t LWJetProducer::Init() {
     fEventObjects->Add(flwCSJetContainer);
   }
 
+  if(!fL1Fastjet.IsNull() || !fL2Relative.IsNull() || !fL3Absolute.IsNull() || !fL2L3Residual.IsNull()) {
+    JetCorrectorParameters *ResJetPar = 0x0; 
+    if(!fL2L3Residual.IsNull()) ResJetPar = new JetCorrectorParameters(fL2L3Residual.Data()); 
+    JetCorrectorParameters *L3JetPar  = 0x0;
+    if(!fL3Absolute.IsNull()) L3JetPar = new JetCorrectorParameters(fL3Absolute.Data());
+    JetCorrectorParameters *L2JetPar  = 0x0;
+    if(!fL2Relative.IsNull()) L2JetPar = new JetCorrectorParameters(fL2Relative.Data());
+    JetCorrectorParameters *L1JetPar  = 0x0;
+    if(!fL1Fastjet.IsNull()) L1JetPar = new JetCorrectorParameters(fL1Fastjet.Data());
+    //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
+    vector<JetCorrectorParameters> vPar;
+    if(L1JetPar)  vPar.push_back(*L1JetPar);
+    if(L2JetPar)  vPar.push_back(*L2JetPar);
+    if(L3JetPar)  vPar.push_back(*L3JetPar);
+    if(ResJetPar) vPar.push_back(*ResJetPar);
+    fJetCorrector = new FactorizedJetCorrector(vPar);
+  }
+
   fIsInit = kTRUE;
   return kTRUE;
 }
@@ -178,8 +208,17 @@ Int_t LWJetProducer::FindJets() {
   Int_t jetCount = 0;
   for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
     Int_t ij = indexes[ijet];
-    if(fabs(jets_incl[ij].perp()<1e-6)) continue; //remove pure ghost jets
-    lwJet *jet = new lwJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m(),jets_incl[ij].user_index());
+    if(jets_incl[ij].perp()<1e-6) continue; //remove pure ghost jets
+    double pt = jets_incl[ij].perp();
+    if(fJetCorrector) {
+      fJetCorrector->setJetEta(jets_incl[ij].eta());
+      fJetCorrector->setJetPt(pt);
+      fJetCorrector->setJetA(fFastJetWrapper.GetJetArea(ij));
+      fJetCorrector->setRho(0.); 
+      double correction = fJetCorrector->getCorrection();
+      pt *= correction;
+    }
+    lwJet *jet = new lwJet(pt, jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m(),jets_incl[ij].user_index());
     jet->SetArea(fFastJetWrapper.GetJetArea(ij));
 
     // Fill constituent info

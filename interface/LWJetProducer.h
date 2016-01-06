@@ -10,6 +10,8 @@ class FJWrapper;
 #include <TNamed.h>
 #include <TClonesArray.h>
 
+#include <CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h>
+
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include <UserCode/diall/interface/FJWrapper.h>
 #include <UserCode/diall/interface/lwJetContainer.h>
@@ -52,6 +54,11 @@ class LWJetProducer : public anaBaseTask {
   void                   SetGhostArea(Double_t gh)   { fGhostArea     = gh; }
   void                   SetPtMinConst(Double_t pt)  { fPtMinConst    = pt; } 
 
+  void                   SetL1Fastjet(TString s)     { fL1Fastjet     = s; }
+  void                   SetL2Relative(TString s)    { fL2Relative    = s; }
+  void                   SetL3Absolute(TString s)    { fL3Absolute    = s; }
+  void                   SetL2L3Residual(TString s)  { fL2L3Residual  = s; }
+
   void                   SetDoConstituentSubtraction(Bool_t b) {fDoConstSubtraction = b;}
   void                   SetRhoMapName(TString n)    { fRhoMapName    = n ; }
   void                   SetRhoMMapName(TString n)   { fRhoMMapName   = n ; }
@@ -89,7 +96,12 @@ class LWJetProducer : public anaBaseTask {
   lwJetContainer  *flwCSJetContainer;       //!lwJetContainer for constituent subtracted jets
   TString          flwCSJetContName;        // name of constituent subtracted jet container
 
-  
+  FactorizedJetCorrector *fJetCorrector;    //jet corrector
+  TString          fL1Fastjet;
+  TString          fL2Relative;
+  TString          fL3Absolute;
+  TString          fL2L3Residual; 
+ 
  private:
   LWJetProducer(const LWJetProducer& obj); // copy constructor
   LWJetProducer& operator=(const LWJetProducer& other); // assignment
