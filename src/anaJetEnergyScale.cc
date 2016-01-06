@@ -11,9 +11,20 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fJetsCont(0x0),
   fJets2Name(""),
   fJets2Cont(0x0),
-  fhEventSel(),
-  fhCentrality(),
-  fhNPV()
+  fhEventSel(0),
+  fhCentrality(0),
+  fhNPV(0),
+  fh2PtEtaNoMatching(0),
+  fh3PtEtaPhiNotMatched(0),
+  fh3PtEtaPhiMatched(0),
+  fh3PtTrueNPVDeltaPt(0),
+  fh3PtTrueNPVDeltaPtRel(0),
+  fh3PtTrueNPVScalePt(0),
+  fh3PtTruePtSubNPV(0),
+  fh3PtTrueEtaDeltaPt(0),
+  fh3PtTrueEtaDeltaPtRel(0),
+  fh3PtTrueEtaScalePt(0),
+  fh3PtTruePtSubEta(0)
 {
 
   fh2PtEtaNoMatching           = new TH2F*[fNcentBins];
