@@ -293,6 +293,8 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
                     prob*p1->M(),
                     p1->GetId());
        pPart->SetCharge(p1->GetCharge());
+       pPart->SetPuppiAlpha(p1->GetPuppiAlpha());
+       pPart->SetPuppiMetric2(p1->GetPuppiMetric2());
        pPart->SetPuppiWeight(prob);
        pPart->SetPuppiWeight2(prob2);
        pPart->SetPuppiWeight3(prob3);
