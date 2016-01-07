@@ -50,7 +50,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   TString signalJets = "aktPUR040";
   if(jetSignalType==0) signalJets = "aktPUR040";
   else if(jetSignalType==1) signalJets = "akt4Gen";
-  
+  std::cout << "signalJets: " << signalJets << std::endl; 
+ 
   // std::vector<std::string> urls = CollectFiles(list);
 
   // Printf("anaFile: %d",anaFile);
@@ -172,7 +173,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupAna->ConnectEventObject(fEventObjects);
   pupAna->SetHiEvtName("hiEventContainer");
   pupAna->SetParticlesName("puppiParticles");
-  pupAna->SetJetsName("aktPUR040");
+  pupAna->SetJetsName(signalJets);//"aktPUR040");
   if(doPuppi) handler->Add(pupAna);
 
   //particle-detector-level jet matching

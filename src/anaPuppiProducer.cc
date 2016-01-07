@@ -134,8 +134,8 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
      if(!p1) continue;
-     Double_t var = 0.;
-     Double_t var2 = 0.;
+     double var = 0.;
+     double var2 = 0.;
      TLorentzVector lsum(0.,0.,0.,0.);
      //for (int j = 0; j < fPFParticles->GetEntriesFast(); j++) {
      for (unsigned int j = 0; j < fSelPFParticles.size(); j++) {
@@ -143,7 +143,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        pfParticle *p2 = fSelPFParticles[j];
        if(!p2) continue;
        //pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
-       Double_t dr = p1->DeltaR(p2);
+       double dr = p1->DeltaR(p2);
        if(dr>fConeRadius) continue;
        var += p2->Pt() /dr/dr;
        if(fAddMetricType==kSumPt)
@@ -180,21 +180,21 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        if(!p1) continue; 
        if(p1->Eta()>=etaMin && p1->Eta()<etaMax) {       
          //check distance to closest signal jet
-         Double_t drDet = 999.;
-         for(Int_t is = 0; is<nSignalJetsDet; is++) {
-           Double_t dPhi = p1->Phi() - sigDetPhi[is];
-           Double_t dEta = p1->Eta() - sigDetEta[is];
+         double drSig = 999.;
+         for(int is = 0; is<nSignalJetsDet; is++) {
+           double dPhi = p1->Phi() - sigDetPhi[is];
+           double dEta = p1->Eta() - sigDetEta[is];
            dPhi = TVector2::Phi_mpi_pi(dPhi);
-           Double_t dr2tmp = dPhi * dPhi + dEta * dEta;
-           Double_t drtmp = 0.;
+           double dr2tmp = dPhi * dPhi + dEta * dEta;
+           double drtmp = 0.;
            if(dr2tmp>0.) drtmp = TMath::Sqrt(dr2tmp);
-           if(drtmp<drDet) {
-             drDet = drtmp;
+           if(drtmp<drSig) {
+             drSig = drtmp;
            }
          }//signal jets
 
          //Excluding regions close to leading detector-level jet
-         if(drDet>fdRMaxJet) {
+         if(drSig>fdRMaxJet) {
            alphaArrExLJ[count] = p1->GetPuppiAlpha();
            metric2ArrExLJ[count] = p1->GetPuppiMetric2();
            count++;
