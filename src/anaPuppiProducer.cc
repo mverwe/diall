@@ -19,6 +19,7 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fMinPtExLJ(20.),
   fdRMaxJet(0.4),
   fAddMetricType(kSumPt),
+  fPuppiWeightType(kAlpha),
   fPtMinParticle(0.),
   fPFParticlesName(""),
   fPFParticles(0x0),
@@ -30,7 +31,11 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fh2CentMedianAlpha(),
   fh2CentRMSAlpha(),
   fh2CentMedianMetric2(),
-  fh2CentRMSMetric2()
+  fh2CentRMSMetric2(),
+  fStoreTree(false),
+  fTreeOut(0x0),
+  fcent(-999),
+  fnpart(0)
 {
 
   //Set default eta ranges
@@ -63,7 +68,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    }
    
    //Get objects from event
-   
+
    //Get jet container
    if(!fJetsCont && !fJetsName.IsNull())
      fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
@@ -199,6 +204,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
            metric2ArrExLJ[count] = p1->GetPuppiMetric2();
            count++;
          }
+         
        }//eta selection
      }//particles loop
      
@@ -246,7 +252,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    }//eta bins
      
    //Set puppi weight for each particle
-   Int_t npup = 0;
+   int npup = 0;
    //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
    //  pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
@@ -285,9 +291,10 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      
      //put puppi weighted particles in array
      double ptpup = prob*p1->Pt();
+     if(fPuppiWeightType==kAlphaMetric2) ptpup = prob2*p1->Pt();
      if(fPuppiParticles && ptpup>1e-4) {
        pfParticle *pPart = new ((*fPuppiParticles)[npup])
-         pfParticle(prob*p1->Pt(),
+         pfParticle(ptpup,
                     p1->Eta(),
                     p1->Phi(),
                     prob*p1->M(),
@@ -298,9 +305,40 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        pPart->SetPuppiWeight(prob);
        pPart->SetPuppiWeight2(prob2);
        pPart->SetPuppiWeight3(prob3);
+
+       if(fStoreTree) {
+         fpt[npup]  = p1->Pt();
+         feta[npup] = p1->Eta();
+         fphi[npup] = p1->Phi();
+         falpha[npup] = p1->GetPuppiAlpha();
+         fmetric2[npup] = p1->GetPuppiMetric2();
+
+         //Get closest jet
+         lwJet *jetClosest = 0x0;
+         double drmin = 999.;
+         for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ++ij) {
+           lwJet *jet = static_cast<lwJet*>(jets->At(ij));
+           double dr = p1->DeltaR(jet);
+           if(dr<drmin) {
+             jetClosest = jet;
+             drmin = dr;
+           }
+         }
+         if(jetClosest) {
+           fptjet[npup] = jetClosest->Pt();
+           fdrjet[npup] = drmin;
+         } else {
+           fptjet[npup] = 0.;
+           fdrjet[npup] = 0.;
+         }
+       }
+       
        ++npup;
      }
    }
+   fcent = (float)cent;
+   fnpart = npup;
+   if(fStoreTree) fTreeOut->Fill();
 }
 
 //----------------------------------------------------------
@@ -324,4 +362,21 @@ void anaPuppiProducer::CreateOutputObjects() {
 
   fh2CentRMSMetric2 = new TH2F("fh2CentRMSMetric2","fh2CentRMSMetric2;centrality (%);RMS{metric2}",10,0,100,30,0,30);
   fOutput->Add(fh2CentRMSMetric2);
+
+  if(fStoreTree) {
+    fTreeOut = new TTree(Form("%sTree",GetName()),"puppi particles tree");
+    fTreeOut->Branch("cent", &fcent,      "cent/F");
+    fTreeOut->Branch("npart",&fnpart,     "npart/I");
+    fTreeOut->Branch("pt",   &fpt,        "pt[npart]/F");
+    fTreeOut->Branch("eta",  &feta,       "eta[npart]/F");
+    fTreeOut->Branch("phi",  &fphi,       "phi[npart]/F");
+    fTreeOut->Branch("alpha",&falpha,     "alpha[npart]/F");
+    fTreeOut->Branch("metric2",&fmetric2, "metric2[npart]/F");
+    fTreeOut->Branch("ptjet",&fptjet,     "ptjet[npart]/F");
+    fTreeOut->Branch("drjet",&fdrjet,     "drjet[npart]/F");
+
+    fOutput->Add(fTreeOut);
+  }
+
+
 }

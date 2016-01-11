@@ -5,6 +5,7 @@
 
 #include "TString.h"
 #include "TH2F.h"
+#include "TTree.h"
 #include "TH3F.h"
 #include "TClonesArray.h"
 #include "TRandom3.h"
@@ -25,6 +26,10 @@ public:
      kSumPt    = 0,
      kMass     = 1
    };
+   enum puppiWeightType {
+     kAlpha        = 0,
+     kAlphaMetric2 = 1
+   };
 
    anaPuppiProducer() {;}
    anaPuppiProducer(const char *name, const char *title);
@@ -33,10 +38,10 @@ public:
    void Exec(Option_t *option="");
    void CreateOutputObjects();
 
-   //void SetHiEvtName(TString name)    { fEvtName  = name ; }
-   void SetPFPartName(TString name)   { fPFParticlesName = name ; }
-   void SetJetsName(TString name)     { fJetsName = name ; }
+   void SetPFPartName(TString name)      { fPFParticlesName = name ; }
+   void SetJetsName(TString name)        { fJetsName = name ; }
    void SetPuppiPartName(TString name)   { fPuppiParticlesName = name ; }
+   void SetStoreTree(bool b)             { fStoreTree = b;     }
 
    void SetPtMinParticle(double min)       { fPtMinParticle = min; }
 
@@ -46,7 +51,8 @@ public:
    void SetMinDistToSigJet(Double_t d)     { fdRMaxJet   = d; }
    void SetEtaLimit(Int_t i, Double_t eta) { fMapEtaRanges[i]=eta;}
    void SetAddMetricType(addMetricType t)  { fAddMetricType = t; }
-
+   void SetPuppiWeightType(puppiWeightType t) { fPuppiWeightType = t; }
+   
  protected:
    Double_t          fConeRadius;       //cone radius for isolation
    Int_t             fCentBin;          //centrality bin
@@ -54,8 +60,7 @@ public:
    Double_t          fMinPtExLJ;        //pt min to qualify as signal jet
    Double_t          fdRMaxJet;         //minimum distance to signal jet
    addMetricType     fAddMetricType;    //type of additional metric
-   //TString           fEvtName;          //name of hi event container
-   //hiEventContainer *fHiEvent;          //!event container
+   puppiWeightType   fPuppiWeightType;  //puppi weight type
    double            fPtMinParticle;    //pt min for pf particles
    TString           fPFParticlesName;  //name of array with pf candidates
    TClonesArray     *fPFParticles;      //!pf candidates array
@@ -69,7 +74,21 @@ public:
    TH2F             *fh2CentRMSAlpha;      //!centrality vs median alpha
    TH2F             *fh2CentMedianMetric2; //!centrality vs median metric2
    TH2F             *fh2CentRMSMetric2;    //!centrality vs median metric2
-   
-   ClassDef(anaPuppiProducer,4)
+
+   bool              fStoreTree;
+   TTree            *fTreeOut;
+   //out tree members
+   float             fcent;
+   int               fnpart;
+   float             fpt[200000];
+   float             feta[200000];
+   float             fphi[200000];
+   float             falpha[200000];
+   float             fmetric2[200000];
+   float             fptjet[200000];
+   float             fdrjet[200000];
+      
+   ClassDef(anaPuppiProducer,6)
 };
+
 #endif
