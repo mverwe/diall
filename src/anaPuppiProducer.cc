@@ -136,9 +136,12 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
 
    //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
      //pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
+   double drmin = 0.02;
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
      if(!p1) continue;
+     if(p1->GetId()==1) drmin = 0.02;
+     else               drmin = 0.05;
      double var = 0.;
      double var2 = 0.;
      TLorentzVector lsum(0.,0.,0.,0.);
@@ -149,7 +152,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        if(!p2) continue;
        //pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
        double dr = p1->DeltaR(p2);
-       if(dr>fConeRadius) continue;
+       if(dr<drmin || dr>fConeRadius) continue;
        var += p2->Pt() /dr/dr;
        if(fAddMetricType==kSumPt)
          var2 += p2->Pt();
