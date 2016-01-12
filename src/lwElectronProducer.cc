@@ -17,7 +17,21 @@ inputBase("lwElectronProducer"),
   flwElectronsGeneName("lwElectronsGene"),
   flwElectronsGene(0x0),
   fElectrons(),
-  fPtMin(10.)
+  fPtMin(10.),
+  fdEtaAtVtxB(0.0094),
+  fdEtaAtVtxE(0.00773),
+  fdPhiAtVtxB(0.0296),
+  fdPhiAtVtxE(0.148),
+  fHoverEB(0.0372),
+  fHoverEE(0.0546),
+  fD0B(0.0151), 
+  fD0E(0.0535),
+  fDZB(0.238),
+  fDZE(0.572),
+  fSigmaIEtaIEtaB(0.0101),
+  fSigmaIEtaIEtaE(0.0287),
+  fEoverPInvB(0.118),
+  fEoverPInvE(0.104)
 {
   //default constructor
 }
@@ -140,26 +154,27 @@ Bool_t lwElectronProducer::AcceptElectron(Int_t i) {
   //https://github.com/CmsHI/quickZMacros/blob/master/ggHistos.C#L4
  
   if((fElectrons.elePt->at(i))<fPtMin) return false;
+  if(fabs(fElectrons.eleEta->at(i))>2.4) return false;
   if(fabs(fElectrons.eleEta->at(i))<1.479) {
-   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<0.0094
-	&& fabs(fElectrons.eledPhiAtVtx->at(i))<0.0296
-	&& fElectrons.eleSigmaIEtaIEta->at(i)<0.0101
-	&& fElectrons.eleHoverE->at(i)<0.0372
-	&& fabs(fElectrons.eleD0->at(i))<0.0151
-	&& fabs(fElectrons.eleDz->at(i))<0.238
-	&& fabs(fElectrons.eleEoverPInv->at(i))<0.118
+   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fdEtaAtVtxB //0.0094
+	&& fabs(fElectrons.eledPhiAtVtx->at(i))<fdPhiAtVtxB //0.0296
+	&& fElectrons.eleSigmaIEtaIEta->at(i)<fSigmaIEtaIEtaB //0.0101
+	&& fElectrons.eleHoverE->at(i)<fHoverEB //0.0372
+	&& fabs(fElectrons.eleD0->at(i))<fD0B //0.0151
+	&& fabs(fElectrons.eleDz->at(i))<fDZB //0.238
+	&& fabs(fElectrons.eleEoverPInv->at(i))<fEoverPInvB //0.118
 	&& fElectrons.eleMissHits->at(i) <= 2
 	) return true;
    else return false;
   }
   if(fabs(fElectrons.eleSCEta->at(i))>1.479) {
-   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<0.00773
-	&& fabs(fElectrons.eledPhiAtVtx->at(i))<0.148
-	&& fElectrons.eleSigmaIEtaIEta->at(i)<0.0287
-	&& fElectrons.eleHoverE->at(i)<0.0546
-	&& fabs(fElectrons.eleD0->at(i))<0.0535
-	&& fabs(fElectrons.eleDz->at(i))<0.572
-	&& fabs(fElectrons.eleEoverPInv->at(i))<0.104
+   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fdEtaAtVtxE //0.00773
+	&& fabs(fElectrons.eledPhiAtVtx->at(i))<fdPhiAtVtxE //0.148
+	&& fElectrons.eleSigmaIEtaIEta->at(i)<fSigmaIEtaIEtaE //0.0287
+	&& fElectrons.eleHoverE->at(i)<fHoverEE //0.0546
+	&& fabs(fElectrons.eleD0->at(i))<fD0E //0.0535
+	&& fabs(fElectrons.eleDz->at(i))<fDZE //0.572
+	&& fabs(fElectrons.eleEoverPInv->at(i))<fEoverPInvE //0.104
 	&& fElectrons.eleMissHits->at(i) <= 1
 	) return true;
    else return false;
