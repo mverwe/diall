@@ -60,7 +60,12 @@ public:
   TH3F             *fh3AlphaMetric2CentAll;     //!alpha vs metric2 vs centrality
   TH3F             *fh3AlphaMetric2CentUE;      //!alpha vs metric2 vs centrality
   TH3F             *fh3AlphaMetric2CentJet;     //!alpha vs metric2 vs centrality
+
+  TH2F             *fh2CentMedianAlphaUE;   //!centrality vs median alpha in UE
+  TH2F             *fh2CentRMSAlphaUE;      //!centrality vs median alpha in UE
+  TH2F             *fh2CentMedianAlphaJet;  //!centrality vs median alpha in Jet
+  TH2F             *fh2CentRMSAlphaJet;     //!centrality vs median alpha in Jet
   
-  ClassDef(anaPuppiParticles,2)
+  ClassDef(anaPuppiParticles,3)
 };
 #endif

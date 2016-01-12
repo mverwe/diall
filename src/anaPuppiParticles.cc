@@ -37,7 +37,11 @@ anaPuppiParticles::anaPuppiParticles(const char *name, const char *title)
   fh2Weight4CentJet(),
   fh3AlphaMetric2CentAll(),
   fh3AlphaMetric2CentUE(),
-  fh3AlphaMetric2CentJet()
+  fh3AlphaMetric2CentJet(),
+  fh2CentMedianAlphaUE(),
+  fh2CentRMSAlphaUE(),
+  fh2CentMedianAlphaJet(),
+  fh2CentRMSAlphaJet()
 {
 
 }
@@ -82,7 +86,10 @@ void anaPuppiParticles::Exec(Option_t * /*option*/)
        nSignalJets++;
      }
    }
-   
+  
+   int countUE = 0; int countJet = 0;
+   static Double_t alphaArrUE[9999] = {0.}; 
+   static Double_t alphaArrJet[9999] = {0.};
    for (int i = 0; i < fParticles->GetEntriesFast(); i++) {
      pfParticle *p = static_cast<pfParticle*>(fParticles->At(i));
      if(!p) {
@@ -131,6 +138,9 @@ void anaPuppiParticles::Exec(Option_t * /*option*/)
        fh2Weight3CentJet->Fill(cent,p->GetPuppiWeight3());
        fh2Weight4CentJet->Fill(cent,p->GetPuppiWeight3()*p->GetPuppiWeight());
        fh3AlphaMetric2CentJet->Fill(cent,p->GetPuppiAlpha(),p->GetPuppiMetric2());
+
+       alphaArrJet[countJet] = p->GetPuppiAlpha();
+       ++countJet;
      }
 
      //UE region
@@ -142,8 +152,36 @@ void anaPuppiParticles::Exec(Option_t * /*option*/)
        fh2Weight3CentUE->Fill(cent,p->GetPuppiWeight3());
        fh2Weight4CentUE->Fill(cent,p->GetPuppiWeight3()*p->GetPuppiWeight());
        fh3AlphaMetric2CentUE->Fill(cent,p->GetPuppiAlpha(),p->GetPuppiMetric2());
+
+       alphaArrUE[countUE] = p->GetPuppiAlpha();
+       ++countUE;
      }
    }
+
+   double medAlphaUE = TMath::Median(countUE,alphaArrUE);
+   double medAlphaJet = TMath::Median(countJet,alphaArrJet);
+
+   fh2CentMedianAlphaUE->Fill(cent,medAlphaUE);
+   fh2CentMedianAlphaJet->Fill(cent,medAlphaJet);
+
+   double rmsAlphaUE = 0.;
+   for(Int_t ia = 0; ia<countUE; ia++) {
+       double alph = alphaArrUE[ia];
+       if(alph<medAlphaUE)
+         rmsAlphaUE += (alph - medAlphaUE)*(alph - medAlphaUE);
+   }
+   if(rmsAlphaUE>0.) rmsAlphaUE = TMath::Sqrt(rmsAlphaUE/((double)countUE/2.));
+
+   double rmsAlphaJet = 0.;
+   for(Int_t ia = 0; ia<countJet; ia++) {
+       double alph = alphaArrJet[ia];
+       if(alph<medAlphaJet)
+         rmsAlphaJet += (alph - medAlphaJet)*(alph - medAlphaJet);
+   }
+   if(rmsAlphaJet>0.) rmsAlphaJet = TMath::Sqrt(rmsAlphaJet/((double)countJet/2.));
+
+   fh2CentRMSAlphaUE->Fill(cent,rmsAlphaUE);
+   fh2CentRMSAlphaJet->Fill(cent,rmsAlphaJet);
 }
 
 //----------------------------------------------------------
@@ -221,5 +259,16 @@ void anaPuppiParticles::CreateOutputObjects() {
   
   fh3AlphaMetric2CentJet = new TH3F("fh3AlphaMetric2CentJet","fh3AlphaMetric2CentJet;centrality;#alpha;metric2",100,0,100,40,0,20,100,0.,200.);
   fOutput->Add(fh3AlphaMetric2CentJet);
-  
+ 
+  fh2CentMedianAlphaUE = new TH2F("fh2CentMedianAlphaUE","fh2CentMedianAlphaUE;centrality (%);med{#alpha}",10,0,100,40,0,20);
+  fOutput->Add(fh2CentMedianAlphaUE);
+
+  fh2CentRMSAlphaUE = new TH2F("fh2CentRMSAlphaUE","fh2CentRMSAlphaUE;centrality (%);RMS{#alpha}",10,0,100,40,0,4);
+  fOutput->Add(fh2CentRMSAlphaUE);
+
+  fh2CentMedianAlphaJet = new TH2F("fh2CentMedianAlphaJet","fh2CentMedianAlphaJet;centrality (%);med{#alpha}",10,0,100,40,0,20);
+  fOutput->Add(fh2CentMedianAlphaJet);
+
+  fh2CentRMSAlphaJet = new TH2F("fh2CentRMSAlphaJet","fh2CentRMSAlphaJet;centrality (%);RMS{#alpha}",10,0,100,40,0,4);
+  fOutput->Add(fh2CentRMSAlphaJet);
 }
