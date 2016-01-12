@@ -30,6 +30,7 @@ using namespace std;
 bool doPuppi         = true;
 bool doJetFinding    = true; //false;
 bool useMetric2      = true; //false;
+bool storeTree       = false;
 
 void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
 
@@ -146,8 +147,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetJetsName(signalJets);
   pupProd->SetAddMetricType(anaPuppiProducer::kMass);
   pupProd->SetPtMinParticle(ptMinPuppi);//1.);
-  pupProd->SetStoreTree(false);//true);
-  if(useMetric2) pupProd->SetPuppiWeightType(anaPuppiProducer::kAlphaMetric2);
+  pupProd->SetStoreTree(storeTree);
+  if(useMetric2) pupProd->SetPuppiWeightType(anaPuppiProducer::kMetric2);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0

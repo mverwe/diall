@@ -295,6 +295,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      //put puppi weighted particles in array
      double ptpup = prob*p1->Pt();
      if(fPuppiWeightType==kAlphaMetric2) ptpup = prob2*p1->Pt();
+     else if(fPuppiWeightType==kMetric2) ptpup = prob3*p1->Pt();
      if(fPuppiParticles && ptpup>1e-4) {
        pfParticle *pPart = new ((*fPuppiParticles)[npup])
          pfParticle(ptpup,

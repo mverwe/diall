@@ -28,7 +28,8 @@ public:
    };
    enum puppiWeightType {
      kAlpha        = 0,
-     kAlphaMetric2 = 1
+     kAlphaMetric2 = 1,
+     kMetric2      = 2
    };
 
    anaPuppiProducer() {;}
@@ -75,8 +76,8 @@ public:
    TH2F             *fh2CentMedianMetric2; //!centrality vs median metric2
    TH2F             *fh2CentRMSMetric2;    //!centrality vs median metric2
 
-   bool              fStoreTree;
-   TTree            *fTreeOut;
+   bool              fStoreTree;       //store tree
+   TTree            *fTreeOut;         //!output tree
    //out tree members
    float             fcent;
    int               fnpart;
