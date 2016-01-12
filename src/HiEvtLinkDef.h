@@ -1,4 +1,5 @@
 #include "UserCode/diall/interface/diParticle.h"
+#include "UserCode/diall/interface/ForestElectrons.h"
 #include "UserCode/diall/interface/ForestMuons.h"
 #include "UserCode/diall/interface/ForestPFs.h"
 #include "UserCode/diall/interface/ForestGenParticles.h"
@@ -11,6 +12,8 @@
 #include "UserCode/diall/interface/hiEventContainer.h"
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/inputBase.h"
+#include "UserCode/diall/interface/lwElectron.h"
+#include "UserCode/diall/interface/lwElectronProducer.h"
 #include "UserCode/diall/interface/lwJet.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
@@ -52,6 +55,7 @@
 #pragma link off all namespace;
 
 #pragma link C++ class diParticle;
+#pragma link C++ class ForestElectrons;
 #pragma link C++ class ForestMuons;
 #pragma link C++ class ForestPFs;
 #pragma link C++ class ForestGenParticles;
@@ -64,6 +68,8 @@
 #pragma link C++ class hiEventContainer;
 #pragma link C++ class hiEventProducer;
 #pragma link C++ class inputBase;
+#pragma link C++ class lwElectron;
+#pragma link C++ class lwElectronProducer;
 #pragma link C++ class lwJet;
 #pragma link C++ class lwJetContainer;
 #pragma link C++ class lwJetFromForestProducer;
