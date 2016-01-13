@@ -29,7 +29,7 @@ using namespace std;
 
 bool doPuppi         = true;
 bool doJetFinding    = true; //false;
-bool useMetric2      = true; //false;
+bool useMetric2      = false;
 bool storeTree       = false;
 
 void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
@@ -157,7 +157,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   lwjakt->SetJetType(LWJetProducer::kAKT);
   lwjakt->SetRadius(0.4);
   lwjakt->SetGhostArea(0.005);
-  lwjakt->SetPtMinConst(0.);
+  lwjakt->SetPtMinConst(ptMinPuppi);//0.);
   lwjakt->SetParticlesName("puppiParticles");
   lwjakt->SetJetContName("JetsAKTR040Puppi");
   if(doJetFinding) handler->Add(lwjakt);
