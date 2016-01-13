@@ -130,6 +130,8 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("genphi", fForestJets.genphi, &fForestJets.b_genphi);
     if (fChain->GetBranch("gensubid"))
       fChain->SetBranchAddress("gensubid", fForestJets.gensubid, &fForestJets.b_gensubid);
+    if (fChain->GetBranch("genmatchindex"))
+      fChain->SetBranchAddress("genmatchindex", fForestJets.genmatchindex, &fForestJets.b_genmatchindex);
 
     fInit = kTRUE;
   }
@@ -211,6 +213,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
       flwGenJetContainer->ClearVec();
       Int_t genJetCount = 0;
       for(Int_t i = 0; i<fForestJets.ngen; i++) {
+        if(fForestJets.genmatchindex[i]<0) continue;
         lwJet *genjet = new lwJet(fForestJets.genpt[i],
                                   fForestJets.geneta[i],
                                   fForestJets.genphi[i],
