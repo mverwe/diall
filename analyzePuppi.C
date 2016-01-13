@@ -148,6 +148,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetAddMetricType(anaPuppiProducer::kMass);
   pupProd->SetPtMinParticle(ptMinPuppi);//1.);
   pupProd->SetStoreTree(storeTree);
+  pupProd->SetConeRadius(0.2);
   if(useMetric2) pupProd->SetPuppiWeightType(anaPuppiProducer::kMetric2);
   if(doPuppi) handler->Add(pupProd);
 
