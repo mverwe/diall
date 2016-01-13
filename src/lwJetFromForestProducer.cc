@@ -213,7 +213,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
       flwGenJetContainer->ClearVec();
       Int_t genJetCount = 0;
       for(Int_t i = 0; i<fForestJets.ngen; i++) {
-        if(fForestJets.genmatchindex[i]<0) continue;
+        //if(fForestJets.genmatchindex[i]<0) continue;
         lwJet *genjet = new lwJet(fForestJets.genpt[i],
                                   fForestJets.geneta[i],
                                   fForestJets.genphi[i],
