@@ -22,6 +22,8 @@ class lwJet : public particleBase {
   Double_t    GetArea()                 const { return fArea           ; }
   float       GetRawPt()                const { return fRawPt          ; }
   float       GetRefPt()                const { return fRefPt          ; }
+  float       GetRefEta()               const { return fRefEta         ; }
+  float       GetRefDr()                const { return fRefDr          ; }
   int         GetSubEvent()             const { return fSube           ; }  
   
   Int_t       GetNConstituents()        const { return fConstIds.size(); }
@@ -53,6 +55,8 @@ class lwJet : public particleBase {
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
   void        SetRefPt(Double_t pt)        { fRefPt = pt; }
+  void        SetRefEta(Double_t eta)      { fRefEta = eta; }
+  void        SetRefDr(Double_t dr)        { fRefDr = dr; }
   void        SetSubEvent(int su)          { fSube  = su; }
 
   void        AddConstituent(Int_t i )     { fConstIds.push_back(i); }
@@ -73,16 +77,18 @@ class lwJet : public particleBase {
   Int_t             fRefParton;     //ref to parton
   Int_t             fRefPartonForB; //ref to parton for b
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
-  float             fRawPt;
-  float             fRefPt;
-  int               fSube;
-  float             fChargedMax;
-  float             fChargedSum;
-  int               fChargedN;
-  float             fChargedHardMax;
-  float             fChargedHardSum;
-  int               fChargedHardN;
-  float             fPhotonMax;
+  float             fRawPt;         //raw pt (no jec)
+  float             fRefPt;         //matched gen-level jet pt
+  float             fRefEta;        //matched gen-level jet eta
+  float             fRefDr;         //distance between reco and gen jet
+  int               fSube;          //sub-event id (0=hard process)
+  float             fChargedMax;    //max track pt
+  float             fChargedSum;    //summed track pt
+  int               fChargedN;      //n tracks
+  float             fChargedHardMax;//max track pt with track pt>4
+  float             fChargedHardSum;//summed track pt of tracks with pt>4
+  int               fChargedHardN;  //n tracks with pt>4
+  float             fPhotonMax;     //max photon e
   float             fPhotonSum;
   int               fPhotonN;
   float             fNeutralMax;

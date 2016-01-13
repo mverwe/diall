@@ -15,6 +15,10 @@ particleBase(),
   fRefPartonForB(-1),
   fCsvSimpleDiscr(-1),
   fRawPt(-1),
+  fRefPt(-1),
+  fRefEta(-999),
+  fRefDr(-1),
+  fSube(-1),
   fChargedMax(-1.),
   fChargedSum(-1.),
   fChargedN(-1),
@@ -46,6 +50,10 @@ lwJet::lwJet(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id, Int_
   fRefPartonForB(-1),
   fCsvSimpleDiscr(-1),
   fRawPt(-1),
+  fRefPt(-1),
+  fRefEta(-999),
+  fRefDr(-1),
+  fSube(-1),
   fChargedMax(-1.),
   fChargedSum(-1.),
   fChargedN(-1),
@@ -77,6 +85,10 @@ lwJet::lwJet(const lwJet &obj) :
   fRefPartonForB(obj.fRefPartonForB),
   fCsvSimpleDiscr(obj.fCsvSimpleDiscr),
   fRawPt(obj.fRawPt),
+  fRefPt(obj.fRefPt),
+  fRefEta(obj.fRefEta),
+  fRefDr(obj.fRefDr),
+  fSube(obj.fSube),
   fChargedMax(obj.fChargedMax),
   fChargedSum(obj.fChargedSum),
   fChargedN(obj.fChargedN),
@@ -112,6 +124,10 @@ lwJet &lwJet::operator=(const lwJet &other)
     fRefPartonForB  = other.fRefPartonForB;
     fCsvSimpleDiscr = other.fCsvSimpleDiscr;
     fRawPt          = other.fRawPt;
+    fRefPt          = other.fRefPt;
+    fRefEta         = other.fRefEta;
+    fRefDr          = other.fRefDr;
+    fSube           = other.fSube;
     fChargedMax = other.fChargedMax;
     fChargedSum = other.fChargedSum;
     fChargedN = other.fChargedN;

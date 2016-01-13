@@ -59,6 +59,12 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("jtm", fForestJets.jtm, &fForestJets.b_jtm);
     if (fChain->GetBranch("refpt"))
       fChain->SetBranchAddress("refpt", fForestJets.refpt, &fForestJets.b_refpt);
+    if (fChain->GetBranch("refeta"))
+      fChain->SetBranchAddress("refeta", fForestJets.refeta, &fForestJets.b_refeta);
+    if (fChain->GetBranch("refdrjt"))
+      fChain->SetBranchAddress("refdrjt", fForestJets.refdrjt, &fForestJets.b_refdrjt);
+    if (fChain->GetBranch("subid"))
+      fChain->SetBranchAddress("subid", fForestJets.subid, &fForestJets.b_subid);
 
     if (fChain->GetBranch("trackMax"))
       fChain->SetBranchAddress("trackMax", fForestJets.trackMax, &fForestJets.b_trackMax);
@@ -183,6 +189,9 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetCsvSimpleDiscr(fForestJets.discr_csvSimple[i]);
     jet->SetRawPt(fForestJets.rawpt[i]);
     jet->SetRefPt(fForestJets.refpt[i]);
+    jet->SetRefEta(fForestJets.refeta[i]);
+    jet->SetRefDr(fForestJets.refdrjt[i]);
+    jet->SetSubEvent(fForestJets.subid[i]);
     jet->SetChargedProp(fForestJets.chargedMax[i],fForestJets.chargedSum[i],fForestJets.chargedN[i]);
     jet->SetChargedHardProp(fForestJets.chargedMax[i],fForestJets.chargedHardSum[i],fForestJets.chargedHardN[i]);
     jet->SetPhotonProp(fForestJets.photonMax[i],fForestJets.photonSum[i],fForestJets.photonN[i]);

@@ -9,6 +9,7 @@
 <use name="UserCode/diall"/>
 <environment>
   <bin name="runExample"              file="runExample.cc"></bin>
+  <bin name="runJES"                  file="runJES.cc"></bin>
   <bin name="runPuppiAna"             file="runPuppiAna.cc"></bin>
   <bin name="runPFCandAna"            file="runPFCandAna.cc"></bin>
   <bin name="runPFCandAna13TeVMC"     file="runPFCandAna13TeVMC.cc"></bin>

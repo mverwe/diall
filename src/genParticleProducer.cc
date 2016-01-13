@@ -138,6 +138,9 @@ Bool_t genParticleProducer::AcceptParticle(Int_t i) {
 
   // if((*fFGenParts.sta)[i]!=fStatus)                  return kFALSE;
   //if((*fFGenParts.sube)[i]!=fSube)                   return kFALSE;
+  int pdgabs = fabs((int)fFGenParts.pdg->at(i));
+  if(pdgabs==12 || pdgabs==14 || pdgabs==16) //12,14,16 exclude neutrinos
+   return kFALSE;
   
   return kTRUE;
 }

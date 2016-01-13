@@ -24,6 +24,7 @@ public:
    void SetNCentBins(Int_t n)          { fNcentBins    = n;  }
    void SetGenJetsName(TString name)   { fJetsName = name ;  }
    void SetRecJetsName(TString name)   { fJets2Name = name ; }
+   void SetUseForestMatching(bool b)   { fUseForestMatching = b; }
       
  protected:
    Int_t             fNcentBins;
@@ -31,6 +32,8 @@ public:
    lwJetContainer   *fJetsCont;       //!jet container
    TString           fJets2Name;      //name of jet container
    lwJetContainer   *fJets2Cont;      //!jet container
+
+   bool              fUseForestMatching; //use matched ref jet from forest
    
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;

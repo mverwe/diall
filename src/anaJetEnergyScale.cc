@@ -11,6 +11,7 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fJetsCont(0x0),
   fJets2Name(""),
   fJets2Cont(0x0),
+  fUseForestMatching(false),
   fhEventSel(0),
   fhCentrality(0),
   fhNPV(0),
@@ -68,32 +69,28 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
   //Get event properties
   if(fHiEvent) {
     if(abs(fHiEvent->GetVz())>15.) {
-      Printf("%s: Didn't pass vertex selection: %f",GetName(),fHiEvent->GetVz());
+      //Printf("%s: Didn't pass vertex selection: %f",GetName(),fHiEvent->GetVz());
       return;
     }
   }
   
-  //Get PF jets
+  //Get base jets
   if(!fJetsCont && !fJetsName.IsNull())
     fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
-  if(!fJetsCont) {
+  if(!fJetsCont && !fUseForestMatching) {
     Printf("%s: Cannot find %s",GetName(),fJetsName.Data());
     return;
   }
-   //Get calo jets
+   //Get tag jets
    if(!fJets2Cont && !fJets2Name.IsNull())
      fJets2Cont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJets2Name.Data()));
    if(!fJets2Cont) {
      Printf("%s: Cannot find %s",GetName(),fJets2Name.Data());
      return;
    }
-   const Int_t nJets1 = fJetsCont->GetNJets();
    const Int_t nJets2 = fJets2Cont->GetNJets();
-   if(nJets1==0 || nJets2==0) {
-     // Printf("%s: nJets1: %d  nJets2: %d",GetName(),nJets1,nJets2);
-     return;
-   }
-
+   if(nJets2==0) return;
+ 
    //Get MC weight
    float weight = 1.;
    if(fHiEvent) {
@@ -120,42 +117,78 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
 
    fhEventSel->Fill(0.5);
 
-   for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
-     lwJet *jet1 = fJetsCont->GetJet(ij);
-     if(!jet1) continue;
+   if(fUseForestMatching) {
+     for(Int_t ij = 0; ij<fJets2Cont->GetNJets(); ij++) {
+       lwJet *jet = fJets2Cont->GetJet(ij);
+       if(!jet) continue;
+       if(jet->GetRefDr()>0.3
+          || jet->GetSubEvent()!=0
+          || jet->GetRefPt()<1e-3)
+         continue;
+       
+       double dpt = jet->Pt()-jet->GetRefPt();
 
-     if(fCentBin>-1 && fCentBin<fNcentBins) 
-       fh2PtEtaNoMatching[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),weight);
-          
-     int id = jet1->GetMatchId1();
-     lwJet *jet2 = fJets2Cont->GetJet(id);
-     if(!jet2) {
-       if(fCentBin>-1 && fCentBin<fNcentBins)
-         fh3PtEtaPhiNotMatched[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
-       continue;
-     }
-
-     if(fCentBin>-1 && fCentBin<fNcentBins)
-       fh3PtEtaPhiMatched[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
-     
-     double dpt = jet2->Pt()-jet1->Pt();
-
-     if(fCentBin>-1 && fCentBin<fNcentBins) {
-       fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt,weight);
-       if(jet1->Pt()>0.) {
-         fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt/jet1->Pt(),weight);
-         fh3PtTrueEtaScalePt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet2->Pt()/jet1->Pt(),weight);
-       }
-       fh3PtTruePtSubEta[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),jet1->Eta(),weight);
-     
-       if(abs(jet1->Eta())<1.3) {
-         
-         fh3PtTrueNPVDeltaPt[fCentBin]->Fill(jet1->Pt(),npv,dpt,weight);
-         if(jet1->Pt()>0.) {
-           fh3PtTrueNPVDeltaPtRel[fCentBin]->Fill(jet1->Pt(),npv,dpt/jet1->Pt(),weight);
-           fh3PtTrueNPVScalePt[fCentBin]->Fill(jet1->Pt(),npv,jet2->Pt()/jet1->Pt(),weight);
+       if(fCentBin>-1 && fCentBin<fNcentBins) {
+         fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt,weight);
+         if(jet->GetRefPt()>0.) {
+           fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt/jet->GetRefPt(),weight);
+           fh3PtTrueEtaScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->Pt()/jet->GetRefPt(),weight);
          }
-         fh3PtTruePtSubNPV[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),npv,weight);
+         fh3PtTruePtSubEta[fCentBin]->Fill(jet->GetRefPt(),jet->Pt(),jet->GetRefEta(),weight);
+     
+         if(abs(jet->GetRefEta())<1.3) {
+         
+           fh3PtTrueNPVDeltaPt[fCentBin]->Fill(jet->GetRefPt(),npv,dpt,weight);
+           if(jet->GetRefPt()>0.) {
+             fh3PtTrueNPVDeltaPtRel[fCentBin]->Fill(jet->GetRefPt(),npv,dpt/jet->GetRefPt(),weight);
+             fh3PtTrueNPVScalePt[fCentBin]->Fill(jet->GetRefPt(),npv,jet->Pt()/jet->GetRefPt(),weight);
+           }
+           fh3PtTruePtSubNPV[fCentBin]->Fill(jet->GetRefPt(),jet->Pt(),npv,weight);
+         }
+       }
+       
+     }
+   } else { //use matching from anaJetMatching
+     const Int_t nJets1 = fJetsCont->GetNJets();
+     if(nJets1==0) return;
+     
+     for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
+       lwJet *jet1 = fJetsCont->GetJet(ij);
+       if(!jet1) continue;
+
+       if(fCentBin>-1 && fCentBin<fNcentBins) 
+         fh2PtEtaNoMatching[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),weight);
+          
+       int id = jet1->GetMatchId1();
+       lwJet *jet2 = fJets2Cont->GetJet(id);
+       if(!jet2) {
+         if(fCentBin>-1 && fCentBin<fNcentBins)
+           fh3PtEtaPhiNotMatched[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
+         continue;
+       }
+
+       if(fCentBin>-1 && fCentBin<fNcentBins)
+         fh3PtEtaPhiMatched[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
+     
+       double dpt = jet2->Pt()-jet1->Pt();
+
+       if(fCentBin>-1 && fCentBin<fNcentBins) {
+         fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt,weight);
+         if(jet1->Pt()>0.) {
+           fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt/jet1->Pt(),weight);
+           fh3PtTrueEtaScalePt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet2->Pt()/jet1->Pt(),weight);
+         }
+         fh3PtTruePtSubEta[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),jet1->Eta(),weight);
+     
+         if(abs(jet1->Eta())<1.3) {
+         
+           fh3PtTrueNPVDeltaPt[fCentBin]->Fill(jet1->Pt(),npv,dpt,weight);
+           if(jet1->Pt()>0.) {
+             fh3PtTrueNPVDeltaPtRel[fCentBin]->Fill(jet1->Pt(),npv,dpt/jet1->Pt(),weight);
+             fh3PtTrueNPVScalePt[fCentBin]->Fill(jet1->Pt(),npv,jet2->Pt()/jet1->Pt(),weight);
+           }
+           fh3PtTruePtSubNPV[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),npv,weight);
+         }
        }
      }
    }
