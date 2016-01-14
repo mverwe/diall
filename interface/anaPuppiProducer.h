@@ -86,6 +86,9 @@ public:
    float             fphi[200000];
    float             falpha[200000];
    float             fmetric2[200000];
+   float             fsumpt[200000];
+   float             falpha2[200000];
+   float             fmeanpt[200000];
    float             fptjet[200000];
    float             fdrjet[200000];
       

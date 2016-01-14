@@ -10,37 +10,50 @@
 class pfParticle : public particleBase {
  public:
   pfParticle();
-  pfParticle(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id = -1, Int_t c = 0);
+  pfParticle(double pt, double eta, double phi, double m, int id = -1, int c = 0);
   virtual ~pfParticle() {;}
   pfParticle(const pfParticle& obj); // copy constructor
   pfParticle& operator=(const pfParticle& other); // assignment
   
   
-  void           SetPuppiId(Int_t id)         { fPupId = id;    }
-  void           SetPuppiAlpha(Double_t a)    { fPupAlpha = a;  }
-  void           SetPuppiMetric2(Double_t a)  { fPupMetric2 = a;}
-  void           SetPuppiWeight(Double_t w)   { fPupWeight = w; }
-  void           SetPuppiWeight2(Double_t w)  { fPupWeight2= w; }
-  void           SetPuppiWeight3(Double_t w)  { fPupWeight3= w; }
-  void           SetPtVS(Double_t pt)         { fPtVS  = pt;    }
+  void           SetPuppiId(int id)         { fPupId = id;    }
+
+  void           SetPuppiAlpha(double a)    { fPupAlpha = a;  }
+  void           SetPuppiMetric2(double a)  { fPupMetric2 = a;}
+  void           SetPuppiSumPt(double a)    { fPupSumPt = a;  }
+  void           SetPuppiAlpha2(double a)   { fPupAlpha2= a;  }
+  void           SetPuppiMeanPt(double a)   { fPupMeanPt = a; }
+
+  void           SetPuppiWeight(double w)   { fPupWeight = w; }
+  void           SetPuppiWeight2(double w)  { fPupWeight2= w; }
+  void           SetPuppiWeight3(double w)  { fPupWeight3= w; }
+  void           SetPtVS(double pt)         { fPtVS  = pt;    }
   
-  Int_t          GetPuppiId() const      { return fPupId; }
-  Double_t       GetPuppiAlpha() const   { return fPupAlpha; }
-  Double_t       GetPuppiMetric2() const { return fPupMetric2;}
-  Double_t       GetPuppiWeight() const  { return fPupWeight; }
-  Double_t       GetPuppiWeight2() const { return fPupWeight2;}
-  Double_t       GetPuppiWeight3() const { return fPupWeight3;}
-  Double_t       PtVS()       const      { return fPtVS;  } 
+  int            GetPuppiId() const      { return fPupId;     }
+
+  double         GetPuppiAlpha() const   { return fPupAlpha;  }
+  double         GetPuppiMetric2() const { return fPupMetric2;}
+  double         GetPuppiSumPt() const   { return fPupSumPt;  }
+  double         GetPuppiAlpha2() const  { return fPupAlpha2; }
+  double         GetPuppiMeanPt() const  { return fPupMeanPt; }
+
+  double         GetPuppiWeight() const  { return fPupWeight; }
+  double         GetPuppiWeight2() const { return fPupWeight2;}
+  double         GetPuppiWeight3() const { return fPupWeight3;}
+  double         PtVS()       const      { return fPtVS;      } 
 
  protected:
-  Int_t          fPupId;       //puppi id
-  Double_t       fPupAlpha;    //puppi alpha
-  Double_t       fPupMetric2;  //puppi alpha
-  Double_t       fPupWeight;   //puppi weight
-  Double_t       fPupWeight2;  //puppi weight2
-  Double_t       fPupWeight3;  //puppi weight3
-  Double_t       fPtVS;        //subtracted pt from HF-Voronoi algo
+  int          fPupId;       //puppi id
+  double       fPupAlpha;    //puppi alpha = pt/r/r
+  double       fPupMetric2;  //puppi metric2
+  double       fPupSumPt;    //puppi sum pt
+  double       fPupAlpha2;   //pt/r
+  double       fPupMeanPt;   //mean pt
+  double       fPupWeight;   //puppi weight
+  double       fPupWeight2;  //puppi weight2
+  double       fPupWeight3;  //puppi weight3
+  double       fPtVS;        //subtracted pt from HF-Voronoi algo
   
-  ClassDef(pfParticle,2)
+  ClassDef(pfParticle,3)
 };
 #endif

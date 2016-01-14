@@ -12,6 +12,9 @@ particleBase(),
   fPupId(-1),
   fPupAlpha(-1),
   fPupMetric2(-1),
+  fPupSumPt(-1),
+  fPupAlpha2(-1),
+  fPupMeanPt(-1),
   fPupWeight(0),
   fPupWeight2(1),
   fPtVS(0.)
@@ -25,6 +28,9 @@ pfParticle::pfParticle(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_
   fPupId(-1),
   fPupAlpha(-1),
   fPupMetric2(-1),
+  fPupSumPt(-1),
+  fPupAlpha2(-1),
+  fPupMeanPt(-1),
   fPupWeight(0),
   fPupWeight2(1),
   fPtVS(0.)
@@ -38,6 +44,9 @@ pfParticle::pfParticle(const pfParticle &obj) :
   fPupId(obj.fPupId),
   fPupAlpha(obj.fPupAlpha),
   fPupMetric2(obj.fPupMetric2),
+  fPupSumPt(obj.fPupSumPt),
+  fPupAlpha2(obj.fPupAlpha2),
+  fPupMeanPt(obj.fPupMeanPt),
   fPupWeight(obj.fPupWeight),
   fPupWeight2(obj.fPupWeight2),
   fPtVS(obj.fPtVS)
@@ -55,6 +64,9 @@ pfParticle &pfParticle::operator=(const pfParticle &other)
     fPupId      = other.fPupId;
     fPupAlpha   = other.fPupAlpha;
     fPupMetric2 = other.fPupMetric2;
+    fPupSumPt   = other.fPupSumPt;
+    fPupAlpha2  = other.fPupAlpha2;
+    fPupMeanPt  = other.fPupMeanPt;
     fPupWeight  = other.fPupWeight;
     fPupWeight2 = other.fPupWeight2;
     fPtVS       = other.fPtVS;

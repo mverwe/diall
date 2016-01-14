@@ -142,8 +142,12 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      if(!p1) continue;
      if(p1->GetId()==1) drmin = 0.02;
      else               drmin = 0.05;
-     double var = 0.;
-     double var2 = 0.;
+
+     double alpha = 0.;
+     // double mass = 0.;
+     double sumpt = 0.;
+     double alpha2 = 0.;
+     int    nconst = 0;
      TLorentzVector lsum(0.,0.,0.,0.);
      //for (int j = 0; j < fPFParticles->GetEntriesFast(); j++) {
      for (unsigned int j = 0; j < fSelPFParticles.size(); j++) {
@@ -153,17 +157,18 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        //pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
        double dr = p1->DeltaR(p2);
        if(dr<drmin || dr>fConeRadius) continue;
-       var += p2->Pt() /dr/dr;
-       if(fAddMetricType==kSumPt)
-         var2 += p2->Pt();
-       else if(fAddMetricType==kMass)
-         lsum+=p2->GetLorentzVector();
+       alpha += p2->Pt() /dr/dr;
+       alpha2 += p2->Pt() /dr;
+       sumpt += p2->Pt();
+       lsum+=p2->GetLorentzVector();
+       nconst++;
      }
-     if(var!=0.) var = log(var);
-     p1->SetPuppiAlpha(var);
-     if(fAddMetricType==kMass)
-       var2+=lsum.M();
-     p1->SetPuppiMetric2(var2);
+     if(alpha!=0.)  alpha  = log(alpha);
+     if(alpha2!=0.) alpha2 = log(alpha2);
+     p1->SetPuppiAlpha2(alpha2);
+     p1->SetPuppiMetric2(lsum.M());
+     p1->SetPuppiSumPt(sumpt);
+     if(nconst>0) p1->SetPuppiMeanPt(sumpt/((double)nconst));
    }//particles loop
 
    //calculation of median and RMS alpha in eta ranges
@@ -306,6 +311,9 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        pPart->SetCharge(p1->GetCharge());
        pPart->SetPuppiAlpha(p1->GetPuppiAlpha());
        pPart->SetPuppiMetric2(p1->GetPuppiMetric2());
+       pPart->SetPuppiSumPt(p1->GetPuppiSumPt());
+       pPart->SetPuppiAlpha2(p1->GetPuppiAlpha2());
+       pPart->SetPuppiMeanPt(p1->GetPuppiMeanPt());
        pPart->SetPuppiWeight(prob);
        pPart->SetPuppiWeight2(prob2);
        pPart->SetPuppiWeight3(prob3);
@@ -316,6 +324,9 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
          fphi[npup] = p1->Phi();
          falpha[npup] = p1->GetPuppiAlpha();
          fmetric2[npup] = p1->GetPuppiMetric2();
+         fsumpt[npup] = p1->GetPuppiSumPt();
+         falpha2[npup] = p1->GetPuppiAlpha2();
+         fmeanpt[npup] = p1->GetPuppiMeanPt();
 
          //Get closest jet
          lwJet *jetClosest = 0x0;
@@ -376,6 +387,9 @@ void anaPuppiProducer::CreateOutputObjects() {
     fTreeOut->Branch("phi",  &fphi,       "phi[npart]/F");
     fTreeOut->Branch("alpha",&falpha,     "alpha[npart]/F");
     fTreeOut->Branch("metric2",&fmetric2, "metric2[npart]/F");
+    fTreeOut->Branch("sumpt" ,&fsumpt,     "sumpt[npart]/F");
+    fTreeOut->Branch("alpha2",&falpha2,    "alpha2[npart]/F");
+    fTreeOut->Branch("meanpt",&fmeanpt,    "meanpt[npart]/F");
     fTreeOut->Branch("ptjet",&fptjet,     "ptjet[npart]/F");
     fTreeOut->Branch("drjet",&fdrjet,     "drjet[npart]/F");
 
