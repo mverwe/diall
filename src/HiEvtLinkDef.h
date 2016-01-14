@@ -24,6 +24,8 @@
 #include "UserCode/diall/interface/pfParticleProducer.h"
 #include "UserCode/diall/interface/rhoMap.h"
 #include "UserCode/diall/interface/trackProducer.h"
+#include "UserCode/diall/interface/triggerMap.h"
+#include "UserCode/diall/interface/triggerProducer.h"
 
 #include "UserCode/diall/interface/FJ_includes.h"
 #include "UserCode/diall/interface/FJJetShape.h"
@@ -80,6 +82,8 @@
 #pragma link C++ class pfParticleProducer;
 #pragma link C++ class rhoMap;
 #pragma link C++ class trackProducer;
+#pragma link C++ class triggerMap;
+#pragma link C++ class triggerProducer;
 
 #pragma link C++ class FJJetShape;
 #pragma link C++ class FJWrapper;

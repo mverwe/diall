@@ -5,6 +5,7 @@
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
+#include "UserCode/diall/interface/triggerProducer.h"
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
 #include "UserCode/diall/interface/anaJetQA.h"
@@ -58,6 +59,10 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   TChain *chain = NULL;
   chain = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
+  Printf("hltTree done");
+
+  TChain *hltTree = new TChain("hltanalysis/HltTree");
+  for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
   Printf("hltTree done");
 
   /*
@@ -117,6 +122,11 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
+  triggerProducer *p_trg = new triggerProducer("trigProd");
+  p_trg->SetInput(hltTree);
+  p_trg->SetTriggerMapName("triggerMap");
+  p_trg->SetEventObjects(fEventObjects);
+  
   pfParticleProducer *p_pf = new pfParticleProducer("pfPartProd");
   p_pf->SetInput(chain);
   p_pf->SetpfParticlesName("pfParticles");
@@ -223,6 +233,8 @@ void analyzePFvsCaloJetsppData(std::vector<std::string> urls, const char *outnam
     // Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
 
+    p_trg->Run(jentry);
+        
     //Printf("produce pf particles");
     //  p_pf->Run(jentry);    //pf particles
     p_pfJet->Run(jentry); //jets
