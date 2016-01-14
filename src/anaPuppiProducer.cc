@@ -18,7 +18,7 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fNExLJ(2),
   fMinPtExLJ(20.),
   fdRMaxJet(0.4),
-  fAddMetricType(kSumPt),
+  //  fAddMetricType(kSumPt),
   fPuppiWeightType(kAlpha),
   fPtMinParticle(0.),
   fPFParticlesName(""),
@@ -123,7 +123,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      }
    }
    
-   //pf candidate loop to calculate alpha for each particle
+   //pf candidate loop to calculate puppi metrics for each particle
 
    //plan: apply pt cut to particles, put particles passing in std::vector and work with those for the rest of the algo
    std::vector<pfParticle*> fSelPFParticles;
@@ -134,8 +134,6 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      fSelPFParticles.push_back(p1);
    }
 
-   //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
-     //pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
    double drmin = 0.02;
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
@@ -149,12 +147,11 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      double alpha2 = 0.;
      int    nconst = 0;
      TLorentzVector lsum(0.,0.,0.,0.);
-     //for (int j = 0; j < fPFParticles->GetEntriesFast(); j++) {
+
      for (unsigned int j = 0; j < fSelPFParticles.size(); j++) {
        if(i==j) continue;
        pfParticle *p2 = fSelPFParticles[j];
        if(!p2) continue;
-       //pfParticle *p2 = static_cast<pfParticle*>(fPFParticles->At(j));
        double dr = p1->DeltaR(p2);
        if(dr<drmin || dr>fConeRadius) continue;
        alpha += p2->Pt() /dr/dr;
@@ -165,6 +162,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      }
      if(alpha!=0.)  alpha  = log(alpha);
      if(alpha2!=0.) alpha2 = log(alpha2);
+     p1->SetPuppiAlpha(alpha);
      p1->SetPuppiAlpha2(alpha2);
      p1->SetPuppiMetric2(lsum.M());
      p1->SetPuppiSumPt(sumpt);
@@ -185,9 +183,6 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t etaMin = fMapEtaRanges.at(ieta)+fConeRadius;
      Double_t etaMax = fMapEtaRanges.at(ieta+1)-fConeRadius;
      
-     //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
-     //  pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
-     //  if(!p1) continue;
      for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
        pfParticle *p1 = fSelPFParticles[i];
        if(!p1) continue; 
@@ -208,11 +203,19 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
 
          //Excluding regions close to leading detector-level jet
          if(drSig>fdRMaxJet) {
-           alphaArrExLJ[count] = p1->GetPuppiAlpha();
+           if(fPuppiWeightType==kAlpha)
+             alphaArrExLJ[count] = p1->GetPuppiAlpha();
+           else if(fPuppiWeightType==kAlpha2)
+             alphaArrExLJ[count] = p1->GetPuppiAlpha2();
+           else if(fPuppiWeightType==kSumPt)
+             alphaArrExLJ[count] = p1->GetPuppiSumPt();
+           else if(fPuppiWeightType==kMeanPt)
+             alphaArrExLJ[count] = p1->GetPuppiMeanPt();
+           else if(fPuppiWeightType==kMetric2)
+             alphaArrExLJ[count] = p1->GetPuppiMetric2();
            metric2ArrExLJ[count] = p1->GetPuppiMetric2();
            count++;
          }
-         
        }//eta selection
      }//particles loop
      
@@ -261,8 +264,6 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      
    //Set puppi weight for each particle
    int npup = 0;
-   //for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
-   //  pfParticle *p1 = static_cast<pfParticle*>(fPFParticles->At(i));
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
      if(!p1) continue;
@@ -278,7 +279,16 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t rmsAlpha = fMapRmsAlpha[etaBin];
      Double_t chiAlpha = 1.;
      if(rmsAlpha>0.) {
-       chiAlpha = (p1->GetPuppiAlpha() - medAlpha) * fabs(p1->GetPuppiAlpha() - medAlpha) / rmsAlpha / rmsAlpha;
+       double var = p1->GetPuppiAlpha();
+       if(fPuppiWeightType==kAlpha2)
+         var = p1->GetPuppiAlpha2();
+       else if(fPuppiWeightType==kSumPt)
+         var = p1->GetPuppiSumPt();
+       else if(fPuppiWeightType==kMeanPt)
+         var = p1->GetPuppiMeanPt();
+       else if(fPuppiWeightType==kMetric2)
+         var = p1->GetPuppiMetric2();
+       chiAlpha = (var - medAlpha) * fabs(var - medAlpha) / rmsAlpha / rmsAlpha;
        prob = ROOT::Math::chisquared_cdf(chiAlpha,1.);
      }
      p1->SetPuppiWeight(prob);
@@ -299,8 +309,8 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      
      //put puppi weighted particles in array
      double ptpup = prob*p1->Pt();
-     if(fPuppiWeightType==kAlphaMetric2) ptpup = prob2*p1->Pt();
-     else if(fPuppiWeightType==kMetric2) ptpup = prob3*p1->Pt();
+     // if(fPuppiWeightType==kAlphaMetric2) ptpup = prob2*p1->Pt();
+     // else if(fPuppiWeightType==kMetric2) ptpup = prob3*p1->Pt();
      if(fPuppiParticles && ptpup>1e-4) {
        pfParticle *pPart = new ((*fPuppiParticles)[npup])
          pfParticle(ptpup,

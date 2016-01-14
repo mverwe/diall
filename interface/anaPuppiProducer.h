@@ -22,14 +22,17 @@
 class anaPuppiProducer : public anaBaseTask {
    
 public:
-   enum addMetricType {
-     kSumPt    = 0,
-     kMass     = 1
-   };
+   //enum addMetricType {
+   //  kSumPt    = 0,
+   //  kMass     = 1
+   //};
    enum puppiWeightType {
      kAlpha        = 0,
      kAlphaMetric2 = 1,
-     kMetric2      = 2
+     kMetric2      = 2,
+     kSumPt        = 3,
+     kMeanPt       = 4,
+     kAlpha2       = 5
    };
 
    anaPuppiProducer() {;}
@@ -51,7 +54,7 @@ public:
    void SetPtMinExLJ(Double_t m)           { fMinPtExLJ  = m; }
    void SetMinDistToSigJet(Double_t d)     { fdRMaxJet   = d; }
    void SetEtaLimit(Int_t i, Double_t eta) { fMapEtaRanges[i]=eta;}
-   void SetAddMetricType(addMetricType t)  { fAddMetricType = t; }
+//   void SetAddMetricType(addMetricType t)  { fAddMetricType = t; }
    void SetPuppiWeightType(puppiWeightType t) { fPuppiWeightType = t; }
    
  protected:
@@ -60,7 +63,7 @@ public:
    Int_t             fNExLJ;            //maximum number of signal jets
    Double_t          fMinPtExLJ;        //pt min to qualify as signal jet
    Double_t          fdRMaxJet;         //minimum distance to signal jet
-   addMetricType     fAddMetricType;    //type of additional metric
+   //addMetricType     fAddMetricType;    //type of additional metric
    puppiWeightType   fPuppiWeightType;  //puppi weight type
    double            fPtMinParticle;    //pt min for pf particles
    TString           fPFParticlesName;  //name of array with pf candidates
