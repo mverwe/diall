@@ -1,5 +1,5 @@
 //
-// producer of muon candidates
+// producer of electron candidates
 //
 
 #include "UserCode/diall/interface/lwElectronProducer.h"
@@ -17,21 +17,27 @@ inputBase("lwElectronProducer"),
   flwElectronsGeneName("lwElectronsGene"),
   flwElectronsGene(0x0),
   fElectrons(),
-  fPtMin(10.),
-  fdEtaAtVtxB(0.0094),
-  fdEtaAtVtxE(0.00773),
-  fdPhiAtVtxB(0.0296),
-  fdPhiAtVtxE(0.148),
-  fHoverEB(0.0372),
-  fHoverEE(0.0546),
-  fD0B(0.0151), 
-  fD0E(0.0535),
-  fDZB(0.238),
-  fDZE(0.572),
-  fSigmaIEtaIEtaB(0.0101),
-  fSigmaIEtaIEtaE(0.0287),
-  fEoverPInvB(0.118),
-  fEoverPInvE(0.104)
+  fPtMin(18.), 
+  fMaxEtaAbs(2.4),
+  fMaxdEtaAtVtxBarrel(0.0094),  
+  fMaxdPhiAtVtxBarrel(0.0296),
+  fMaxSigmaIEtaIEtaBarrel(0.0101),
+  fMaxHoverEBarrel(0.0372),
+  fMaxDxyBarrel(0.0151),
+  fMaxDzBarrel(0.238),
+  fMaxEoverPInvBarrel(0.118),
+  fMaxMissHitsBarrel(2),
+  fPassConversionVetoBarrel(kTRUE),
+  fMaxdEtaAtVtxEndcap(0.00773),  
+  fMaxdPhiAtVtxEndcap(0.148),
+  fMaxSigmaIEtaIEtaEndcap(0.0287),
+  fMaxHoverEEndcap(0.0546),
+  fMaxDxyEndcap(0.0535),
+  fMaxDzEndcap(0.572),
+  fMaxEoverPInvEndcap(0.104),
+  fMaxMissHitsEndcap(1),
+  fPassConversionVetoEndcap(kTRUE)
+
 {
   //default constructor
 }
@@ -44,7 +50,26 @@ lwElectronProducer::lwElectronProducer(const char *name) :
   flwElectronsGeneName("lwElectronsGene"),
   flwElectronsGene(0x0),
   fElectrons(),
-  fPtMin(16.)
+  fPtMin(16.),
+  fMaxEtaAbs(2.1),
+  fMaxdEtaAtVtxBarrel(0.0094),  
+  fMaxdPhiAtVtxBarrel(0.0296),
+  fMaxSigmaIEtaIEtaBarrel(0.0101),
+  fMaxHoverEBarrel(0.0372),
+  fMaxDxyBarrel(0.0151),
+  fMaxDzBarrel(0.238),
+  fMaxEoverPInvBarrel(0.118),
+  fMaxMissHitsBarrel(2),
+  fPassConversionVetoBarrel(kTRUE),
+  fMaxdEtaAtVtxEndcap(0.00773),  
+  fMaxdPhiAtVtxEndcap(0.148),
+  fMaxSigmaIEtaIEtaEndcap(0.0287),
+  fMaxHoverEEndcap(0.0546),
+  fMaxDxyEndcap(0.0535),
+  fMaxDzEndcap(0.572),
+  fMaxEoverPInvEndcap(0.104),
+  fMaxMissHitsEndcap(1),
+  fPassConversionVetoEndcap(kTRUE)
 {
   //standard constructor
 }
@@ -55,12 +80,29 @@ Bool_t lwElectronProducer::Init() {
   if(!inputBase::Init()) return kFALSE;
   
   if(fInputMode==hiForest) {
+    // Gen Info
+    /*
+    if (fChain->GetBranch("mult"))
+      fChain->SetBranchAddress("mult", &fElectrons.Gen_nptl, &fElectrons.b_Gen_nptl);
+    if (fChain->GetBranch("pdg"))
+      fChain->SetBranchAddress("pdg", &fElectrons.Gen_pid, &fElectrons.b_Gen_pid);
+    //if (fChain->GetBranch("Gen_mom"))
+    // fChain->SetBranchAddress("Gen_mom", &fElectrons.Gen_mom, &fElectrons.b_Gen_mom);
+    if (fChain->GetBranch("pt"))
+      fChain->SetBranchAddress("pt", &fElectrons.Gen_pt, &fElectrons.b_Gen_pt);
+    if (fChain->GetBranch("eta"))
+      fChain->SetBranchAddress("eta", &fElectrons.Gen_eta, &fElectrons.b_Gen_eta);
+    if (fChain->GetBranch("phi"))
+      fChain->SetBranchAddress("phi", &fElectrons.Gen_phi, &fElectrons.b_Gen_phi);
+    */
     // Reco Info
-    fChain->SetBranchStatus("*", 0);
-    fChain->SetBranchStatus("nEle", 1);
-    fChain->SetBranchStatus("ele*", 1);
-    if (fChain->GetBranch("nEle"))
-      fChain->SetBranchAddress("nEle", &fElectrons.nEle, &fElectrons.b_nEle);
+    //fChain->SetBranchStatus("*", 0);
+    fChain->SetBranchStatus("nEle",1);     // enable electron branches
+    fChain->SetBranchStatus("ele*",1);     // enable electron branches
+    if (fChain->GetBranch("nEle")){    printf("mpika!!!!! ");
+      fChain->SetBranchAddress("nEle", &fElectrons.nEle, &fElectrons.b_nEle); }
+    if (fChain->GetBranch("eleEn"))
+      fChain->SetBranchAddress("eleEn", &fElectrons.eleEn, &fElectrons.b_eleEn);
     if (fChain->GetBranch("eleCharge"))
       fChain->SetBranchAddress("eleCharge", &fElectrons.eleCharge, &fElectrons.b_eleCharge);
     if (fChain->GetBranch("elePt"))
@@ -69,7 +111,31 @@ Bool_t lwElectronProducer::Init() {
       fChain->SetBranchAddress("eleEta", &fElectrons.eleEta, &fElectrons.b_eleEta);
     if (fChain->GetBranch("elePhi"))
       fChain->SetBranchAddress("elePhi", &fElectrons.elePhi, &fElectrons.b_elePhi);
-   if (fChain->GetBranch("eledEtaAtVtx"))
+    if (fChain->GetBranch("eleSCEn"))
+      fChain->SetBranchAddress("eleSCEn", &fElectrons.eleSCEn, &fElectrons.b_eleSCEn);
+    if (fChain->GetBranch("eleESEn"))
+      fChain->SetBranchAddress("eleESEn", &fElectrons.eleESEn, &fElectrons.b_eleESEn);
+    if (fChain->GetBranch("eleSCEta"))
+      fChain->SetBranchAddress("eleSCEta", &fElectrons.eleSCEta, &fElectrons.b_eleSCEta);
+    if (fChain->GetBranch("eleSCPhi"))
+      fChain->SetBranchAddress("eleSCPhi", &fElectrons.eleSCPhi, &fElectrons.b_eleSCPhi);
+    if (fChain->GetBranch("eleSCRawEn"))
+      fChain->SetBranchAddress("eleSCRawEn", &fElectrons.eleSCRawEn, &fElectrons.b_eleSCRawEn);
+    if (fChain->GetBranch("eleSCEtaWidth"))
+      fChain->SetBranchAddress("eleSCEtaWidth", &fElectrons.eleSCEtaWidth, &fElectrons.b_eleSCEtaWidth);
+    if (fChain->GetBranch("eleSCPhiWidth"))
+      fChain->SetBranchAddress("eleSCPhiWidth", &fElectrons.eleSCPhiWidth, &fElectrons.b_eleSCPhiWidth);
+    if (fChain->GetBranch("eleHoverE"))
+      fChain->SetBranchAddress("eleHoverE", &fElectrons.eleHoverE, &fElectrons.b_eleHoverE);
+    if (fChain->GetBranch("eleSigmaIEtaIEta"))
+      fChain->SetBranchAddress("eleSigmaIEtaIEta", &fElectrons.eleSigmaIEtaIEta, &fElectrons.b_eleSigmaIEtaIEta);
+    if (fChain->GetBranch("eleSigmaIEtaIEta_2012"))
+      fChain->SetBranchAddress("eleSigmaIEtaIEta_2012", &fElectrons.eleSigmaIEtaIEta_2012, &fElectrons.b_eleSigmaIEtaIEta_2012);
+    if (fChain->GetBranch("eleSigmaIPhiIPhi"))
+      fChain->SetBranchAddress("eleSigmaIPhiIPhi", &fElectrons.eleSigmaIPhiIPhi, &fElectrons.b_eleSigmaIPhiIPhi);
+    if (fChain->GetBranch("eleEoverPInv"))
+      fChain->SetBranchAddress("eleEoverPInv", &fElectrons.eleEoverPInv, &fElectrons.b_eleEoverPInv);
+    if (fChain->GetBranch("eledEtaAtVtx"))
       fChain->SetBranchAddress("eledEtaAtVtx", &fElectrons.eledEtaAtVtx, &fElectrons.b_eledEtaAtVtx);
     if (fChain->GetBranch("eledPhiAtVtx"))
       fChain->SetBranchAddress("eledPhiAtVtx", &fElectrons.eledPhiAtVtx, &fElectrons.b_eledPhiAtVtx);
@@ -77,17 +143,21 @@ Bool_t lwElectronProducer::Init() {
       fChain->SetBranchAddress("eleD0", &fElectrons.eleD0, &fElectrons.b_eleD0);
     if (fChain->GetBranch("eleDz"))
       fChain->SetBranchAddress("eleDz", &fElectrons.eleDz, &fElectrons.b_eleDz);
-    if (fChain->GetBranch("eleSigmaIEtaIEta"))
-      fChain->SetBranchAddress("eleSigmaIEtaIEta", &fElectrons.eleSigmaIEtaIEta, &fElectrons.b_eleSigmaIEtaIEta);
-    if (fChain->GetBranch("eleHoverE"))
-      fChain->SetBranchAddress("eleHoverE", &fElectrons.eleHoverE, &fElectrons.b_eleHoverE);
-    if (fChain->GetBranch("eleEoverP"))
-      fChain->SetBranchAddress("eleEoverP", &fElectrons.eleEoverP, &fElectrons.b_eleEoverP);
-    if (fChain->GetBranch("eleEoverPInv"))
-      fChain->SetBranchAddress("eleEoverPInv", &fElectrons.eleEoverPInv, &fElectrons.b_eleEoverPInv);
+    if (fChain->GetBranch("eleD0Err"))
+      fChain->SetBranchAddress("eleD0Err", &fElectrons.eleD0Err, &fElectrons.b_eleD0Err);
+    if (fChain->GetBranch("eleDzErr"))
+      fChain->SetBranchAddress("eleDzErr", &fElectrons.eleDzErr, &fElectrons.b_eleDzErr);
     if (fChain->GetBranch("eleMissHits"))
       fChain->SetBranchAddress("eleMissHits", &fElectrons.eleMissHits, &fElectrons.b_eleMissHits);
- 
+    if (fChain->GetBranch("elePFChIso"))
+      fChain->SetBranchAddress("elePFChIso", &fElectrons.elePFChIso, &fElectrons.b_elePFChIso);
+    if (fChain->GetBranch("elePFPhoIso"))
+      fChain->SetBranchAddress("elePFPhoIso", &fElectrons.elePFPhoIso, &fElectrons.b_elePFPhoIso);
+    if (fChain->GetBranch("elePFNeuIso"))
+      fChain->SetBranchAddress("elePFNeuIso", &fElectrons.elePFNeuIso, &fElectrons.b_elePFNeuIso);
+    if (fChain->GetBranch("elePFPUIso"))
+      fChain->SetBranchAddress("elePFPUIso", &fElectrons.elePFPUIso, &fElectrons.b_elePFPUIso);
+        
     fInit = kTRUE;
   }
   return kTRUE;
@@ -121,6 +191,7 @@ Bool_t lwElectronProducer::Run(Long64_t entry) {
 
   //overloaded run funtion
   Long64_t centry = LoadTree(entry);
+
   if(centry<0) return kFALSE;
 
   if(!InitEventObjects()) return kFALSE;
@@ -133,17 +204,37 @@ Bool_t lwElectronProducer::Run(Long64_t entry) {
   Int_t eleCount = 0;
   for(Int_t i = 0; i<fElectrons.nEle; i++) {
     if(!AcceptElectron(i)) continue;
-    lwElectron *el = new lwElectron(fElectrons.elePt->at(i),
-                            fElectrons.eleEta->at(i),
-                            fElectrons.elePhi->at(i),
-                            0,
-                            i);
-    el->SetCharge(fElectrons.eleCharge->at(i));
-    (*flwElectronsReco)[eleCount] = el;
+    lwElectron *ele = new lwElectron(fElectrons.elePt->at(i),
+				     fElectrons.eleEta->at(i),
+				     fElectrons.elePhi->at(i),
+				     0,
+				     i);
+    ele->SetCharge(fElectrons.eleCharge->at(i));
+    (*flwElectronsReco)[eleCount] = ele;
     ++eleCount;
   }
   flwElectronsReco->Sort();
+  
 
+  //generated electrons
+  if(flwElectronsGene) {
+    eleCount = 0;
+    for(Int_t i = 0; i<fElectrons.Gen_nptl; i++) {
+      genParticle *ele = new genParticle(fElectrons.Gen_pt[i],
+					 fElectrons.Gen_eta[i],
+					 fElectrons.Gen_phi[i],
+					 0,
+					 i);
+      ele->SetCharge(fElectrons.Gen_pid[i]/abs(fElectrons.Gen_pid[i]));
+      ele->SetPID(fElectrons.Gen_pid[i]);
+      ele->SetPIDMom(fElectrons.Gen_mom[i]);
+      (*flwElectronsGene)[eleCount] = ele;
+      ++eleCount;
+    }
+    flwElectronsGene->Sort();
+    //Printf("%d generated electrons",eleCount);
+  }
+  
   return kTRUE;
 }
 
@@ -151,36 +242,37 @@ Bool_t lwElectronProducer::Run(Long64_t entry) {
 Bool_t lwElectronProducer::AcceptElectron(Int_t i) {
 
   //electron quality selection 
-  //https://github.com/CmsHI/quickZMacros/blob/master/ggHistos.C#L4
- 
-  if((fElectrons.elePt->at(i))<fPtMin) return false;
-  if(fabs(fElectrons.eleEta->at(i))>2.4) return false;
-  if(fabs(fElectrons.eleEta->at(i))<1.479) {
-   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fdEtaAtVtxB //0.0094
-	&& fabs(fElectrons.eledPhiAtVtx->at(i))<fdPhiAtVtxB //0.0296
-	&& fElectrons.eleSigmaIEtaIEta->at(i)<fSigmaIEtaIEtaB //0.0101
-	&& fElectrons.eleHoverE->at(i)<fHoverEB //0.0372
-	&& fabs(fElectrons.eleD0->at(i))<fD0B //0.0151
-	&& fabs(fElectrons.eleDz->at(i))<fDZB //0.238
-	&& fabs(fElectrons.eleEoverPInv->at(i))<fEoverPInvB //0.118
-	&& fElectrons.eleMissHits->at(i) <= 2
-	) return true;
-   else return false;
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_50ns (medium WP)
+  //no isolation for the moment!!!
+
+  if(fabs(fElectrons.eleSCEta->at(i))<1.479) {
+    if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fMaxdEtaAtVtxBarrel
+	 && fabs(fElectrons.eledPhiAtVtx->at(i))<fMaxdPhiAtVtxBarrel
+	 && fElectrons.eleSigmaIEtaIEta->at(i)<fMaxSigmaIEtaIEtaBarrel
+	 && fElectrons.eleHoverE->at(i)< fMaxHoverEBarrel
+	 && fabs(fElectrons.eleD0->at(i))<fMaxDxyBarrel
+	 && fabs(fElectrons.eleDz->at(i))<fMaxDzBarrel
+	 && fabs(fElectrons.eleEoverPInv->at(i))<fMaxEoverPInvBarrel
+	 && fElectrons.eleMissHits->at(i) <= fMaxMissHitsBarrel
+	 ) return kTRUE;
+    else return kFALSE;
   }
   if(fabs(fElectrons.eleSCEta->at(i))>1.479) {
-   if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fdEtaAtVtxE //0.00773
-	&& fabs(fElectrons.eledPhiAtVtx->at(i))<fdPhiAtVtxE //0.148
-	&& fElectrons.eleSigmaIEtaIEta->at(i)<fSigmaIEtaIEtaE //0.0287
-	&& fElectrons.eleHoverE->at(i)<fHoverEE //0.0546
-	&& fabs(fElectrons.eleD0->at(i))<fD0E //0.0535
-	&& fabs(fElectrons.eleDz->at(i))<fDZE //0.572
-	&& fabs(fElectrons.eleEoverPInv->at(i))<fEoverPInvE //0.104
-	&& fElectrons.eleMissHits->at(i) <= 1
-	) return true;
-   else return false;
+    if(  fabs(fElectrons.eledEtaAtVtx->at(i))<fMaxdEtaAtVtxEndcap
+	 && fabs(fElectrons.eledPhiAtVtx->at(i))<fMaxdPhiAtVtxEndcap
+	 && fElectrons.eleSigmaIEtaIEta->at(i)<fMaxSigmaIEtaIEtaEndcap
+	 && fElectrons.eleHoverE->at(i)<fMaxHoverEEndcap
+	 && fabs(fElectrons.eleD0->at(i))<fMaxDxyEndcap
+	 && fabs(fElectrons.eleDz->at(i))<fMaxDzEndcap
+	 && fabs(fElectrons.eleEoverPInv->at(i))<fMaxEoverPInvEndcap
+	 && fElectrons.eleMissHits->at(i) <= fMaxMissHitsEndcap
+	 ) return kTRUE;
+    else return kFALSE;
   }
-  return false;
+  else return kFALSE;
+
 }
+
 
 //__________________________________________________________
 Long64_t lwElectronProducer::LoadTree(Long64_t entry) {
@@ -201,11 +293,13 @@ Long64_t lwElectronProducer::LoadTree(Long64_t entry) {
  
   Long64_t centry = fChain->LoadTree(entry);
   if (centry < 0) {
-    Printf("lwElectronProducer: centry smaller than 0");
+    Printf("hiEventProducer: centry smaller than 0");
     return centry;  
   }
-  
-  fChain->GetEntry(entry);
+  //fChain->SetNotify(0); 
+  fChain->GetEntry(entry); //Line that gives the brake!!
 
+  
   return centry;
 }
+

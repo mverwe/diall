@@ -18,9 +18,10 @@ class diParticle : public particleBase {
   diParticle& operator=(const diParticle& other); // assignment
 
   void           AddParticle(particleBase *p);
-  
+  TObjArray*     GetDecayParticles() const { return fDecayParticles; }
+
  protected:
-  TObjArray            fDecayParticles;   // pointer to decay particles
+  TObjArray      *fDecayParticles;   // pointer to decay particles
 
  private:
   ClassDef(diParticle,1)

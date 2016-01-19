@@ -32,9 +32,9 @@ class hiEventProducer : public inputBase {
  protected:
   TString                      fhiEventContName;  // name of HI event container
   hiEventContainer            *fhiEventContainer; //!HI event properties
-  Int_t                        fRun;     //!
-  Int_t                        fEvt;     //!
-  Int_t                        fLumi;    //!
+  UInt_t                       fRun;     //!
+  ULong64_t                    fEvt;     //!
+  UInt_t                       fLumi;    //!
   Float_t                      fWeight;  //!
   Float_t                      fVx;      //!
   Float_t                      fVy;      //!

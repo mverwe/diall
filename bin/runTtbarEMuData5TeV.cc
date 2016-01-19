@@ -1,4 +1,4 @@
-#include "UserCode/diall/analyzePFvsCaloJetsppData5TeV.C"
+#include "UserCode/diall/analyzeTtbarEMuppData5TeV.C"
 
 //#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
@@ -56,11 +56,11 @@ int main(int argc, char* argv[])
   for (std::vector<std::string>::const_iterator i = urls.begin(); i != urls.end(); ++i)
     std::cout << *i << std::endl;
   
-  std::string outname = "AnaResultsPFvsCaloJets.root";
+  std::string outname = "AnaResults.root";
   // std::string outname = runProcess.getParameter<std::string>("output");
   int maxEvts = runProcess.getParameter<int>("maxEvents");
   
-  analyzePFvsCaloJetsppData5TeV(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
+  analyzeTtbarEMuppData5TeV(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
   
   cout << "Results have been stored in " << outname << endl;
 }
