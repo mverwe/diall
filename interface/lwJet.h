@@ -28,7 +28,7 @@ class lwJet : public particleBase {
   
   Int_t       GetNConstituents()        const { return fConstIds.size(); }
   Int_t       GetConstituentId(Int_t i) const { return fConstIds[i]    ; }
-  pfParticle *GetConstituent(Int_t i, TClonesArray *c) const { if(!c) return 0; return dynamic_cast<pfParticle*>(c->At(fConstIds[i])); }
+  particleBase *GetConstituent(Int_t i, TClonesArray *c) const { if(!c) return 0; return dynamic_cast<particleBase*>(c->At(fConstIds[i])); }
 
   Int_t       GetRefParton()            const { return fRefParton      ; }
   Int_t       GetRefPartonForB()        const { return fRefPartonForB  ; }
