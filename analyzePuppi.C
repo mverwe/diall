@@ -28,9 +28,10 @@
 using namespace std;
 
 bool doPuppi         = true;
-bool doJetFinding    = false;
+bool doJetFinding    = true;
 bool useMetric2      = false;
-bool storeTree       = true;//false;
+bool storeTree       = false;
+bool doCSJets        = true;
 
 void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
 
@@ -46,7 +47,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
    */
 
   double ptMinPuppi = 0.;
-  if(ptminType==0) ptMinPuppi = 0.;
+  if(ptminType==0) ptMinPuppi = 1e-4;
   else if(ptminType==1) ptMinPuppi = 1.;
   else if(ptminType==2) ptMinPuppi = 2.;
 
@@ -149,7 +150,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetPtMinParticle(ptMinPuppi);//1.);
   pupProd->SetStoreTree(storeTree);
   pupProd->SetConeRadius(0.2);
-  pupProd->SetPuppiWeightType(anaPuppiProducer::kMeanPt);
+  pupProd->SetPuppiWeightType(anaPuppiProducer::kAlpha);//kMeanPt);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0
@@ -161,7 +162,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   lwjakt->SetPtMinConst(ptMinPuppi);//0.);
   lwjakt->SetParticlesName("puppiParticles");
   lwjakt->SetJetContName("JetsAKTR040Puppi");
-  if(doJetFinding) handler->Add(lwjakt);
+  if(doPuppi && doJetFinding) handler->Add(lwjakt);
 
   //anti-kt jet finder on generated particles
   LWJetProducer *lwjaktGen = new LWJetProducer("LWGenJetProducerAKTR040","LWGenJetProducerAKTR040");
@@ -188,7 +189,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   match->SetHiEvtName("hiEventContainer");
   match->SetJetsNameBase("JetsAKTR040Puppi");
   match->SetJetsNameTag("akt4Gen");//GenJetsAKTR040");
-  if(doJetFinding) handler->Add(match);
+  if(doPuppi && doJetFinding) handler->Add(match);
 
   anaJetEnergyScale *anajes = new anaJetEnergyScale("anaJES","anaJES");
   anajes->ConnectEventObject(fEventObjects);
@@ -196,13 +197,13 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   anajes->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
   anajes->SetRecJetsName("JetsAKTR040Puppi");
   anajes->SetNCentBins(4);
-  if(doJetFinding) handler->Add(anajes);
+  if(doPuppi && doJetFinding) handler->Add(anajes);
   
   anaJetMatching *matchGen = new anaJetMatching("jetMatchingGenGen","jetMatchingGenGen");
   matchGen->ConnectEventObject(fEventObjects);
   matchGen->SetHiEvtName("hiEventContainer");
-  matchGen->SetJetsNameBase("GenJetsAKTR040");
-  matchGen->SetJetsNameTag("akt4Gen");
+  matchGen->SetJetsNameBase("GenJetsAKTR040"); //gen jets from gen particles
+  matchGen->SetJetsNameTag("akt4Gen");         //forest gen jets
   if(doJetFinding) handler->Add(matchGen);
  
   anaJetEnergyScale *anajesgen = new anaJetEnergyScale("anajesgen","anajesgen");
@@ -212,6 +213,66 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   anajesgen->SetRecJetsName("GenJetsAKTR040");
   anajesgen->SetNCentBins(4);
   if(doJetFinding) handler->Add(anajesgen);
+
+  if(doCSJets) {
+    //kt jet finder
+    LWJetProducer *lwjkt = new LWJetProducer("LWJetProducerKTR020","LWJetProducerKTR020");
+    lwjkt->ConnectEventObject(fEventObjects);
+    lwjkt->SetJetType(LWJetProducer::kKT);
+    lwjkt->SetRadius(0.2);
+    lwjkt->SetGhostArea(0.005);
+    lwjkt->SetPtMinConst(0.);
+    lwjkt->SetParticlesName("pfParticles");
+    lwjkt->SetJetContName("JetsKTR020");
+    lwjkt->SetDoConstituentSubtraction(kFALSE);
+    handler->Add(lwjkt);
+
+    anaRhoProducer *rhoProd = new anaRhoProducer("anaRhoProducerKTR020","anaRhoProducerKTR020");
+    rhoProd->ConnectEventObject(fEventObjects);
+    rhoProd->SetJetsName("JetsKTR020");
+    rhoProd->SetHiEvtName("hiEventContainer");
+    rhoProd->SetNExcl(2);
+    rhoProd->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    handler->Add(rhoProd);
+
+    //anti-kt jet finder on reconstructed pf candidates
+    LWJetProducer *lwjaktCS = new LWJetProducer("LWCSJetProducerAKTR040","LWCSJetProducerAKTR040");
+    lwjaktCS->ConnectEventObject(fEventObjects);
+    lwjaktCS->SetJetType(LWJetProducer::kAKT);
+    lwjaktCS->SetRadius(0.4);
+    lwjaktCS->SetGhostArea(0.005);
+    lwjaktCS->SetPtMinConst(0.);
+    lwjaktCS->SetParticlesName("pfParticles");
+    lwjaktCS->SetJetContName("JetsAKTR040");
+    lwjaktCS->SetCSJetContName("JetsAKTR040CS");
+    lwjaktCS->SetDoConstituentSubtraction(kTRUE);
+    lwjaktCS->SetRhoMapName("rhoMap");
+    lwjaktCS->SetRhoMMapName("rhoMMap");
+    handler->Add(lwjaktCS);
+    
+    anaJetMatching *matchCS = new anaJetMatching("jetMatchingCS","jetMatchingCS");
+    matchCS->ConnectEventObject(fEventObjects);
+    matchCS->SetHiEvtName("hiEventContainer");
+    matchCS->SetJetsNameBase("JetsAKTR040CS");
+    matchCS->SetJetsNameTag("akt4Gen");//GenJetsAKTR040");
+    handler->Add(matchCS);
+
+    anaJetEnergyScale *anajesCS = new anaJetEnergyScale("anajesCS","anajesCS");
+    anajesCS->ConnectEventObject(fEventObjects);
+    anajesCS->SetHiEvtName("hiEventContainer");
+    anajesCS->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesCS->SetRecJetsName("JetsAKTR040CS");
+    anajesCS->SetNCentBins(4);
+    handler->Add(anajesCS);
+
+    anaJetEnergyScale *anajesRaw = new anaJetEnergyScale("anajesRaw","anajesRaw");
+    anajesRaw->ConnectEventObject(fEventObjects);
+    anajesRaw->SetHiEvtName("hiEventContainer");
+    anajesRaw->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesRaw->SetRecJetsName("JetsAKTR040");
+    anajesRaw->SetNCentBins(4);
+    handler->Add(anajesRaw);
+  }
  
   //---------------------------------------------------------------
   //Event loop
