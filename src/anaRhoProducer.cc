@@ -36,8 +36,11 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
 //----------------------------------------------------------
 void anaRhoProducer::Exec(Option_t * /*option*/)
 {
-   //printf("anaRhoProducer executing\n");
+  //printf("anaRhoProducer executing\n");
    if(!fInitOutput) CreateOutputObjects();
+
+   anaBaseTask::Exec();
+   //if(!SelectEvent()) return;
 
    //create maps
    if(!fRhoMap && !fRhoName.IsNull()) {
@@ -60,6 +63,9 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
 
    Double_t radius = fJetsCont->GetJetRadius();
    TClonesArray *jets = fJetsCont->GetJets();
+   if(!jets) {
+     Printf("%s: couldn't locate jets %s",GetName(),fJetsName.Data());
+   }
 
    static Double_t rhoVec[999];
    static Double_t rhomVec[999];
@@ -67,14 +73,16 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
 
    Int_t nacc = 0;
    Int_t iexcl = 0;
+   double maxMd = -999.;
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
      lwJet *jet = static_cast<lwJet*>(jets->At(i));
+     if(!jet) continue;
      if(fabs(jet->Pt()-0.)<1e-6) continue; //remove ghosts
      Double_t pt = jet->Pt();
      Double_t eta = jet->Eta();
      Double_t phi = jet->Phi();
      Double_t area = jet->GetArea();
-     
+
      fh3PtEtaPhi->Fill(pt,eta,phi);
      fh3PtEtaArea->Fill(pt,eta,area);
 
@@ -84,15 +92,15 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      if(area>0.) {
        rhoVec[nacc] = pt/area;
        Double_t md = calcMd(jet);
+       if(md>maxMd) maxMd = md;
        rhomVec[nacc] = md/area;
        etaVec[nacc] = eta;
        ++nacc;
-
-       fh3RhoCentEtaJet->Fill(fHiEvent->GetCentrality(),pt/area,eta);
-    }
+       if(fHiEvent) fh3RhoCentEtaJet->Fill(fHiEvent->GetCentrality(),pt/area,eta);
+     }
    }
    fh1NJets->Fill(nacc);
-
+   
    //calculate rho and rhom
    Double_t rho = 0.;
    Double_t rhom = 0.;
@@ -120,15 +128,16 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
          ++naccCur;
        }//eta selection
      }//accepted jet loop
-     Double_t rhoCur = TMath::Median(naccCur, rhoVecCur);
-     Double_t rhomCur = TMath::Median(naccCur, rhomVecCur);
-     fRhoMap->SetValue(ieta,rhoCur);
-     fRhoMMap->SetValue(ieta,rhomCur);
-
-     fh3RhoCentEtaBin->Fill(fHiEvent->GetCentrality(),rhoCur,etaMin + 0.5*(etaMax-etaMin));
-     fh3RhoMCentEtaBin->Fill(fHiEvent->GetCentrality(),rhomCur,etaMin + 0.5*(etaMax-etaMin));
+     if(naccCur>0) {
+       Double_t rhoCur = TMath::Median(naccCur, rhoVecCur);
+       Double_t rhomCur = TMath::Median(naccCur, rhomVecCur);
+       fRhoMap->SetValue(ieta,rhoCur);
+       fRhoMMap->SetValue(ieta,rhomCur);
+       
+       fh3RhoCentEtaBin->Fill(fHiEvent->GetCentrality(),rhoCur,etaMin + 0.5*(etaMax-etaMin));
+       fh3RhoMCentEtaBin->Fill(fHiEvent->GetCentrality(),rhomCur,etaMin + 0.5*(etaMax-etaMin));
+     }
    }//eta ranges
-   
 }
 
 //----------------------------------------------------------
@@ -205,10 +214,12 @@ Double_t anaRhoProducer::calcMd(const lwJet *jet) {
   Double_t sum = 0.;
   Double_t sumPt = 0.;
   for(Int_t i = 0; i<jet->GetNConstituents(); ++i) {
-    pfParticle *p = jet->GetConstituent(i,fJetsCont->GetConstituents());
+    particleBase *p = jet->GetConstituent(i,fJetsCont->GetConstituents());
     if(p->Pt()<1e-6) continue; //remove ghosts
+    //double pm = p->M()*p->M() + p->Pt()*p->Pt();
     sum += TMath::Sqrt(p->M()*p->M() + p->Pt()*p->Pt()) - p->Pt();
     sumPt+=p->Pt();
   }
+  
   return sum;
 }
