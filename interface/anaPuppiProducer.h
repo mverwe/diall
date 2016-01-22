@@ -56,7 +56,8 @@ public:
    void SetEtaLimit(Int_t i, Double_t eta) { fMapEtaRanges[i]=eta;}
 //   void SetAddMetricType(addMetricType t)  { fAddMetricType = t; }
    void SetPuppiWeightType(puppiWeightType t) { fPuppiWeightType = t; }
-   
+   void SetWeightCut(double w)             { fWeightCut = w;  }  
+ 
  protected:
    Double_t          fConeRadius;       //cone radius for isolation
    Int_t             fCentBin;          //centrality bin
@@ -73,7 +74,8 @@ public:
    TString           fPuppiParticlesName; //name of array with puppi particles
    TClonesArray     *fPuppiParticles;     //!puppi candidates array
    std::map<int,double> fMapEtaRanges;    //eta ranges
-   
+   double            fWeightCut;          //minimum puppi weight. If smaller set to zero  
+ 
    TH2F             *fh2CentMedianAlpha;   //!centrality vs median alpha
    TH2F             *fh2CentRMSAlpha;      //!centrality vs median alpha
    TH2F             *fh2CentMedianMetric2; //!centrality vs median metric2
@@ -84,16 +86,34 @@ public:
    //out tree members
    float             fcent;
    int               fnpart;
+   float             fMedAlpha;
+   float             fMedAlpha2;
+   float             fMedSumPt;
+   float             fMedMeanPt;
+   float             fMedMetric2;
    float             fpt[200000];
    float             feta[200000];
    float             fphi[200000];
+   int               fue[200000];
+   int               fetabin[200000];
    float             falpha[200000];
    float             fmetric2[200000];
    float             fsumpt[200000];
    float             falpha2[200000];
    float             fmeanpt[200000];
+   float             fwalpha[200000];
+   float             fwmetric2[200000];
+   float             fwsumpt[200000];
+   float             fwalpha2[200000];
+   float             fwmeanpt[200000];
    float             fptjet[200000];
    float             fdrjet[200000];
+   //signal jets
+   int               fnSigJets;
+   float             fSigJetPt[10];
+   float             fSigJetPhi[10];
+   float             fSigJetEta[10];
+   
       
    ClassDef(anaPuppiProducer,6)
 };

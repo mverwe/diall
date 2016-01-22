@@ -28,6 +28,7 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fPuppiParticlesName(""),
   fPuppiParticles(0x0),
   fMapEtaRanges(),
+  fWeightCut(0.01),
   fh2CentMedianAlpha(),
   fh2CentRMSAlpha(),
   fh2CentMedianMetric2(),
@@ -35,7 +36,13 @@ anaPuppiProducer::anaPuppiProducer(const char *name, const char *title)
   fStoreTree(false),
   fTreeOut(0x0),
   fcent(-999),
-  fnpart(0)
+  fnpart(0),
+  fMedAlpha(-1),
+  fMedAlpha2(-1),
+  fMedSumPt(-1),
+  fMedMeanPt(-1),
+  fMedMetric2(-1),
+  fnSigJets(0)
 {
 
   //Set default eta ranges
@@ -60,7 +67,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
 {
   // printf("anaPuppiProducer executing\n");
   anaBaseTask::Exec();
-   if(!fInitOutput) CreateOutputObjects();
+    if(!fInitOutput) CreateOutputObjects();
 
    if(!fEventObjects) {
      Printf("%s: fEventObjects does not exist. Cannot store output",GetName());
@@ -108,18 +115,23 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    else fCentBin = -1;
    
    //Find signal jets at detector level
-   Int_t nSignalJetsDet = 0;
+   //Int_t nSignalJetsDet = 0;
+   fnSigJets = 0;
    // Int_t sigDetIds[999];
-   Double_t sigDetPhi[999];
-   Double_t sigDetEta[999];
+   //Double_t sigDetPhi[999];
+   //Double_t sigDetEta[999];
    Int_t nj = TMath::Min(fNExLJ,fJetsCont->GetNJets());
    for(Int_t ij = 0; ij<nj; ij++) {
      lwJet *jet = static_cast<lwJet*>(jets->At(ij));
      if(jet->Pt()>fMinPtExLJ) {
        // sigDetIds[nSignalJetsDet] = ij;
-       sigDetPhi[nSignalJetsDet] = jet->Phi();
-       sigDetEta[nSignalJetsDet] = jet->Eta();
-       nSignalJetsDet++;
+       //sigDetPhi[nSignalJetsDet] = jet->Phi();
+       //sigDetEta[nSignalJetsDet] = jet->Eta();
+       fSigJetPt[fnSigJets] = jet->Pt();
+       fSigJetPhi[fnSigJets] = jet->Phi();
+       fSigJetEta[fnSigJets] = jet->Eta();
+       //nSignalJetsDet++;
+       fnSigJets++;
      }
    }
    
@@ -170,18 +182,35 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    }//particles loop
 
    //calculation of median and RMS alpha in eta ranges
-   std::map<int,double> fMapMedianAlpha;   //median alpha in eta regions
-   std::map<int,double> fMapRmsAlpha;      //rms alpha in eta regions
+   std::map<int,double> fMapMedianMetric;  //median selected metric in eta regions
+   std::map<int,double> fMapRmsMetric;     //rms selected in eta regions
+
+   std::map<int,double> fMapMedianAlpha;   //median default metric in eta regions
+   std::map<int,double> fMapRmsAlpha;      //rms default metric in eta regions
+   std::map<int,double> fMapMedianAlpha2;  //median alpha2 in eta regions
+   std::map<int,double> fMapRmsAlpha2;     //rms alpha2 in eta regions
+   std::map<int,double> fMapMedianSumPt;   //median sumPt in eta regions
+   std::map<int,double> fMapRmsSumPt;      //rms sumPt in eta regions
+   std::map<int,double> fMapMedianMeanPt;  //median alpha in eta regions
+   std::map<int,double> fMapRmsMeanPt;     //rms alpha in eta regions
    std::map<int,double> fMapMedianMetric2; //median metric2 in eta regions
    std::map<int,double> fMapRmsMetric2;    //rms metric2 in eta regions
+
    Int_t neta = (Int_t)fMapEtaRanges.size();
    for(Int_t ieta = 1; ieta<neta; ieta++) {
-     static Double_t alphaArrExLJ[9999] = {0.};
+     static Double_t metricArrExLJ[9999]  = {0.};
+     static Double_t alphaArrExLJ[9999]   = {0.};
+     static Double_t alpha2ArrExLJ[9999]  = {0.};
+     static Double_t sumPtArrExLJ[9999]   = {0.};
+     static Double_t meanPtArrExLJ[9999]  = {0.};
      static Double_t metric2ArrExLJ[9999] = {0.};
+     
      Int_t count = 0;
 
      Double_t etaMin = fMapEtaRanges.at(ieta)+fConeRadius;
      Double_t etaMax = fMapEtaRanges.at(ieta+1)-fConeRadius;
+
+     //Printf("ieta: %d  etaMin: %f etaMax: %f",ieta,etaMin,etaMax);
      
      for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
        pfParticle *p1 = fSelPFParticles[i];
@@ -189,9 +218,12 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        if(p1->Eta()>=etaMin && p1->Eta()<etaMax) {       
          //check distance to closest signal jet
          double drSig = 999.;
-         for(int is = 0; is<nSignalJetsDet; is++) {
-           double dPhi = p1->Phi() - sigDetPhi[is];
-           double dEta = p1->Eta() - sigDetEta[is];
+         //for(int is = 0; is<nSignalJetsDet; is++) {
+         for(int is = 0; is<fnSigJets; is++) {
+           //double dPhi = p1->Phi() - sigDetPhi[is];
+           //double dEta = p1->Eta() - sigDetEta[is];
+           double dPhi = p1->Phi() - fSigJetPhi[is];
+           double dEta = p1->Eta() - fSigJetEta[is];
            dPhi = TVector2::Phi_mpi_pi(dPhi);
            double dr2tmp = dPhi * dPhi + dEta * dEta;
            double drtmp = 0.;
@@ -204,40 +236,77 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
          //Excluding regions close to leading detector-level jet
          if(drSig>fdRMaxJet) {
            if(fPuppiWeightType==kAlpha)
-             alphaArrExLJ[count] = p1->GetPuppiAlpha();
+             metricArrExLJ[count] = p1->GetPuppiAlpha();
            else if(fPuppiWeightType==kAlpha2)
-             alphaArrExLJ[count] = p1->GetPuppiAlpha2();
+             metricArrExLJ[count] = p1->GetPuppiAlpha2();
            else if(fPuppiWeightType==kSumPt)
-             alphaArrExLJ[count] = p1->GetPuppiSumPt();
+             metricArrExLJ[count] = p1->GetPuppiSumPt();
            else if(fPuppiWeightType==kMeanPt)
-             alphaArrExLJ[count] = p1->GetPuppiMeanPt();
+             metricArrExLJ[count] = p1->GetPuppiMeanPt();
            else if(fPuppiWeightType==kMetric2)
-             alphaArrExLJ[count] = p1->GetPuppiMetric2();
+             metricArrExLJ[count] = p1->GetPuppiMetric2();
+           alphaArrExLJ[count] = p1->GetPuppiAlpha();
+           alpha2ArrExLJ[count] = p1->GetPuppiAlpha2();
+           sumPtArrExLJ[count] = p1->GetPuppiSumPt();
+           meanPtArrExLJ[count] = p1->GetPuppiMeanPt();
            metric2ArrExLJ[count] = p1->GetPuppiMetric2();
+
+           p1->SetPuppiId(1);
+           
            count++;
          }
+         //Printf("ieta: %d count: %d pt: %f eta: %f phi: %f",ieta,count,p1->Pt(),p1->Eta(),p1->Phi());
        }//eta selection
      }//particles loop
      
-     static Int_t indexes[9999] = {-1};//indexes for sorting
-     TMath::Sort(count,alphaArrExLJ,indexes);
-     Double_t medAlpha = TMath::Median(count,alphaArrExLJ);
-     static Int_t indexes2[9999] = {-1};//indexes for sorting
-     TMath::Sort(count,metric2ArrExLJ,indexes2);
-     Double_t medMetric2 = TMath::Median(count,metric2ArrExLJ);
+     //static Int_t indexes[9999] = {-1};//indexes for sorting
+     //TMath::Sort(count,metricArrExLJ,indexes);
+     Double_t medMetric = TMath::Median(count,metricArrExLJ);
+     //static Int_t indexes2[9999] = {-1};//indexes for sorting
+     //TMath::Sort(count,metric2ArrExLJ,indexes2);
 
+     Double_t medAlpha   = TMath::Median(count,alphaArrExLJ);
+     Double_t medAlpha2  = TMath::Median(count,alpha2ArrExLJ);
+     Double_t medSumPt   = TMath::Median(count,sumPtArrExLJ);
+     Double_t medMeanPt  = TMath::Median(count,meanPtArrExLJ);
+     Double_t medMetric2 = TMath::Median(count,metric2ArrExLJ);
+     /*
+     Printf("ieta: %d",ieta);
+     Printf("N particles UE: %d",count);
+     Printf("medAlpha: %f", medAlpha);
+     Printf("medAlpha2: %f", medAlpha2);
+     Printf("medSumPt: %f", medSumPt);
+     Printf("medMeanPt: %f", medMeanPt);
+     Printf("medMetric2: %f", medMetric2);
+     Printf("---------");
+     */
      //Calculate LHS RMS. LHS defined as all entries up to median
      Int_t nias = TMath::FloorNint((Double_t)count/2.);
-     Double_t rmsAlpha   = 0.;
-     Double_t rmsMetric2 = 0.;
+     Double_t rmsMetric   = 0.;
+     Double_t rmsAlpha    = 0.;
+     Double_t rmsAlpha2   = 0.;
+     Double_t rmsSumPt    = 0.;
+     Double_t rmsMeanPt   = 0.;
+     Double_t rmsMetric2  = 0.;
      for(Int_t ia = 0; ia<count; ia++) { //taking entries starting from nias since sorted from high to low
-       Double_t alph = alphaArrExLJ[ia];//indexes[ia]];
-       if(alph<medAlpha)
-         rmsAlpha += (alph - medAlpha)*(alph - medAlpha);
+       Double_t alph = metricArrExLJ[ia];//indexes[ia]];
+       if(alph<medMetric)
+         rmsMetric += (alph - medMetric)*(alph - medMetric);
        
-       //      if(alph>medAlpha) Printf("WARNING: alph (%f) larger than medAlpha (%f)",alph,medAlpha);
-       
-       //metric2
+       //      if(alph>medMetric) Printf("WARNING: alph (%f) larger than medMetric (%f)",alph,medMetric);
+      
+      if(alphaArrExLJ[ia]<medAlpha)
+        rmsAlpha += (alphaArrExLJ[ia] - medAlpha)*(alphaArrExLJ[ia] - medAlpha);
+
+      if(alpha2ArrExLJ[ia]<medAlpha2)
+        rmsAlpha2 += (alpha2ArrExLJ[ia] - medAlpha2)*(alpha2ArrExLJ[ia] - medAlpha2);
+
+      if(sumPtArrExLJ[ia]<medSumPt)
+        rmsSumPt += (sumPtArrExLJ[ia] - medSumPt)*(sumPtArrExLJ[ia] - medSumPt);
+
+      if(meanPtArrExLJ[ia]<medMeanPt)
+        rmsMeanPt += (meanPtArrExLJ[ia] - medMeanPt)*(meanPtArrExLJ[ia] - medMeanPt);
+ 
        Double_t metr2 = metric2ArrExLJ[ia];//indexes[ia]];
        if(metr2<medMetric2) 
          rmsMetric2 += (metr2 - medMetric2)*(metr2 - medMetric2);
@@ -245,25 +314,45 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        //       if(metr2>medMetric2) Printf("WARNING: metr2 (%f) larger than medMetric2 (%f)",metr2,medMetric2);
 
      }
-     if(rmsAlpha>0.) rmsAlpha = TMath::Sqrt(rmsAlpha/((double)nias));
+     if(rmsMetric>0.)  rmsMetric  = TMath::Sqrt(rmsMetric/((double)nias));
+     if(rmsAlpha>0.)   rmsAlpha   = TMath::Sqrt(rmsAlpha/((double)nias));
+     if(rmsAlpha2>0.)  rmsAlpha2  = TMath::Sqrt(rmsAlpha2/((double)nias));
+     if(rmsSumPt>0.)   rmsSumPt   = TMath::Sqrt(rmsSumPt/((double)nias));
+     if(rmsMeanPt>0.)  rmsMeanPt  = TMath::Sqrt(rmsMeanPt/((double)nias));
      if(rmsMetric2>0.) rmsMetric2 = TMath::Sqrt(rmsMetric2/((double)nias));
 
      //Fill histograms, only for mid rapidity
      if(ieta==3) {
-       fh2CentMedianAlpha->Fill(cent,medAlpha);
-       fh2CentRMSAlpha->Fill(cent,rmsAlpha);
+       fh2CentMedianAlpha->Fill(cent,medMetric);
+       fh2CentRMSAlpha->Fill(cent,rmsMetric);
        fh2CentMedianMetric2->Fill(cent,medMetric2);
-       fh2CentRMSMetric2->Fill(cent,rmsMetric2);
+       fh2CentRMSMetric2->Fill(cent,rmsMetric2);       
      }
-     fMapMedianAlpha[ieta] = medAlpha;
-     fMapRmsAlpha[ieta] = rmsAlpha;
+     fMapMedianMetric[ieta]  = medMetric;
+     fMapRmsMetric[ieta]     = rmsMetric;
+
+     fMapMedianAlpha[ieta]   = medAlpha;
+     fMapRmsAlpha[ieta]      = rmsAlpha;
+     fMapMedianAlpha2[ieta]  = medAlpha2;
+     fMapRmsAlpha2[ieta]     = rmsAlpha2;
+     fMapMedianSumPt[ieta]   = medSumPt;
+     fMapRmsSumPt[ieta]      = rmsSumPt;
+     fMapMedianMeanPt[ieta]  = medMeanPt;
+     fMapRmsMeanPt[ieta]     = rmsMeanPt;
      fMapMedianMetric2[ieta] = medMetric2;
-     fMapRmsMetric2[ieta] = rmsMetric2;
+     fMapRmsMetric2[ieta]    = rmsMetric2;
      
    }//eta bins
-     
+
+   fMedAlpha   =  fMapMedianAlpha[3];
+   fMedAlpha2  =  fMapMedianAlpha2[3];
+   fMedSumPt   =  fMapMedianSumPt[3];
+   fMedMeanPt  =  fMapMedianMeanPt[3];
+   fMedMetric2 =  fMapMedianMetric2[3];
+   
    //Set puppi weight for each particle
    int npup = 0;
+   int ntree = 0;
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
      if(!p1) continue;
@@ -275,10 +364,14 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        if(p1->Eta()>=etaMin && p1->Eta()<etaMax)
          etaBin = ieta;
      }
-     Double_t medAlpha = fMapMedianAlpha[etaBin];
-     Double_t rmsAlpha = fMapRmsAlpha[etaBin];
-     Double_t chiAlpha = 1.;
-     if(rmsAlpha>0.) {
+     if(etaBin<1) {
+       if(p1->Eta()<fMapEtaRanges.at(1)) etaBin = 1;
+       if(p1->Eta()>fMapEtaRanges.at(neta)) etaBin = neta-1;
+     }
+     Double_t medMetric = fMapMedianMetric[etaBin];
+     Double_t rmsMetric = fMapRmsMetric[etaBin];
+     Double_t chiMetric = 1.;
+     if(rmsMetric>0.) {
        double var = p1->GetPuppiAlpha();
        if(fPuppiWeightType==kAlpha2)
          var = p1->GetPuppiAlpha2();
@@ -288,82 +381,124 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
          var = p1->GetPuppiMeanPt();
        else if(fPuppiWeightType==kMetric2)
          var = p1->GetPuppiMetric2();
-       chiAlpha = (var - medAlpha) * fabs(var - medAlpha) / rmsAlpha / rmsAlpha;
-       prob = ROOT::Math::chisquared_cdf(chiAlpha,1.);
+       chiMetric = (var - medMetric) * fabs(var - medMetric) / rmsMetric / rmsMetric;
+       prob = ROOT::Math::chisquared_cdf(chiMetric,1.);
      }
      p1->SetPuppiWeight(prob);
 
-     //weight metric2
-     Double_t medMetric2 = fMapMedianMetric2[etaBin];
-     Double_t rmsMetric2 = fMapRmsMetric2[etaBin];
-     Double_t prob2 = 1.;
-     Double_t prob3 = 1.;
-     if(rmsMetric2>0.) {
-       Double_t chiMetric2 = (p1->GetPuppiMetric2() - medMetric2) * fabs(p1->GetPuppiMetric2() - medMetric2) / rmsMetric2 / rmsMetric2;
-       Double_t chii = chiAlpha + chiMetric2;
-       prob2 = ROOT::Math::chisquared_cdf(chii,2.);
-       prob3 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
+     Double_t chiAlpha     = 0.;
+     Double_t chiAlpha2    = 0.;
+     Double_t chiSumPt     = 0.;
+     Double_t chiMeanPt    = 0.;
+     Double_t chiMetric2   = 0.;
+
+     Double_t probAlpha    = 0.;
+     Double_t probAlpha2   = 0.;
+     Double_t probSumPt    = 0.;
+     Double_t probMeanPt   = 0.;
+     Double_t probMetric2  = 0.;
+     
+     if(fMapRmsAlpha[etaBin]>0.) {
+       chiAlpha = (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) * fabs(p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) / fMapRmsAlpha[etaBin] / fMapRmsAlpha[etaBin];
+       probAlpha = ROOT::Math::chisquared_cdf(chiAlpha,1.);
      }
+     if(fMapRmsAlpha2[etaBin]>0.) {
+       chiAlpha2 = (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) * fabs(p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) / fMapRmsAlpha2[etaBin] / fMapRmsAlpha2[etaBin];
+       probAlpha2 = ROOT::Math::chisquared_cdf(chiAlpha2,1.);
+     }
+     if(fMapRmsSumPt[etaBin]>0.) {
+       chiSumPt = (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) * fabs(p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) / fMapRmsSumPt[etaBin] / fMapRmsSumPt[etaBin];
+       probSumPt = ROOT::Math::chisquared_cdf(chiSumPt,1.);
+     }
+     if(fMapRmsMeanPt[etaBin]>0.) {
+       chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * fabs(p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
+       probMeanPt = ROOT::Math::chisquared_cdf(chiMeanPt,1.);
+     }
+     if(fMapRmsMetric2[etaBin]>0.) {
+       chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * fabs(p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
+       probMetric2 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
+     }
+     
+     //weight metric+metric2
+     Double_t prob2 = ROOT::Math::chisquared_cdf(chiMetric+chiMetric2,1.);
      p1->SetPuppiWeight2(prob2);
-     p1->SetPuppiWeight3(prob3);
+     p1->SetPuppiWeight3(probMetric2);
      
      //put puppi weighted particles in array
      double ptpup = prob*p1->Pt();
+     if(prob<fWeightCut) { ptpup = 0.; prob = 0.; }
      // if(fPuppiWeightType==kAlphaMetric2) ptpup = prob2*p1->Pt();
      // else if(fPuppiWeightType==kMetric2) ptpup = prob3*p1->Pt();
-     if(fPuppiParticles && ptpup>1e-4) {
-       pfParticle *pPart = new ((*fPuppiParticles)[npup])
-         pfParticle(ptpup,
-                    p1->Eta(),
-                    p1->Phi(),
-                    prob*p1->M(),
-                    p1->GetId());
-       pPart->SetCharge(p1->GetCharge());
-       pPart->SetPuppiAlpha(p1->GetPuppiAlpha());
-       pPart->SetPuppiMetric2(p1->GetPuppiMetric2());
-       pPart->SetPuppiSumPt(p1->GetPuppiSumPt());
-       pPart->SetPuppiAlpha2(p1->GetPuppiAlpha2());
-       pPart->SetPuppiMeanPt(p1->GetPuppiMeanPt());
-       pPart->SetPuppiWeight(prob);
-       pPart->SetPuppiWeight2(prob2);
-       pPart->SetPuppiWeight3(prob3);
+     if(fPuppiParticles) {
+       if(ptpup>1e-4) {
+         pfParticle *pPart = new ((*fPuppiParticles)[npup])
+           pfParticle(ptpup,
+                      p1->Eta(),
+                      p1->Phi(),
+                      prob*p1->M(),
+                      p1->GetId());
+         pPart->SetCharge(p1->GetCharge());
+         pPart->SetPuppiId(p1->GetPuppiId());
+         pPart->SetPuppiAlpha(p1->GetPuppiAlpha());
+         pPart->SetPuppiMetric2(p1->GetPuppiMetric2());
+         pPart->SetPuppiSumPt(p1->GetPuppiSumPt());
+         pPart->SetPuppiAlpha2(p1->GetPuppiAlpha2());
+         pPart->SetPuppiMeanPt(p1->GetPuppiMeanPt());
+         pPart->SetPuppiWeight(prob);
+         pPart->SetPuppiWeight2(prob2);
+         pPart->SetPuppiWeight3(probMetric2);
+         ++npup;
+       }
+     }
 
-       if(fStoreTree) {
-         fpt[npup]  = p1->Pt();
-         feta[npup] = p1->Eta();
-         fphi[npup] = p1->Phi();
-         falpha[npup] = p1->GetPuppiAlpha();
-         fmetric2[npup] = p1->GetPuppiMetric2();
-         fsumpt[npup] = p1->GetPuppiSumPt();
-         falpha2[npup] = p1->GetPuppiAlpha2();
-         fmeanpt[npup] = p1->GetPuppiMeanPt();
+     if(fStoreTree) {
+       fpt[ntree]       = p1->Pt();
+       feta[ntree]      = p1->Eta();
+       fphi[ntree]      = p1->Phi();
+       fue[ntree]       = p1->GetPuppiId();
+       fetabin[ntree]   = etaBin;
+         
+       falpha[ntree]    = p1->GetPuppiAlpha();
+       falpha2[ntree]   = p1->GetPuppiAlpha2();
+       fsumpt[ntree]    = p1->GetPuppiSumPt();
+       fmeanpt[ntree]   = p1->GetPuppiMeanPt();
+       fmetric2[ntree]  = p1->GetPuppiMetric2();
 
-         //Get closest jet
-         lwJet *jetClosest = 0x0;
-         double drmin = 999.;
-         for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ++ij) {
-           lwJet *jet = static_cast<lwJet*>(jets->At(ij));
-           double dr = p1->DeltaR(jet);
-           if(dr<drmin) {
-             jetClosest = jet;
-             drmin = dr;
-           }
-         }
-         if(jetClosest) {
-           fptjet[npup] = jetClosest->Pt();
-           fdrjet[npup] = drmin;
-         } else {
-           fptjet[npup] = 0.;
-           fdrjet[npup] = 0.;
+       fwalpha[ntree]   = probAlpha;
+       fwalpha2[ntree]  = probAlpha2;
+       fwsumpt[ntree]   = probSumPt;
+       fwmeanpt[ntree]  = probMeanPt;
+       fwmetric2[ntree] = probMetric2;
+         
+       //Get closest jet
+       lwJet *jetClosest = 0x0;
+       double drmin = 999.;
+       for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ++ij) {
+         lwJet *jet = static_cast<lwJet*>(jets->At(ij));
+         double dr = p1->DeltaR(jet);
+         if(dr<drmin) {
+           jetClosest = jet;
+           drmin = dr;
          }
        }
-       
-       ++npup;
+       if(jetClosest) {
+         fptjet[ntree] = jetClosest->Pt();
+         fdrjet[ntree] = drmin;
+       } else {
+         fptjet[ntree] = 0.;
+         fdrjet[ntree] = 0.;
+       }     
+       ++ntree;
      }
+     // if(etaBin==5 && p1->GetPuppiId()==1) Printf("etaBin: %d ntree: %d pt: %f eta: %f phi: %f",etaBin,ntree,p1->Pt(),p1->Eta(),p1->Phi());
    }
-   fcent = (float)cent;
-   fnpart = npup;
-   if(fStoreTree) fTreeOut->Fill();
+
+   if(fStoreTree) {
+     fcent = (float)cent;
+     fnpart = ntree;
+     fTreeOut->Fill();
+   }
+   if(fPuppiParticles) fPuppiParticles->Sort();
 }
 
 //----------------------------------------------------------
@@ -392,19 +527,38 @@ void anaPuppiProducer::CreateOutputObjects() {
     fTreeOut = new TTree(Form("%sTree",GetName()),"puppi particles tree");
     fTreeOut->Branch("cent", &fcent,      "cent/F");
     fTreeOut->Branch("npart",&fnpart,     "npart/I");
-    fTreeOut->Branch("pt",   &fpt,        "pt[npart]/F");
-    fTreeOut->Branch("eta",  &feta,       "eta[npart]/F");
-    fTreeOut->Branch("phi",  &fphi,       "phi[npart]/F");
-    fTreeOut->Branch("alpha",&falpha,     "alpha[npart]/F");
+
+    fTreeOut->Branch("medAlpha",  &fMedAlpha,   "medAlpha/F");
+    fTreeOut->Branch("medAlpha2", &fMedAlpha2,  "medAlpha2/F");
+    fTreeOut->Branch("medSumPt",  &fMedSumPt,   "medSumPt/F");
+    fTreeOut->Branch("medMeanPt", &fMedMeanPt,  "medMeanPt/F");
+    fTreeOut->Branch("medMetric2",&fMedMetric2, "medMetric2/F");
+    
+    fTreeOut->Branch("pt",     &fpt,      "pt[npart]/F");
+    fTreeOut->Branch("eta",    &feta,     "eta[npart]/F");
+    fTreeOut->Branch("phi",    &fphi,     "phi[npart]/F");
+    fTreeOut->Branch("ue",     &fue,      "ue[npart]/I");
+    fTreeOut->Branch("etabin", &fetabin,  "etabin[npart]/I");
+    fTreeOut->Branch("alpha",  &falpha,   "alpha[npart]/F");
+    fTreeOut->Branch("alpha2", &falpha2,  "alpha2[npart]/F");
+    fTreeOut->Branch("sumpt" , &fsumpt,   "sumpt[npart]/F");
+    fTreeOut->Branch("meanpt", &fmeanpt,  "meanpt[npart]/F");
     fTreeOut->Branch("metric2",&fmetric2, "metric2[npart]/F");
-    fTreeOut->Branch("sumpt" ,&fsumpt,     "sumpt[npart]/F");
-    fTreeOut->Branch("alpha2",&falpha2,    "alpha2[npart]/F");
-    fTreeOut->Branch("meanpt",&fmeanpt,    "meanpt[npart]/F");
+
+    fTreeOut->Branch("walpha",  &fwalpha,     "walpha[npart]/F");
+    fTreeOut->Branch("walpha2", &fwalpha2,    "walpha2[npart]/F");
+    fTreeOut->Branch("wsumpt" , &fwsumpt,     "wsumpt[npart]/F");
+    fTreeOut->Branch("wmeanpt", &fwmeanpt,    "wmeanpt[npart]/F");
+    fTreeOut->Branch("wmetric2",&fwmetric2,   "wmetric2[npart]/F");
+
     fTreeOut->Branch("ptjet",&fptjet,     "ptjet[npart]/F");
     fTreeOut->Branch("drjet",&fdrjet,     "drjet[npart]/F");
 
+    fTreeOut->Branch("nSigJets",   &fnSigJets,     "nSigJets/I");
+    fTreeOut->Branch("ptSigJet",   &fSigJetPt,     "ptSigJet[nSigJets]/F");
+    fTreeOut->Branch("etaSigJet",  &fSigJetEta,    "etaSigJet[nSigJets]/F");
+    fTreeOut->Branch("phiSigJet",  &fSigJetPhi,    "phiSigJet[nSigJets]/F");
+
     fOutput->Add(fTreeOut);
   }
-
-
 }
