@@ -71,7 +71,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
     for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
       lwJet *jet = fJetsCont->GetJet(ij);
       if(!jet) continue;
-      if(jet->GetRefPt()<25. || abs(jet->Eta())>2.) continue; //only select true jets
+      if(jet->GetRefPt()<25. || fabs(jet->Eta())>2.) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
       double mindphi = 2*3.14159/3.;
