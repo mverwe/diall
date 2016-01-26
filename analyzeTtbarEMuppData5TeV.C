@@ -31,23 +31,18 @@
 
 using namespace std;
 
-void analyzeTtbarEMuppData5TeV(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int isData = 1) {
+void analyzeTtbarEMuppData5TeV(std::vector<std::string> urls, const char *outname = "AnaResults.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int isData = 1) {
 
-  // std::vector<std::string> urls = CollectFiles(list);
 
-  // Printf("anaFile: %d",anaFile);
   
-  std::cout << "nfiles: " << urls.size() << std::endl;
-  //for (auto i = urls.begin(); i != urls.end(); ++i)
-  //  std::cout << *i << std::endl;
-
+  //Printf("anaFile: %d",anaFile);
   size_t firstFile = 0;
   size_t lastFile = urls.size();
 
-  //if(firstF>-1) {
-  //  firstFile = (size_t)firstF;
-  //  lastFile = (size_t)lastF;
-  // }
+  if(firstF>-1) {
+    firstFile = (size_t)firstF;
+    lastFile = (size_t)lastF;
+  }
   std::cout << "firstFile: " << firstFile << "  lastFile: " << lastFile << std::endl;
 
   Int_t lastEvent = nentries;
@@ -229,23 +224,25 @@ void analyzeTtbarEMuppData5TeV(std::vector<std::string> urls, const char *outnam
   //---------------------------------------------------------------
   //Event loop
   //---------------------------------------------------------------	  
-  Long64_t entries_tot =  chain->GetEntriesFast(); //93064
+  Long64_t entries_tot =  chain->GetEntries(); //93064
+  std::cout << entries_tot << std::endl;
   if(nentries<0) lastEvent = chain->GetEntries();  
   // Long64_t nentries = 20;//chain->GetEntriesFast();
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
-  for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
+  for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) { //49945
     //  for (Long64_t jentry=0; jentry<nentries;jentry++) {
     if (jentry%10000==0) Printf("Processing event %d  %d",(int)(jentry), (int)(lastEvent));
     //Run producers
+    if (jentry>=entries_tot)break;
     // Printf("produce hiEvent");
-    p_evt->Run(jentry);   //hi event properties
+    if(!p_evt->Run(jentry));   //hi event properties
 
     //p_trg->Run(jentry);
-    p_mu->Run(jentry);
-    p_ele->Run(jentry);
+    if(!p_mu->Run(jentry));
+    if(!p_ele->Run(jentry));
     //Printf("produce pf particles");
-    p_pf->Run(jentry);    //pf particles
-    p_pfJet->Run(jentry); //jets
+    if(!p_pf->Run(jentry));    //pf particles
+    if(!p_pfJet->Run(jentry)); //jets
     //p_caloJet->Run(jentry); //jets
     
     //Execute all analysis tasks

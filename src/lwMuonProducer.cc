@@ -25,8 +25,8 @@ inputBase("lwMuonProducer"),
   fMinMS(1),
   fMaxDxy(0.2),//3.),
   fMaxDz(0.5),//15.),
-  fMaxtrkDxy(0.3),//3.),
-  fMaxtrkDz(20.),
+  fMaxTrkDxy(0.3),//3.),
+  fMaxTrkDz(20.),
   fMinNPixHits(0),
   fMinTrkLWM(5)
 {
@@ -49,8 +49,8 @@ lwMuonProducer::lwMuonProducer(const char *name) :
   fMinMS(1),
   fMaxDxy(0.2),//3.),
   fMaxDz(0.5),//15.),
-  fMaxtrkDxy(0.3),//3.),
-  fMaxtrkDz(20.),
+  fMaxTrkDxy(0.3),//3.),
+  fMaxTrkDz(20.),
   fMinNPixHits(0),
   fMinTrkLWM(5)
 {
@@ -101,7 +101,7 @@ Bool_t lwMuonProducer::Init() {
     if (fChain->GetBranch("muMuonHits"))
       fChain->SetBranchAddress("muMuonHits", &fMuons.Glb_nValMuHits, &fMuons.b_Glb_nValMuHits);
     if (fChain->GetBranch("muTrkQuality"))
-      fChain->SetBranchAddress("muTrkQuality", &fMuons.Glb_trkQuality, &fMuons.b_Glb_trkQuality);
+      fChain->SetBranchAddress("muTrkQuality", &fMuons.Glb_TrkQuality, &fMuons.b_Glb_TrkQuality);
     if (fChain->GetBranch("muIsGood"))
       fChain->SetBranchAddress("muIsGood", &fMuons.Glb_isGood, &fMuons.b_Glb_isGood);
     if (fChain->GetBranch("muChi2NDF"))
@@ -109,13 +109,13 @@ Bool_t lwMuonProducer::Init() {
     if (fChain->GetBranch("muStations"))
       fChain->SetBranchAddress("muStations", &fMuons.Glb_nMatchedStations, &fMuons.b_Glb_nMatchedStations);
     if (fChain->GetBranch("muInnerD0"))
-      fChain->SetBranchAddress("muInnerD0", &fMuons.Glb_trkDxy, &fMuons.b_Glb_trkDxy);
+      fChain->SetBranchAddress("muInnerD0", &fMuons.Glb_TrkDxy, &fMuons.b_Glb_TrkDxy);
     if (fChain->GetBranch("muInnerDz"))
-      fChain->SetBranchAddress("muInnerDz", &fMuons.Glb_trkDz, &fMuons.b_Glb_trkDz);
+      fChain->SetBranchAddress("muInnerDz", &fMuons.Glb_TrkDz, &fMuons.b_Glb_TrkDz);
     if (fChain->GetBranch("muPixelLayers"))
       fChain->SetBranchAddress("muPixelLayers", &fMuons.Glb_pixLayerWMeas, &fMuons.b_Glb_pixLayerWMeas);
     if (fChain->GetBranch("muTrkLayers"))
-      fChain->SetBranchAddress("muTrkLayers", &fMuons.Glb_trkLayerWMeas, &fMuons.b_Glb_trkLayerWMeas);
+      fChain->SetBranchAddress("muTrkLayers", &fMuons.Glb_TrkLayerWMeas, &fMuons.b_Glb_TrkLayerWMeas);
     if (fChain->GetBranch("muPFChIso"))
       fChain->SetBranchAddress("muPFChIso", &fMuons.Glb_pfChIso, &fMuons.b_Glb_pfChIso);
     if (fChain->GetBranch("muPFPhoIso"))
@@ -219,11 +219,11 @@ Bool_t lwMuonProducer::AcceptMuon(Int_t i) {
   else if((fMuons.Glb_nMatchedStations->at(i))<fMinMS)  return kFALSE;
   //else if((fMuons.Glb_dxy->at(i))>fMaxDxy)            return kFALSE;
   //else if((fMuons.Glb_dz->at(i))>fMaxDz)              return kFALSE;
-  else if((fabs(fMuons.Glb_trkDxy->at(i)))>fMaxDxy)     return kFALSE;
-  else if((fabs(fMuons.Glb_trkDz->at(i)))>fMaxDz)       return kFALSE;
+  else if((fabs(fMuons.Glb_TrkDxy->at(i)))>fMaxDxy)     return kFALSE;
+  else if((fabs(fMuons.Glb_TrkDz->at(i)))>fMaxDz)       return kFALSE;
   else if((fMuons.Glb_nValPixHits->at(i))<fMinNPixHits) return kFALSE;
-  else if((fMuons.Glb_trkLayerWMeas->at(i))<fMinTrkLWM) return kFALSE;
-  else if (!(fMuons.Glb_trkQuality->at(i)))             return kFALSE; 
+  else if((fMuons.Glb_TrkLayerWMeas->at(i))<fMinTrkLWM) return kFALSE;
+  else if (!(fMuons.Glb_TrkQuality->at(i)))             return kFALSE; 
   else return kTRUE;
 }
 

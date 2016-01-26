@@ -89,6 +89,7 @@ public:
    std::vector<Int_t> fh1NMuons;             //!# selected muons in event
    std::vector<Int_t> fh1NJetsIncl;          //!# selected jets in event
    std::vector<Int_t> fh1NBJetsIncl;         //!# selected b-tagged jets in event
+   std::vector<Float_t> fh1BJetsDiscr;         //!# selected b-tagged jets in event
    
    std::vector<Float_t> fh1HT;                 //!# HT varialbe
    std::vector<Float_t>fh1MassEMu;            //!# dilepton mass varialbe

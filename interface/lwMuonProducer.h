@@ -26,7 +26,19 @@ class lwMuonProducer : public inputBase {
   
   void     SetlwMuonsRecoName(TString n) { flwMuonsRecoName = n; }
   void     SetlwMuonsGeneName(TString n) { flwMuonsGeneName = n; }
-
+  void     SetEtaCut(float eta) {fMaxEtaAbs = eta; }
+  void     SetPtCut(float pt) {fPtMin = pt; }
+  void     SetTrkChi2Cut(float cut) {fMaxTrkChi2 = cut; }
+  void     SetGlbChi2Cut(float cut) {fMaxGlbChi2 = cut; }
+  void     SetNMuHitsCut(float cut) {fMinNMuHits = cut; }
+  void     SetMatchedStationsCut(float cut) {fMinMS = cut; }
+  void     SetDxyCut(float cut) {fMaxDxy = cut; }
+  void     SetDzCut(float cut) {fMaxDz = cut; }
+  void     SetTrkDxyCut(float cut) {fMaxTrkDxy = cut; }
+  void     SetTrkDzCut(float cut) {fMaxTrkDz = cut; }
+  void     SetNPixHitsCut(float cut) {fMinNPixHits = cut; }
+  void     SetTrkLWMCut(float cut) {fMinTrkLWM = cut; }
+  
   const char* GetlwMuonsRecoName() const { return flwMuonsRecoName.Data() ; }
   const char* GetlwMuonsGeneName() const { return flwMuonsGeneName.Data() ; }
   
@@ -46,8 +58,8 @@ class lwMuonProducer : public inputBase {
   Int_t                        fMinMS;          // #matched stations
   Float_t                      fMaxDxy;         // max dxy
   Float_t                      fMaxDz;          // max dz
-  Float_t                      fMaxtrkDxy;      // max innerTrack dxy
-  Float_t                      fMaxtrkDz;       // max innerTrack dz
+  Float_t                      fMaxTrkDxy;      // max innerTrack dxy
+  Float_t                      fMaxTrkDz;       // max innerTrack dz
   Int_t                        fMinNPixHits;    // min pixel hits
   Int_t                        fMinTrkLWM;      // min tracker layer hits
 

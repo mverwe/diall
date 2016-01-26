@@ -27,16 +27,29 @@ class lwElectronProducer : public inputBase {
   void     SetlwElectronsRecoName(TString n) { flwElectronsRecoName = n; }
   void     SetlwElectronsGeneName(TString n) { flwElectronsGeneName = n; }
 
+  void     SetEtaCut(float eta) {fMaxEtaAbs = eta; }
+  void     SetPtCut(float pt) {fPtMin = pt; }
+  void     SetdEtaCuts(float b, float e) {fMaxdEtaAtVtxBarrel = b; fMaxdEtaAtVtxEndcap = e; }
+  void     SetdPhiCuts(float b, float e) {fMaxdPhiAtVtxBarrel = b; fMaxdPhiAtVtxEndcap = e; }
+  void     SetHoverECuts(float b, float e) {fMaxHoverEBarrel = b; fMaxHoverEEndcap = e; }
+  void     SetD0Cuts(float b, float e) {fMaxDxyBarrel = b; fMaxDxyEndcap = e; }
+  void     SetDZCuts(float b, float e) {fMaxDzBarrel = b; fMaxDzEndcap= e; }
+  void     SetSigmaIEtaIEtaCuts(float b, float e) {fMaxSigmaIEtaIEtaBarrel = b; fMaxSigmaIEtaIEtaEndcap = e; }
+  void     SetEoverPInvCuts(float b, float e) {fMaxEoverPInvBarrel = b; fMaxEoverPInvEndcap = e; }
+  void     SetMissHitsCuts(int b, int e) {fMaxMissHitsBarrel = b; fMaxMissHitsEndcap = e; }
+  void     SetPassConversionVetoCuts(bool b, bool e) {fPassConversionVetoBarrel = b; fPassConversionVetoEndcap = e; }
+
+  
   const char* GetlwElectronsRecoName() const { return flwElectronsRecoName.Data() ; }
   const char* GetlwElectronsGeneName() const { return flwElectronsGeneName.Data() ; }
   
  protected:
   Bool_t   AcceptElectron(Int_t i);
   
-  TString                      flwElectronsRecoName;// name of reco muons
-  TClonesArray                *flwElectronsReco;    //!reco muons
-  TString                      flwElectronsGeneName;// name of gene muons
-  TClonesArray                *flwElectronsGene;    //!gene muons
+  TString                      flwElectronsRecoName;// name of reco electrons
+  TClonesArray                *flwElectronsReco;    //!reco electons
+  TString                      flwElectronsGeneName;// name of gene electrons
+  TClonesArray                *flwElectronsGene;    //!gene electrons
   ForestElectrons              fElectrons;          //! Electrons in forest tree
   Float_t                      fPtMin;          // minimum pT
   Float_t                      fMaxEtaAbs;      // max eta

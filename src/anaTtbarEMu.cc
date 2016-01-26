@@ -163,6 +163,7 @@ void anaTtbarEMu::Exec(Option_t * /*option*/)
    Int_t nbjets = 0;
    for (int i = 0; i < fRecoJets->GetNJets(); i++) {
      lwJet * jet = fRecoJets->GetJet(i);
+     fh1BJetsDiscr.push_back(jet->GetCsvSimpleDiscr());
      if(jet->GetCsvSimpleDiscr()>0.9)nbjets++;
      //std::cout<<"disc" <<jet->GetCsvSimpleDiscr()<<std::endl;
    }
@@ -338,6 +339,7 @@ void anaTtbarEMu::Exec(Option_t * /*option*/)
      fh1NMuons.clear();             
      fh1NJetsIncl.clear();          
      fh1NBJetsIncl.clear();  
+     fh1BJetsDiscr.clear();
      fh1HT.clear();                 
      fh1MassEMu.clear();            
      fh1LeadJetPt.clear();          
@@ -455,6 +457,7 @@ anaTtbarEMu::CreateOutputObjects() {
   fAnaTtbarEMuInfo->Branch("fh1NMuons",&fh1NMuons);
   fAnaTtbarEMuInfo->Branch("fh1NJetsIncl", &fh1NJetsIncl);
   fAnaTtbarEMuInfo->Branch("fh1NBJetsIncl",&fh1NBJetsIncl);
+  fAnaTtbarEMuInfo->Branch("fh1BJetsDiscr",&fh1BJetsDiscr);
 
   fAnaTtbarEMuInfo->Branch("fh1HT", &fh1HT);          
   fAnaTtbarEMuInfo->Branch("fh1MassEMu",&fh1MassEMu);

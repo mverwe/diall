@@ -6,7 +6,7 @@ import time
 
 import FWCore.ParameterSet.Config as cms
 #from storeTools_cff import *
-#python scripts/submitJobs.py -q 1nh -j 10 -n -1 -o /afs/cern.ch/user/g/gkrintir/github/HI/CMSSW_7_5_7_patch2/src/UserCode/diall/first_result_HighPtMuon --proxy proxyforprod
+#python scripts/submitJobs.py -q 1nh -j 2 -n 10000 -f 1 -o /afs/cern.ch/user/g/gkrintir/github/HI/CMSSW_7_5_7_patch2/src/UserCode/diall/first_result_HighPtMuon
 
 # python submitJobs.py -q 1nd -j 50 -n 10000 --proxy proxyforprod
 
@@ -49,7 +49,8 @@ for n in xrange(1,opt.jobs+1):
     scriptFile.write('eval `scram r -sh`\n')
     scriptFile.write('cd -\n')
     scriptFile.write('cp %s/ExampleAnalysisParameters_cfg.py .\n' % jobsBase)
-    scriptFile.write('runTtbarEMuData5TeV ExampleAnalysisParameters_cfg.py %d %d\n' % ((n-1)*opt.files,(n-1)*opt.files+opt.files))
+    #scriptFile.write('runTtbarEMuData5TeV ExampleAnalysisParameters_cfg.py %d %d\n' % ((n-1)*opt.files,(n-1)*opt.files+opt.files))
+    scriptFile.write('runTtbarEMuData5TeV ExampleAnalysisParameters_cfg.py %d %d %d\n' % ((1-1)*opt.files, (1-1)*opt.files+opt.files, (n-1)*opt.nevts ))
     #scriptFile.write('cmsMkdir $OUTDIR\n')
     scriptFile.write('export OUTPUT=AnaResults_%d.root\n' % n)
     scriptFile.write('cp AnaResults.root $OUTDIR/$OUTPUT\n')
@@ -61,7 +62,7 @@ for n in xrange(1,opt.jobs+1):
 
     if opt.queue=='':
         print 'Job #%d will run locally' % n
-        os.system('%s/runJob_%d.sh' % (jobsBase,n) )
+        #os.system('%s/runJob_%d.sh' % (jobsBase,n) )
     else:
         print 'Job #%d will run remotely' % n
         os.system("bsub -q %s -R \"swp>1000 && pool>30000\" -J tt%d \'%s/runJob_%d.sh\'" % (opt.queue,n,jobsBase,n) )
