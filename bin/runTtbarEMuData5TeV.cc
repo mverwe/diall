@@ -1,4 +1,4 @@
-#include "UserCode/diall/analyzePFvsCaloJetsppData5TeV.C"
+#include "UserCode/diall/analyzeTtbarEMuppData5TeV.C"
 
 //#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
   // load framework libraries
   gSystem->Load( "libFWCoreFWLite" );
-//  AutoLibraryLoader::enable();
+  //  AutoLibraryLoader::enable();
   FWLiteEnabler::enable();
 
   //check arguments
@@ -31,24 +31,30 @@ int main(int argc, char* argv[])
   // int anaFile = 1;
   int firstFile = 0;
   int lastFile  = 1;
-  if(argc>2) {
-    firstFile = atoi(argv[2]);
-    lastFile = atoi(argv[3]);
-  }
-
   Int_t firstEvent = 0;
-  if(argc>3)
-    firstEvent = atoi(argv[4]);
- 
   int isData = 1;
-  if(argc>4)
-    isData = atoi(argv[5]);
- 
+  
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
+    switch(argc)
+      {
+      case 4: 
+	firstFile = atoi(argv[2]);
+	lastFile = atoi(argv[3]);
+	break;
+      case 5:
+	firstFile = atoi(argv[2]);
+	lastFile = atoi(argv[3]);
+	firstEvent = atoi(argv[4]);
+	break;
+      case 6:
+	firstFile = atoi(argv[2]);
+	lastFile = atoi(argv[3]);
+	firstEvent = atoi(argv[4]);
+	isData = atoi(argv[5]);
+      }
   }
-  
   // read configuration
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("config");
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
@@ -56,11 +62,14 @@ int main(int argc, char* argv[])
   for (std::vector<std::string>::const_iterator i = urls.begin(); i != urls.end(); ++i)
     std::cout << *i << std::endl;
   
-  std::string outname = "AnaResultsPFvsCaloJets.root";
+  std::string outname = "AnaResults.root";
   // std::string outname = runProcess.getParameter<std::string>("output");
   int maxEvts = runProcess.getParameter<int>("maxEvents");
   
-  analyzePFvsCaloJetsppData5TeV(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
+  std::cout<< maxEvts<< firstFile << lastFile << firstEvent<< isData<< std::endl;//firstEvent << isData << std::endl;
+
+  analyzeTtbarEMuppData5TeV(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,isData);
   
   cout << "Results have been stored in " << outname << endl;
+
 }

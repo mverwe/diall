@@ -25,7 +25,6 @@ triggerMap::triggerMap(const char *name) :
   //standard constructor
 }
 
-
 //__________________________________________________________
 void triggerMap::PrintTriggers() const {
   

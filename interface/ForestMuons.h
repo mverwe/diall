@@ -43,15 +43,15 @@ public :
    std::vector<Int_t>           *Glb_nValMuHits=0;   //[Glb_nptl]
    std::vector<Int_t>           *Glb_nValTrkHits=0;   //[Glb_nptl]
    std::vector<Int_t>           *Glb_nValPixHits=0;   //[Glb_nptl]
-   std::vector<Int_t>           *Glb_trkLayerWMeas=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_TrkLayerWMeas=0;   //[Glb_nptl]
    std::vector<Int_t>           *Glb_nMatchedStations=0;   //[Glb_nptl]
    std::vector<Int_t>           *Glb_nTrkFound=0;   //[Glb_nptl]
    std::vector<Float_t>         *Glb_glbChi2_ndof=0;   //[Glb_nptl]
-   std::vector<Float_t>         *Glb_trkChi2_ndof=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_TrkChi2_ndof=0;   //[Glb_nptl]
    std::vector<Int_t>           *Glb_pixLayerWMeas=0;   //[Glb_nptl]
-   std::vector<Float_t>         *Glb_trkDxy=0;   //[Glb_nptl]
-   std::vector<Float_t>         *Glb_trkDz=0;   //[Glb_nptl]
-   std::vector<Int_t>           *Glb_trkQuality=0; //[Glb_nptl]
+   std::vector<Float_t>         *Glb_TrkDxy=0;   //[Glb_nptl]
+   std::vector<Float_t>         *Glb_TrkDz=0;   //[Glb_nptl]
+   std::vector<Int_t>           *Glb_TrkQuality=0; //[Glb_nptl]
    std::vector<Int_t>           *Glb_isGood=0; //[Glb_nptl]
    std::vector<Float_t>         *Glb_pfChIso=0; //[Glb_nptl]
    std::vector<Float_t>         *Glb_pfPhoIso=0; //[Glb_nptl]
@@ -87,8 +87,8 @@ public :
    std::vector<Int_t>           *Di_isArb2=0;   //[Di_npair]
    std::vector<Float_t>         *Di_nTrkHit1=0;   //[Di_npair]
    std::vector<Float_t>         *Di_nTrkHit2=0;   //[Di_npair]
-   std::vector<Float_t>         *Di_trkChi2_1=0;   //[Di_npair]
-   std::vector<Float_t>         *Di_trkChi2_2=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_TrkChi2_1=0;   //[Di_npair]
+   std::vector<Float_t>         *Di_TrkChi2_2=0;   //[Di_npair]
    std::vector<Float_t>         *Di_glbChi2_1=0;   //[Di_npair]
    std::vector<Float_t>         *Di_glbChi2_2=0;   //[Di_npair]
    std::vector<Float_t>         *Di_dxy1=0;   //[Di_npair]
@@ -126,15 +126,15 @@ public :
    TBranch        *b_Glb_nValMuHits;   //!
    TBranch        *b_Glb_nValTrkHits;   //!
    TBranch        *b_Glb_nValPixHits;   //!
-   TBranch        *b_Glb_trkLayerWMeas;   //!
+   TBranch        *b_Glb_TrkLayerWMeas;   //!
    TBranch        *b_Glb_nMatchedStations;   //!
    TBranch        *b_Glb_nTrkFound;   //!
    TBranch        *b_Glb_glbChi2_ndof;   //!
-   TBranch        *b_Glb_trkChi2_ndof;   //!
+   TBranch        *b_Glb_TrkChi2_ndof;   //!
    TBranch        *b_Glb_pixLayerWMeas;   //!
-   TBranch        *b_Glb_trkDxy;   //!
-   TBranch        *b_Glb_trkDz;   //!
-   TBranch        *b_Glb_trkQuality;
+   TBranch        *b_Glb_TrkDxy;   //!
+   TBranch        *b_Glb_TrkDz;   //!
+   TBranch        *b_Glb_TrkQuality;
    TBranch        *b_Glb_isGood;
    TBranch        *b_Glb_pfChIso;
    TBranch        *b_Glb_pfPhoIso;
@@ -170,8 +170,8 @@ public :
    TBranch        *b_Di_isArb2;   //!
    TBranch        *b_Di_nTrkHit1;   //!
    TBranch        *b_Di_nTrkHit2;   //!
-   TBranch        *b_Di_trkChi2_1;   //!
-   TBranch        *b_Di_trkChi2_2;   //!
+   TBranch        *b_Di_TrkChi2_1;   //!
+   TBranch        *b_Di_TrkChi2_2;   //!
    TBranch        *b_Di_glbChi2_1;   //!
    TBranch        *b_Di_glbChi2_2;   //!
    TBranch        *b_Di_dxy1;   //!
