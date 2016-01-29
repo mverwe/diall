@@ -10,14 +10,28 @@ ClassImp(anaZJetMCResponse)
 //----------------------------------------------------------
 anaZJetMCResponse::anaZJetMCResponse(const char *name, const char *title) 
  :anaBaseTask(name,title),
+  fNcentBins(4),
   fZsName(""),
   fZs(0x0),
   fJetsName(""),
   fJetsCont(0x0),
+  fGenJetsName(""),
+  fGenJetsCont(0x0),
+  fUseForestMatching(true),
   fh1ZPt(),
   fh3ZJetPtRecGen(),
   fh3ZJetXJZRecGen()
 {
+
+  fh1ZPt               = new TH1F*[fNcentBins];
+  fh3ZJetPtRecGen      = new TH3F*[fNcentBins];
+  fh3ZJetXJZRecGen     = new TH3F*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    fh1ZPt[i]           = 0;
+    fh3ZJetPtRecGen[i]  = 0;
+    fh3ZJetXJZRecGen[i] = 0;
+  }
 
 }
 
@@ -47,11 +61,28 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
     return;
   }
 
+  //Get gen jets
+  if(!fGenJetsCont && !fGenJetsName.IsNull())
+    fGenJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fGenJetsName.Data()));
+  if(!fGenJetsCont && !fUseForestMatching) {
+    Printf("%s: Cannot find %s",GetName(),fJetsName.Data());
+    return;
+  }
+
   // Double_t cent = 0.;
   float weight = 1.;
+  double cent = 0.;
   if(fHiEvent) {
     if(fHiEvent->GetWeight()>0.) weight = fHiEvent->GetWeight();
-  //    cent = fHiEvent->GetCentrality();
+    cent = fHiEvent->GetCentrality();
+  }
+  Int_t fCentBin = 0;
+  if(fNcentBins==4) {
+    if(cent>=0. && cent<10.)       fCentBin = 0;
+    else if(cent>=10. && cent<30.) fCentBin = 1;
+    else if(cent>=30. && cent<50.) fCentBin = 2;
+    else if(cent>=50. && cent<80.) fCentBin = 3;
+    else fCentBin = -1;
   }
   
   Int_t nZs = fZs->GetEntriesFast();
@@ -66,19 +97,32 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
       continue;
     }
     if(z->Pt()<20.) continue;
-    fh1ZPt->Fill(z->Pt(),weight);
+    if(fCentBin>-1 && fCentBin<fNcentBins)
+      fh1ZPt[fCentBin]->Fill(z->Pt(),weight);
     
     for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
       lwJet *jet = fJetsCont->GetJet(ij);
       if(!jet) continue;
-      if(jet->GetRefPt()<25. || fabs(jet->Eta())>2.) continue; //only select true jets
+
+      double refpt = -1.;
+      if(fUseForestMatching)
+        refpt = jet->GetRefPt();
+      else {
+       int id = jet->GetMatchId1();
+       lwJet *jetGen = fGenJetsCont->GetJet(id);
+       if(!jetGen) continue;
+       refpt = jetGen->Pt();
+      }
+      
+      if(refpt<25. || fabs(jet->Eta())>2.) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
       double mindphi = 2*3.14159/3.;
       if(dphi<mindphi) continue;
-      fh3ZJetPtRecGen->Fill(z->Pt(),jet->Pt(),jet->GetRefPt(),weight);
-      fh3ZJetXJZRecGen->Fill(z->Pt(),jet->Pt()/z->Pt(),jet->GetRefPt()/z->Pt(),weight);      
-      
+      if(fCentBin>-1 && fCentBin<fNcentBins) {
+        fh3ZJetPtRecGen[fCentBin]->Fill(z->Pt(),jet->Pt(),refpt,weight);
+        fh3ZJetXJZRecGen[fCentBin]->Fill(z->Pt(),jet->Pt()/z->Pt(),refpt/z->Pt(),weight);
+      }
     }//jet loop
   }//Z loop
   
@@ -94,13 +138,22 @@ void anaZJetMCResponse::CreateOutputObjects() {
     return;
   }
 
-  fh1ZPt = new TH1F("fh1ZPt","fh1ZPt;p_{T,Z}",200,0,200.);
-  fOutput->Add(fh1ZPt);
+  TString histTitle = "";
+  TString histName  = "";
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    histName  = Form("fh1ZPt_%d",i);
+    histTitle = Form("%s;#it{p}_{T,Z};",histName.Data());
+    fh1ZPt[i] = new TH1F(histName.Data(),histTitle.Data(),200,0,200.);
+    fOutput->Add(fh1ZPt[i]);
 
-  fh3ZJetPtRecGen = new TH3F("fh3ZJetPtRecGen","fh3JetPtRecGen;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,200,0,200,200,0,200);
-  fOutput->Add(fh3ZJetPtRecGen);
+    histName  = Form("fh3ZJetPtRecGen_%d",i);
+    histTitle = Form("%s;#it{p}_{T,Z};p_{T,jet}^{rec};p_{T,jet}^{gen}",histName.Data());
+    fh3ZJetPtRecGen[i] = new TH3F(histName.Data(),histTitle.Data(),200,0,200,200,0,200,200,0,200);
+    fOutput->Add(fh3ZJetPtRecGen[i]);
 
-  fh3ZJetXJZRecGen = new TH3F("fh3ZJetXJZRecGen","fh3JetPtRecGen;p_{T,Z};p_{T,jet}^{det};p_{T,jet}^{part}",200,0,200,40,0,2,40,0,2);
-  fOutput->Add(fh3ZJetXJZRecGen);
-
+    histName  = Form("fh3ZJetZJZRecGen_%d",i);
+    histTitle = Form("%s;#it{p}_{T,Z};p_{T,jet}^{rec}/p_{T,Z};p_{T,jet}^{gen}/p_{T,Z}",histName.Data());
+    fh3ZJetXJZRecGen[i] = new TH3F(histName.Data(),histTitle.Data(),200,0,200,40,0,2,40,0,2);
+    fOutput->Add(fh3ZJetXJZRecGen[i]);
+  }
 }
