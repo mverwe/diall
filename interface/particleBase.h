@@ -20,6 +20,8 @@ class particleBase : public TObject {
   void           SetMatchId2(Int_t id)               { fMatchId2 = id; }
 
   Double_t       Pt()               const { return fLorentzVector.Pt(); }
+  Double_t       Px()               const { return fLorentzVector.Px(); }
+  Double_t       Py()               const { return fLorentzVector.Py(); }
   Double_t       Phi()              const { return fLorentzVector.Phi(); }
   Double_t       Eta()              const { return fLorentzVector.Eta(); }
   Double_t       M()                const { return fLorentzVector.M(); }

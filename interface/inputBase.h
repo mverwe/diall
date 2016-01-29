@@ -40,6 +40,6 @@ class inputBase : public TNamed {
   
  private:
   
-  ClassDef(inputBase,1)
+  ClassDef(inputBase,2)
 };
 #endif

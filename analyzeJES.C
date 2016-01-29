@@ -67,7 +67,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
   
-  TChain *jetTree = new TChain("akPu4PFJetAnalyzer/t");
+  TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   chain->AddFriend(jetTree);
   Printf("jetTree done");

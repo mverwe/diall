@@ -75,18 +75,18 @@ Bool_t triggerProducer::Run(Long64_t entry) {
   TObjArray *objarr = fChain->GetListOfBranches();
   for(int i = 0; i < objarr->GetEntries(); ++i) {
     TString str = objarr->At(i)->GetName();
-    if(str.Contains("Prescl")) continue;
-    Printf("%s val: %d",str.Data(),val[i]);
+    //if(!str.Contains("HLT_HIL2Mu15_v1")) continue;
+    //Printf("%s val: %d",str.Data(),val[i]);
     // TBranch* branch = GetBranch(str.Data());
     // if(!branch) continue;
     
     if(fChain->SetBranchAddress(str.Data(),&val[i],&br[i])<0) continue;
     fChain->GetEntry(entry);
-    Printf("%s val: %d",str.Data(),val[i]);
+    //Printf("%s val: %d",str.Data(),val[i]);
     fTriggerMap->AddTrigger(str.Data(),val[i]);
   }
-
-  fTriggerMap->PrintTriggers();
+ 
+  //fTriggerMap->PrintTriggers();
 
   return kTRUE; 
 }

@@ -6,6 +6,7 @@ import time
 
 import FWCore.ParameterSet.Config as cms
 #from storeTools_cff import *
+#python scripts/submitJobs.py -q 1nh -j 2 -n 10000 -f 1 -o /afs/cern.ch/user/g/gkrintir/github/HI/CMSSW_7_5_7_patch2/src/UserCode/diall/first_result_HighPtMuon
 
 # python submitJobs.py -q 1nd -j 50 -n 10000 --proxy proxyforprod
 
@@ -16,7 +17,7 @@ parser.add_option('-j', '--jobs'       ,dest='jobs'   ,help='number of jobs'    
 parser.add_option('-f', '--files'      ,dest='files'  ,help='files per job'        ,default=5,   type=int)
 parser.add_option('-n', '--nevts'      ,dest='nevts'  ,help='number of events/job' ,default=-1,  type=int)
 parser.add_option(      '--proxy'      ,dest='proxy'  ,help='proxy to be used'     ,default=None, type='string')
-parser.add_option('-o', '--output'     ,dest='output' ,help='output directory'     ,default='/store/cmst3/user/mverweij/top/muonIso/TT/v3')
+parser.add_option('-o', '--output'     ,dest='output' ,help='output directory'     ,default='')
 (opt, args) = parser.parse_args()
 
 #prepare working directory
@@ -27,7 +28,7 @@ outDir=opt.output
 
 jobsBase='%s/FARM%s'%(workBase,time.time())
 os.system('mkdir -p %s'%jobsBase)
-os.system('cp %s/src/UserCode/TopFromHeavyIons/test/ExampleAnalysisParameters_cfg.py %s' % (cmsswBase,jobsBase))
+os.system('cp %s/src/UserCode/diall/test/ExampleAnalysisParameters_cfg.py %s' % (cmsswBase,jobsBase))
 
 #init a new proxy if none has been passed
 if opt.proxy is None:
@@ -48,10 +49,11 @@ for n in xrange(1,opt.jobs+1):
     scriptFile.write('eval `scram r -sh`\n')
     scriptFile.write('cd -\n')
     scriptFile.write('cp %s/ExampleAnalysisParameters_cfg.py .\n' % jobsBase)
-    scriptFile.write('runExample ExampleAnalysisParameters_cfg.py %d %d\n' % ((n-1)*opt.files,(n-1)*opt.files+opt.files))
-    scriptFile.write('cmsMkdir $OUTDIR\n')
+    #scriptFile.write('runTtbarEMuData5TeV ExampleAnalysisParameters_cfg.py %d %d\n' % ((n-1)*opt.files,(n-1)*opt.files+opt.files))
+    scriptFile.write('runTtbarEMuData5TeV ExampleAnalysisParameters_cfg.py %d %d %d\n' % ((1-1)*opt.files, (1-1)*opt.files+opt.files, (n-1)*opt.nevts ))
+    #scriptFile.write('cmsMkdir $OUTDIR\n')
     scriptFile.write('export OUTPUT=AnaResults_%d.root\n' % n)
-    scriptFile.write('cmsStage AnaResults.root $OUTDIR/$OUTPUT\n')
+    scriptFile.write('cp AnaResults.root $OUTDIR/$OUTPUT\n')
     scriptFile.write('rm AnaResults.root\n')
     scriptFile.close()
 
@@ -60,7 +62,7 @@ for n in xrange(1,opt.jobs+1):
 
     if opt.queue=='':
         print 'Job #%d will run locally' % n
-        os.system('%s/runJob_%d.sh' % (jobsBase,n) )
+        #os.system('%s/runJob_%d.sh' % (jobsBase,n) )
     else:
         print 'Job #%d will run remotely' % n
         os.system("bsub -q %s -R \"swp>1000 && pool>30000\" -J tt%d \'%s/runJob_%d.sh\'" % (opt.queue,n,jobsBase,n) )

@@ -37,7 +37,3 @@ lwElectron &lwElectron::operator=(const lwElectron &other)
   }
   return *this;
 }
-  
-  
-
-

@@ -5,6 +5,7 @@
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
 #include "UserCode/diall/interface/lwJet.h"
 
+#include <iostream>
 ClassImp(lwJetFromForestProducer)
 
 //__________________________________________________________
@@ -41,101 +42,106 @@ Bool_t lwJetFromForestProducer::Init() {
   if(!inputBase::Init()) return kFALSE;
   
   if(fInputMode==hiForest) {
+    fChain->SetBranchStatus("nref",1); // enable jet branches
     if (fChain->GetBranch("nref"))
       fChain->SetBranchAddress("nref", &fForestJets.nref, &fForestJets.b_nref);
-    if (fChain->GetBranch("rawpt"))
-      fChain->SetBranchAddress("rawpt", fForestJets.rawpt, &fForestJets.b_rawpt);
-    if (fChain->GetBranch("jtpt"))
-      fChain->SetBranchAddress("jtpt", fForestJets.jtpt, &fForestJets.b_jtpt);
-    if (fChain->GetBranch("jteta"))
-      fChain->SetBranchAddress("jteta", fForestJets.jteta, &fForestJets.b_jteta);
-    if (fChain->GetBranch("jty"))
-      fChain->SetBranchAddress("jty", fForestJets.jty, &fForestJets.b_jty);
-    if (fChain->GetBranch("jtphi"))
-      fChain->SetBranchAddress("jtphi", fForestJets.jtphi, &fForestJets.b_jtphi);
-    if (fChain->GetBranch("jtpu"))
-      fChain->SetBranchAddress("jtpu", fForestJets.jtpu, &fForestJets.b_jtpu);
-    if (fChain->GetBranch("jtm"))
-      fChain->SetBranchAddress("jtm", fForestJets.jtm, &fForestJets.b_jtm);
-    if (fChain->GetBranch("refpt"))
-      fChain->SetBranchAddress("refpt", fForestJets.refpt, &fForestJets.b_refpt);
+    if (fChain->GetBranch("rawpt")){
+      fChain->SetBranchStatus("rawpt",1);
+      fChain->SetBranchAddress("rawpt", &fForestJets.rawpt, &fForestJets.b_rawpt);}
+    fChain->SetBranchStatus("jt*",1);
+    if (fChain->GetBranch("jtpt")) {
+      fChain->SetBranchAddress("jtpt", &fForestJets.jtpt, &fForestJets.b_jtpt); }
+    if (fChain->GetBranch("jteta")){
+      fChain->SetBranchAddress("jteta", &fForestJets.jteta, &fForestJets.b_jteta); }
+    if (fChain->GetBranch("jty")){
+      fChain->SetBranchAddress("jty", &fForestJets.jty, &fForestJets.b_jty);}
+    if (fChain->GetBranch("jtphi")){
+      fChain->SetBranchAddress("jtphi", &fForestJets.jtphi, &fForestJets.b_jtphi);}
+    if (fChain->GetBranch("jtpu")){
+      fChain->SetBranchAddress("jtpu", &fForestJets.jtpu, &fForestJets.b_jtpu);}
+    if (fChain->GetBranch("jtm")){
+      fChain->SetBranchAddress("jtm", &fForestJets.jtm, &fForestJets.b_jtm);}
+    fChain->SetBranchStatus("ref*",1);
+    if (fChain->GetBranch("refpt")){
+      fChain->SetBranchAddress("refpt", &fForestJets.refpt, &fForestJets.b_refpt);}
     if (fChain->GetBranch("refeta"))
-      fChain->SetBranchAddress("refeta", fForestJets.refeta, &fForestJets.b_refeta);
+      fChain->SetBranchAddress("refeta", &fForestJets.refeta, &fForestJets.b_refeta);
     if (fChain->GetBranch("refm"))
-      fChain->SetBranchAddress("refm", fForestJets.refm, &fForestJets.b_refm);
+      fChain->SetBranchAddress("refm", &fForestJets.refm, &fForestJets.b_refm);
     if (fChain->GetBranch("refdrjt"))
-      fChain->SetBranchAddress("refdrjt", fForestJets.refdrjt, &fForestJets.b_refdrjt);
+      fChain->SetBranchAddress("refdrjt", &fForestJets.refdrjt, &fForestJets.b_refdrjt);
     if (fChain->GetBranch("subid"))
-      fChain->SetBranchAddress("subid", fForestJets.subid, &fForestJets.b_subid);
-
+      fChain->SetBranchAddress("subid", &fForestJets.subid, &fForestJets.b_subid);
+    fChain->SetBranchStatus("*Max",1);
     if (fChain->GetBranch("trackMax"))
-      fChain->SetBranchAddress("trackMax", fForestJets.trackMax, &fForestJets.b_trackMax);
+      fChain->SetBranchAddress("trackMax", &fForestJets.trackMax, &fForestJets.b_trackMax);
     if (fChain->GetBranch("chargedMax"))
-      fChain->SetBranchAddress("chargedMax", fForestJets.chargedMax, &fForestJets.b_chargedMax);
+      fChain->SetBranchAddress("chargedMax", &fForestJets.chargedMax, &fForestJets.b_chargedMax);
     if (fChain->GetBranch("photonMax"))
-      fChain->SetBranchAddress("photonMax", fForestJets.photonMax, &fForestJets.b_photonMax);
+      fChain->SetBranchAddress("photonMax", &fForestJets.photonMax, &fForestJets.b_photonMax);
     if (fChain->GetBranch("neutralMax"))
-      fChain->SetBranchAddress("neutralMax", fForestJets.neutralMax, &fForestJets.b_neutralMax);
+      fChain->SetBranchAddress("neutralMax", &fForestJets.neutralMax, &fForestJets.b_neutralMax);
     if (fChain->GetBranch("eMax"))
-      fChain->SetBranchAddress("eMax", fForestJets.eMax, &fForestJets.b_eMax);
+      fChain->SetBranchAddress("eMax", &fForestJets.eMax, &fForestJets.b_eMax);
     if (fChain->GetBranch("muMax"))
-      fChain->SetBranchAddress("muMax", fForestJets.muMax, &fForestJets.b_muMax);
-    
+      fChain->SetBranchAddress("muMax", &fForestJets.muMax, &fForestJets.b_muMax);
+    fChain->SetBranchStatus("*Sum",1);
     if (fChain->GetBranch("chargedSum"))
-      fChain->SetBranchAddress("chargedSum", fForestJets.chargedSum, &fForestJets.b_chargedSum);
+      fChain->SetBranchAddress("chargedSum", &fForestJets.chargedSum, &fForestJets.b_chargedSum);
     if (fChain->GetBranch("chargedHardSum"))
-      fChain->SetBranchAddress("chargedHardSum", fForestJets.chargedHardSum, &fForestJets.b_chargedHardSum);
+      fChain->SetBranchAddress("chargedHardSum", &fForestJets.chargedHardSum, &fForestJets.b_chargedHardSum);
     if (fChain->GetBranch("photonSum"))
-      fChain->SetBranchAddress("photonSum", fForestJets.photonSum, &fForestJets.b_photonSum);
+      fChain->SetBranchAddress("photonSum", &fForestJets.photonSum, &fForestJets.b_photonSum);
     if (fChain->GetBranch("neutralSum"))
-      fChain->SetBranchAddress("neutralSum", fForestJets.neutralSum, &fForestJets.b_neutralSum);
+      fChain->SetBranchAddress("neutralSum", &fForestJets.neutralSum, &fForestJets.b_neutralSum);
     if (fChain->GetBranch("eSum"))
-      fChain->SetBranchAddress("eSum", fForestJets.eSum, &fForestJets.b_eSum);
+      fChain->SetBranchAddress("eSum", &fForestJets.eSum, &fForestJets.b_eSum);
     if (fChain->GetBranch("muSum"))
-      fChain->SetBranchAddress("muSum", fForestJets.muSum, &fForestJets.b_muSum);
-    
+      fChain->SetBranchAddress("muSum", &fForestJets.muSum, &fForestJets.b_muSum);
+    fChain->SetBranchStatus("*N",1);
     if (fChain->GetBranch("trackN"))
-      fChain->SetBranchAddress("trackN", fForestJets.trackN, &fForestJets.b_trackN);
+      fChain->SetBranchAddress("trackN", &fForestJets.trackN, &fForestJets.b_trackN);
     if (fChain->GetBranch("chargedN"))
-      fChain->SetBranchAddress("chargedN", fForestJets.chargedN, &fForestJets.b_chargedN);
+      fChain->SetBranchAddress("chargedN", &fForestJets.chargedN, &fForestJets.b_chargedN);
     if (fChain->GetBranch("photonN"))
-      fChain->SetBranchAddress("photonN", fForestJets.photonN, &fForestJets.b_photonN);
+      fChain->SetBranchAddress("photonN", &fForestJets.photonN, &fForestJets.b_photonN);
     if (fChain->GetBranch("neutralN"))
-      fChain->SetBranchAddress("neutralN", fForestJets.neutralN, &fForestJets.b_neutralN);
+      fChain->SetBranchAddress("neutralN", &fForestJets.neutralN, &fForestJets.b_neutralN);
     if (fChain->GetBranch("eN"))
-      fChain->SetBranchAddress("eN", fForestJets.eN, &fForestJets.b_eN);
+      fChain->SetBranchAddress("eN", &fForestJets.eN, &fForestJets.b_eN);
     if (fChain->GetBranch("muN"))
-      fChain->SetBranchAddress("muN", fForestJets.muN, &fForestJets.b_muN);
-    
+      fChain->SetBranchAddress("muN", &fForestJets.muN, &fForestJets.b_muN);
+    fChain->SetBranchStatus("discr_*",1);
     if (fChain->GetBranch("discr_ssvHighEff"))
-      fChain->SetBranchAddress("discr_ssvHighEff", fForestJets.discr_ssvHighEff, &fForestJets.b_discr_ssvHighEff);
+      fChain->SetBranchAddress("discr_ssvHighEff", &fForestJets.discr_ssvHighEff, &fForestJets.b_discr_ssvHighEff);
     if (fChain->GetBranch("discr_ssvHighPur"))
-      fChain->SetBranchAddress("discr_ssvHighPur", fForestJets.discr_ssvHighPur, &fForestJets.b_discr_ssvHighPur);
+      fChain->SetBranchAddress("discr_ssvHighPur", &fForestJets.discr_ssvHighPur, &fForestJets.b_discr_ssvHighPur);
     if (fChain->GetBranch("discr_csvMva"))
-      fChain->SetBranchAddress("discr_csvMva", fForestJets.discr_csvMva, &fForestJets.b_discr_csvMva);
+      fChain->SetBranchAddress("discr_csvMva", &fForestJets.discr_csvMva, &fForestJets.b_discr_csvMva);
     if (fChain->GetBranch("discr_csvSimple"))
-      fChain->SetBranchAddress("discr_csvSimple", fForestJets.discr_csvSimple, &fForestJets.b_discr_csvSimple);
+      fChain->SetBranchAddress("discr_csvSimple", &fForestJets.discr_csvSimple, &fForestJets.b_discr_csvSimple);
     if (fChain->GetBranch("refparton_flavor"))
-      fChain->SetBranchAddress("refparton_flavor", fForestJets.refparton_flavor, &fForestJets.b_refparton_flavor);
+      fChain->SetBranchAddress("refparton_flavor", &fForestJets.refparton_flavor, &fForestJets.b_refparton_flavor);
     if (fChain->GetBranch("refparton_flavorForB"))
-      fChain->SetBranchAddress("refparton_flavorForB", fForestJets.refparton_flavorForB, &fForestJets.b_refparton_flavorForB);
-
+      fChain->SetBranchAddress("refparton_flavorForB", &fForestJets.refparton_flavorForB, &fForestJets.b_refparton_flavorForB);
+    fChain->SetBranchStatus("ngen",1);
+    fChain->SetBranchStatus("gen*",1);
     if (fChain->GetBranch("ngen"))
       fChain->SetBranchAddress("ngen", &fForestJets.ngen, &fForestJets.b_ngen);
     if (fChain->GetBranch("genpt"))
-      fChain->SetBranchAddress("genpt", fForestJets.genpt, &fForestJets.b_genpt);
+      fChain->SetBranchAddress("genpt", &fForestJets.genpt, &fForestJets.b_genpt);
     if (fChain->GetBranch("geneta"))
-      fChain->SetBranchAddress("geneta", fForestJets.geneta, &fForestJets.b_geneta);
+      fChain->SetBranchAddress("geneta", &fForestJets.geneta, &fForestJets.b_geneta);
     if (fChain->GetBranch("geny"))
-      fChain->SetBranchAddress("geny", fForestJets.geny, &fForestJets.b_geny);
+      fChain->SetBranchAddress("geny", &fForestJets.geny, &fForestJets.b_geny);
     if (fChain->GetBranch("genphi"))
-      fChain->SetBranchAddress("genphi", fForestJets.genphi, &fForestJets.b_genphi);
+      fChain->SetBranchAddress("genphi", &fForestJets.genphi, &fForestJets.b_genphi);
     if (fChain->GetBranch("genm"))
-      fChain->SetBranchAddress("genm", fForestJets.genm, &fForestJets.b_genm);
+      fChain->SetBranchAddress("genm", &fForestJets.genm, &fForestJets.b_genm);
     if (fChain->GetBranch("gensubid"))
-      fChain->SetBranchAddress("gensubid", fForestJets.gensubid, &fForestJets.b_gensubid);
+      fChain->SetBranchAddress("gensubid", &fForestJets.gensubid, &fForestJets.b_gensubid);
     if (fChain->GetBranch("genmatchindex"))
-      fChain->SetBranchAddress("genmatchindex", fForestJets.genmatchindex, &fForestJets.b_genmatchindex);
+      fChain->SetBranchAddress("genmatchindex", &fForestJets.genmatchindex, &fForestJets.b_genmatchindex);
 
     fInit = kTRUE;
   }
@@ -181,7 +187,10 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
   //put jets of this event in array
   Int_t jetCount = 0;
   //Printf("%s: njets: %d",GetName(),fForestJets.nref);
+
   for(Int_t i = 0; i<fForestJets.nref; i++) {
+    //std::cout<<fForestJets.chargedSum[i]<<std::endl;
+
     if( fDoPFJetID && !IsGoodPFJet(i)) {
       //Printf("jet not accepted");
       continue;
@@ -198,6 +207,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetRefEta(fForestJets.refeta[i]);
     jet->SetRefM(fForestJets.refm[i]);
     jet->SetRefDr(fForestJets.refdrjt[i]);
+    jet->SetCsvSimpleDiscr(fForestJets.discr_csvSimple[i]);
     jet->SetSubEvent(fForestJets.subid[i]);
     jet->SetChargedProp(fForestJets.chargedMax[i],fForestJets.chargedSum[i],fForestJets.chargedN[i]);
     jet->SetChargedHardProp(fForestJets.chargedMax[i],fForestJets.chargedHardSum[i],fForestJets.chargedHardN[i]);

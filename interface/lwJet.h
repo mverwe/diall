@@ -26,7 +26,7 @@ class lwJet : public particleBase {
   float       GetRefEta()               const { return fRefEta         ; }
   float       GetRefM()                 const { return fRefM           ; }
   float       GetRefDr()                const { return fRefDr          ; }
-  int         GetSubEvent()             const { return fSube           ; }  
+  int         GetSubEvent()             const { return fSube           ; }
   
   Int_t       GetNConstituents()        const { return fConstIds.size(); }
   Int_t       GetConstituentId(Int_t i) const { return fConstIds[i]    ; }
@@ -35,24 +35,24 @@ class lwJet : public particleBase {
   Int_t       GetRefParton()            const { return fRefParton      ; }
   Int_t       GetRefPartonForB()        const { return fRefPartonForB  ; }
   Float_t     GetCsvSimpleDiscr()       const { return fCsvSimpleDiscr ; }
-  float       GetChargedSum()           const { return fChargedSum; }
-  float       GetChargedMax()           const { return fChargedMax; }
-  int         GetChargedN()             const { return fChargedN;   }
-  float       GetChargedHardSum()       const { return fChargedHardSum; }
-  float       GetChargedHardMax()       const { return fChargedHardMax; }
-  int         GetChargedHardN()         const { return fChargedHardN;   }
-  float       GetPhotonSum()            const { return fPhotonSum; }
-  float       GetPhotonMax()            const { return fPhotonMax; }
-  int         GetPhotonN()              const { return fPhotonN;   }
-  float       GetNeutralSum()           const { return fNeutralSum; }
-  float       GetNeutralMax()           const { return fNeutralMax; }
-  int         GetNeutralN()             const { return fNeutralN;   }
-  float       GetEmSum()                const { return fEmSum; }
-  float       GetEmMax()                const { return fEmMax; }
-  int         GetEmN()                  const { return fEmN; }
-  float       GetMuSum()                const { return fMuSum; }
-  float       GetMuMax()                const { return fMuMax; }
-  int         GetMuN()                  const { return fMuN; }
+  Float_t       GetChargedSum()           const { return fChargedSum; }
+  Float_t       GetChargedMax()           const { return fChargedMax; }
+  Int_t         GetChargedN()             const { return fChargedN;   }
+  Float_t       GetChargedHardSum()       const { return fChargedHardSum; }
+  Float_t       GetChargedHardMax()       const { return fChargedHardMax; }
+  Int_t         GetChargedHardN()         const { return fChargedHardN;   }
+  Float_t       GetPhotonSum()            const { return fPhotonSum; }
+  Float_t       GetPhotonMax()            const { return fPhotonMax; }
+  Int_t         GetPhotonN()              const { return fPhotonN;   }
+  Float_t       GetNeutralSum()           const { return fNeutralSum; }
+  Float_t       GetNeutralMax()           const { return fNeutralMax; }
+  Int_t         GetNeutralN()             const { return fNeutralN;   }
+  Float_t       GetEmSum()                const { return fEmSum; }
+  Float_t       GetEmMax()                const { return fEmMax; }
+  Int_t         GetEmN()                  const { return fEmN; }
+  Float_t       GetMuSum()                const { return fMuSum; }
+  Float_t       GetMuMax()                const { return fMuMax; }
+  Int_t         GetMuN()                  const { return fMuN; }
   
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
@@ -61,26 +61,27 @@ class lwJet : public particleBase {
   void        SetRefEta(Double_t eta)      { fRefEta = eta; }
   void        SetRefM(Double_t m)          { fRefM = m; }
   void        SetRefDr(Double_t dr)        { fRefDr = dr; }
-  void        SetSubEvent(int su)          { fSube  = su; }
+  void        SetSubEvent(Int_t su)          { fSube  = su; }
 
   void        AddConstituent(Int_t i )     { fConstIds.push_back(i); }
   void        SetRefToParton(Int_t i)      { fRefParton = i;}
   void        SetRefToPartonForB(Int_t i)  { fRefPartonForB = i; }
   void        SetCsvSimpleDiscr(Float_t d) { fCsvSimpleDiscr = d;}
 
-  void        SetChargedProp(float max, float sum, int n);
-  void        SetChargedHardProp(float max, float sum, int n);
-  void        SetPhotonProp(float max, float sum, int n);
-  void        SetNeutralProp(float max, float sum, int n);
-  void        SetEmProp(float max, float sum, int n);
-  void        SetMuProp(float max, float sum, int n);
+  void        SetChargedProp(Float_t max, Float_t sum, Int_t n);
+  void        SetChargedHardProp(Float_t max, Float_t sum, Int_t n);
+  void        SetPhotonProp(Float_t max, Float_t sum, Int_t n);
+  void        SetNeutralProp(Float_t max, Float_t sum, Int_t n);
+  void        SetEmProp(Float_t max, Float_t sum, Int_t n);
+  void        SetMuProp(Float_t max, Float_t sum, Int_t n);
   
  protected:
   Double_t          fArea;          //jet area
-  std::vector<int>  fConstIds;      //ids of constituents
+  std::vector<Int_t>  fConstIds;      //ids of constituents
   Int_t             fRefParton;     //ref to parton
   Int_t             fRefPartonForB; //ref to parton for b
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
+
   float             fRawPt;         //raw pt (no jec)
   float             fRawM;          //raw mass (no jec)
   float             fRefPt;         //matched gen-level jet pt
