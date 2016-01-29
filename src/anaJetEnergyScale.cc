@@ -25,7 +25,11 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fh3PtTrueEtaDeltaPt(0),
   fh3PtTrueEtaDeltaPtRel(0),
   fh3PtTrueEtaScalePt(0),
-  fh3PtTruePtSubEta(0)
+  fh3PtTruePtSubEta(0),
+  fh3PtTrueEtaDeltaM(0),
+  fh3PtTrueEtaDeltaMRel(0),
+  fh3PtTrueEtaScaleM(0),
+  fh3PtTrueMTrueScaleM(0)
 {
 
   fh2PtEtaNoMatching           = new TH2F*[fNcentBins];
@@ -39,6 +43,11 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fh3PtTrueEtaDeltaPtRel       = new TH3F*[fNcentBins];
   fh3PtTrueEtaScalePt          = new TH3F*[fNcentBins];
   fh3PtTruePtSubEta            = new TH3F*[fNcentBins];
+
+  fh3PtTrueEtaDeltaM           = new TH3F*[fNcentBins];
+  fh3PtTrueEtaDeltaMRel        = new TH3F*[fNcentBins];
+  fh3PtTrueEtaScaleM           = new TH3F*[fNcentBins];
+  fh3PtTrueMTrueScaleM         = new TH3F*[fNcentBins];
   
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2PtEtaNoMatching[i]           = 0;
@@ -52,6 +61,11 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
     fh3PtTrueEtaDeltaPtRel[i]       = 0;
     fh3PtTrueEtaScalePt[i]          = 0;
     fh3PtTruePtSubEta[i]            = 0;
+
+    fh3PtTrueEtaDeltaM[i]           = 0;
+    fh3PtTrueEtaDeltaMRel[i]        = 0;
+    fh3PtTrueEtaScaleM[i]           = 0;
+    fh3PtTrueMTrueScaleM[i]         = 0;
   }
 
 }
@@ -127,12 +141,18 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
          continue;
        
        double dpt = jet->Pt()-jet->GetRefPt();
+       double dm  = jet->M()-jet->GetRefM();
 
        if(fCentBin>-1 && fCentBin<fNcentBins) {
          fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt,weight);
+         fh3PtTrueEtaDeltaM[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dm,weight);
          if(jet->GetRefPt()>0.) {
            fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt/jet->GetRefPt(),weight);
            fh3PtTrueEtaScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->Pt()/jet->GetRefPt(),weight);
+         }
+         if(jet->GetRefM()>0.) {
+           fh3PtTrueEtaDeltaMRel[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dm/jet->GetRefM(),weight);
+           fh3PtTrueEtaScaleM[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->M()/jet->GetRefM(),weight);
          }
          fh3PtTruePtSubEta[fCentBin]->Fill(jet->GetRefPt(),jet->Pt(),jet->GetRefEta(),weight);
      
@@ -144,7 +164,10 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
              fh3PtTrueNPVScalePt[fCentBin]->Fill(jet->GetRefPt(),npv,jet->Pt()/jet->GetRefPt(),weight);
            }
            fh3PtTruePtSubNPV[fCentBin]->Fill(jet->GetRefPt(),jet->Pt(),npv,weight);
-         }
+
+           if(jet->GetRefM()>0.)
+             fh3PtTrueMTrueScaleM[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefM(),jet->M()/jet->GetRefM(),weight);
+         }//eta selection
        }
        
      }
@@ -171,13 +194,20 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
          fh3PtEtaPhiMatched[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet1->Phi(),weight);
      
        double dpt = jet2->Pt()-jet1->Pt();
-
+       double dm  = jet2->M() - jet1->M();
+       
        if(fCentBin>-1 && fCentBin<fNcentBins) {
          fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt,weight);
+         fh3PtTrueEtaDeltaM[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dm,weight);
          if(jet1->Pt()>0.) {
            fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt/jet1->Pt(),weight);
            fh3PtTrueEtaScalePt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet2->Pt()/jet1->Pt(),weight);
          }
+         if(jet1->M()>0.) {
+           fh3PtTrueEtaDeltaMRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dm/jet1->M(),weight);
+           fh3PtTrueEtaScaleM[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),jet2->M()/jet1->M(),weight);
+         }
+
          fh3PtTruePtSubEta[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),jet1->Eta(),weight);
      
          if(abs(jet1->Eta())<1.3) {
@@ -188,7 +218,11 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
              fh3PtTrueNPVScalePt[fCentBin]->Fill(jet1->Pt(),npv,jet2->Pt()/jet1->Pt(),weight);
            }
            fh3PtTruePtSubNPV[fCentBin]->Fill(jet1->Pt(),jet2->Pt(),npv,weight);
-         }
+
+           //mass
+           if(jet1->M()>0.)
+             fh3PtTrueMTrueScaleM[fCentBin]->Fill(jet1->Pt(),jet1->M(),jet2->M()/jet1->M(),weight);
+         }//eta selection
        }
      }
    }
@@ -235,6 +269,31 @@ void anaJetEnergyScale::CreateOutputObjects() {
   const Double_t maxScalePt = 3.;
   double *binsScalePt = new double[nBinsScalePt+1];
   for(int i=0; i<=nBinsScalePt; ++i) binsScalePt[i]=(double)minScalePt + (maxScalePt-minScalePt)/nBinsScalePt*(double)i ;
+
+  //
+  const Int_t nBinsMPart  = 100;
+  const Double_t minMPart =   0.;
+  const Double_t maxMPart = 100.;
+  double *binsMPart = new double[nBinsMPart+1];
+  for(int i=0; i<=nBinsMPart; ++i) binsMPart[i]=(double)minMPart + (maxMPart-minMPart)/nBinsMPart*(double)i ;
+  
+  const Int_t nBinsDM  = 100;
+  const Double_t minDM = -25.;
+  const Double_t maxDM = 25.;
+  double *binsDM = new double[nBinsDM+1];
+  for(int i=0; i<=nBinsDM; ++i) binsDM[i]=(double)minDM + (maxDM-minDM)/nBinsDM*(double)i ;
+
+  const Int_t nBinsDMRel  = 600;
+  const Double_t minDMRel = -3.;
+  const Double_t maxDMRel = 3.;
+  double *binsDMRel = new double[nBinsDMRel+1];
+  for(int i=0; i<=nBinsDMRel; ++i) binsDMRel[i]=(double)minDMRel + (maxDMRel-minDMRel)/nBinsDMRel*(double)i ;
+
+  const Int_t nBinsScaleM  = 300;
+  const Double_t minScaleM = 0.;
+  const Double_t maxScaleM = 6.;
+  double *binsScaleM = new double[nBinsScaleM+1];
+  for(int i=0; i<=nBinsScaleM; ++i) binsScaleM[i]=(double)minScaleM + (maxScaleM-minScaleM)/nBinsScaleM*(double)i ;
 
   const Int_t nBinsNPV = 100;
   const Double_t minNPV = 0.;
@@ -314,6 +373,28 @@ void anaJetEnergyScale::CreateOutputObjects() {
     fh3PtTrueEtaScalePt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsScalePt,binsScalePt);
     fOutput->Add(fh3PtTrueEtaScalePt[i]);
 
+    //mass scale
+    histName = Form("fh3PtTrueEtaDeltaM_%d",i);
+    histTitle = Form("%s;#it{p}_{T,gen};Eta;#it{M}_{rec}-#it{M}_{gen}",histName.Data());
+    fh3PtTrueEtaDeltaM[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsDM,binsDM);
+    fOutput->Add(fh3PtTrueEtaDeltaM[i]);
+
+    histName = Form("fh3PtTrueEtaDeltaMRel_%d",i);
+    histTitle = Form("%s;#it{p}_{T,gen};Eta;(#it{M}_{rec}-#it{M}_{gen})/#it{M}_{gen}",histName.Data());
+    fh3PtTrueEtaDeltaMRel[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsDMRel,binsDMRel);
+    fOutput->Add(fh3PtTrueEtaDeltaMRel[i]);
+
+    histName = Form("fh3PtTrueEtaScaleM_%d",i);
+    histTitle = Form("%s;#it{p}_{T,gen};Eta;#it{M}_{rec}/#it{M}_{gen}",histName.Data());
+    fh3PtTrueEtaScaleM[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsScaleM,binsScaleM);
+    fOutput->Add(fh3PtTrueEtaScaleM[i]);
+
+    histName = Form("fh3PtTrueMTrueScaleM_Cent%d",i);
+    histTitle = Form("%s;#it{p}_{T,true};#it{M}_{true};(#it{M}_{sub}-#it{M}_{true})/#it{M}_{true}",histName.Data());
+    fh3PtTrueMTrueScaleM[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,minPtPart,maxPtPart,nBinsMPart,minMPart,maxMPart,nBinsScaleM,minScaleM,maxScaleM);
+    fOutput->Add(fh3PtTrueMTrueScaleM[i]);
+
+    //pt response matrix
     histName = Form("fh3PtTruePtSubEta_%d",i);
     histTitle = Form("%s;#it{p}_{T,gen};#it{p}_{T,rec};Eta",histName.Data());
     fh3PtTruePtSubEta[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsPtDet,binsPtDet,nBinsEta,binsEta);
@@ -327,6 +408,10 @@ void anaJetEnergyScale::CreateOutputObjects() {
   if(binsDPt)               delete [] binsDPt;
   if(binsDPtRel)            delete [] binsDPtRel;
   if(binsScalePt)           delete [] binsScalePt;
+  if(binsMPart)             delete [] binsMPart;
+  if(binsDM)                delete [] binsDM;
+  if(binsDMRel)             delete [] binsDMRel;
+  if(binsScaleM)            delete [] binsScaleM;
   if(binsNPV)               delete [] binsNPV;
 
 }
