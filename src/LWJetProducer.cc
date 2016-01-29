@@ -38,6 +38,9 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   fRhoMMap(),
   flwCSJetContainer(),
   flwCSJetContName(""),
+  fAlpha(0.),
+  fDoJEC(false),
+  fDoJECCS(false),
   fJetCorrector(0),
   fL1Fastjet(""),
   fL2Relative(""),
@@ -70,6 +73,9 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   fRhoMMap(),
   flwCSJetContainer(),
   flwCSJetContName(""),
+  fAlpha(0.),
+  fDoJEC(false),
+  fDoJECCS(false),
   fJetCorrector(0),
   fL1Fastjet(""),
   fL2Relative(""),
@@ -210,15 +216,19 @@ Int_t LWJetProducer::FindJets() {
     Int_t ij = indexes[ijet];
     if(jets_incl[ij].perp()<1e-6) continue; //remove pure ghost jets
     double pt = jets_incl[ij].perp();
-    if(fJetCorrector) {
+    double mass = jets_incl[ij].m();
+    if(fJetCorrector && fDoJEC) {
       fJetCorrector->setJetEta(jets_incl[ij].eta());
       fJetCorrector->setJetPt(pt);
       fJetCorrector->setJetA(fFastJetWrapper.GetJetArea(ij));
       fJetCorrector->setRho(0.); 
       double correction = fJetCorrector->getCorrection();
       pt *= correction;
+      mass *= correction;
     }
-    lwJet *jet = new lwJet(pt, jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m(),jets_incl[ij].user_index());
+    lwJet *jet = new lwJet(pt, jets_incl[ij].eta(), jets_incl[ij].phi(), mass,jets_incl[ij].user_index());
+    jet->SetRawPt(jets_incl[ij].perp());
+    jet->SetRawM(jets_incl[ij].m());
     jet->SetArea(fFastJetWrapper.GetJetArea(ij));
 
     // Fill constituent info
@@ -247,7 +257,8 @@ Int_t LWJetProducer::FindJets() {
     std::vector<fastjet::PseudoJet> unsub;
     std::vector<fastjet::PseudoJet> jets_sub;
     jets_sub.reserve(jets_incl.size());
-    for(Int_t ie = 0; ie<5; ie++) {
+    Int_t neta = fRhoMap->GetNEtaBins();
+    for(Int_t ie = 0; ie<neta; ie++) {
       unsub.clear();
 
       //Get rho and rhoM for eta regio
@@ -256,7 +267,7 @@ Int_t LWJetProducer::FindJets() {
       
       //initialize constituent subtraction
       fastjet::contrib::ConstituentSubtractor *subtractor;
-      subtractor     = new fastjet::contrib::ConstituentSubtractor(rho,rhom,0.,-1.);
+      subtractor     = new fastjet::contrib::ConstituentSubtractor(rho,rhom,fAlpha,-1.);
       
       for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
         Int_t ieta = fRhoMap->GetIndex(jets_incl[ijet].eta());
@@ -278,8 +289,22 @@ Int_t LWJetProducer::FindJets() {
     jetCount = 0;
     for (UInt_t ij = 0; ij < jets_sub.size(); ++ij) {
       if(fabs(jets_sub[ij].perp()<1e-6)) continue; //remove pure ghost jets
-      lwJet *jet = new lwJet(jets_sub[ij].perp(), jets_sub[ij].eta(), jets_sub[ij].phi(), jets_sub[ij].m(),jets_sub[ij].user_index());
-      // jet->SetArea(fFastJetWrapper.GetJetArea(ij));
+      double pt = jets_sub[ij].perp();
+      double mass = jets_sub[ij].m();
+      if(fJetCorrector && fDoJECCS) {
+        fJetCorrector->setJetEta(jets_sub[ij].eta());
+        fJetCorrector->setJetPt(pt);
+        fJetCorrector->setJetA(fFastJetWrapper.GetJetArea(ij));
+        fJetCorrector->setRho(0.);
+        double correction = fJetCorrector->getCorrection();
+        //if(pt>40.) Printf("pt: %f eta: %f mass: %f correction: %f",pt,jets_sub[ij].eta(),mass,correction);
+        pt *= correction;
+        mass *= correction;
+      }
+      lwJet *jet = new lwJet(pt, jets_sub[ij].eta(), jets_sub[ij].phi(), mass,jets_sub[ij].user_index());
+      jet->SetRawPt(jets_sub[ij].perp());
+      jet->SetRawM(jets_sub[ij].m());
+      jet->SetArea(fFastJetWrapper.GetJetArea(ij));
       flwCSJetContainer->AddJet(jet,jetCount);
       ++jetCount;
     }

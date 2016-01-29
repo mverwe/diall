@@ -21,8 +21,10 @@ class lwJet : public particleBase {
 
   Double_t    GetArea()                 const { return fArea           ; }
   float       GetRawPt()                const { return fRawPt          ; }
+  float       GetRawM()                 const { return fRawM           ; }
   float       GetRefPt()                const { return fRefPt          ; }
   float       GetRefEta()               const { return fRefEta         ; }
+  float       GetRefM()                 const { return fRefM           ; }
   float       GetRefDr()                const { return fRefDr          ; }
   int         GetSubEvent()             const { return fSube           ; }  
   
@@ -54,8 +56,10 @@ class lwJet : public particleBase {
   
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
+  void        SetRawM(Double_t m)          { fRawM = m; }
   void        SetRefPt(Double_t pt)        { fRefPt = pt; }
   void        SetRefEta(Double_t eta)      { fRefEta = eta; }
+  void        SetRefM(Double_t m)          { fRefM = m; }
   void        SetRefDr(Double_t dr)        { fRefDr = dr; }
   void        SetSubEvent(int su)          { fSube  = su; }
 
@@ -78,8 +82,10 @@ class lwJet : public particleBase {
   Int_t             fRefPartonForB; //ref to parton for b
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
   float             fRawPt;         //raw pt (no jec)
+  float             fRawM;          //raw mass (no jec)
   float             fRefPt;         //matched gen-level jet pt
   float             fRefEta;        //matched gen-level jet eta
+  float             fRefM;          //matched gen-level jet mass
   float             fRefDr;         //distance between reco and gen jet
   int               fSube;          //sub-event id (0=hard process)
   float             fChargedMax;    //max track pt
@@ -101,6 +107,6 @@ class lwJet : public particleBase {
   float             fMuSum;
   int               fMuN;
     
-  ClassDef(lwJet,3)
+  ClassDef(lwJet,5)
 };
 #endif

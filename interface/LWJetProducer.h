@@ -54,6 +54,8 @@ class LWJetProducer : public anaBaseTask {
   void                   SetGhostArea(Double_t gh)   { fGhostArea     = gh; }
   void                   SetPtMinConst(Double_t pt)  { fPtMinConst    = pt; } 
 
+  void                   SetDoJEC(bool b)            { fDoJEC         = b; }
+  void                   SetDoJECCS(bool b)          { fDoJECCS       = b; }
   void                   SetL1Fastjet(TString s)     { fL1Fastjet     = s; }
   void                   SetL2Relative(TString s)    { fL2Relative    = s; }
   void                   SetL3Absolute(TString s)    { fL3Absolute    = s; }
@@ -62,7 +64,8 @@ class LWJetProducer : public anaBaseTask {
   void                   SetDoConstituentSubtraction(Bool_t b) {fDoConstSubtraction = b;}
   void                   SetRhoMapName(TString n)    { fRhoMapName    = n ; }
   void                   SetRhoMMapName(TString n)   { fRhoMMapName   = n ; }
-  
+  void                   SetAlpha(double a)          { fAlpha         = a ; } 
+ 
   UInt_t                 GetJetType()          const { return fJetType         ; }
   Double_t               GetRadius()           const { return fRadius          ; }
   Int_t                  GetRecombScheme()     const { return fRecombScheme    ; }
@@ -95,7 +98,10 @@ class LWJetProducer : public anaBaseTask {
   rhoMap          *fRhoMMap;                //!rhom map
   lwJetContainer  *flwCSJetContainer;       //!lwJetContainer for constituent subtracted jets
   TString          flwCSJetContName;        // name of constituent subtracted jet container
+  double           fAlpha;                  // power of pt in constituent subtraction metric
 
+  bool             fDoJEC;                  //apply JEC to standard jets
+  bool             fDoJECCS;                //apply JEC to constituent subtracted jets
   FactorizedJetCorrector *fJetCorrector;    //jet corrector
   TString          fL1Fastjet;
   TString          fL2Relative;
@@ -106,7 +112,7 @@ class LWJetProducer : public anaBaseTask {
   LWJetProducer(const LWJetProducer& obj); // copy constructor
   LWJetProducer& operator=(const LWJetProducer& other); // assignment
   
-  ClassDef(LWJetProducer,3)
+  ClassDef(LWJetProducer,5)
 
 };
 #endif
