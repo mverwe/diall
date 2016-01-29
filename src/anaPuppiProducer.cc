@@ -356,7 +356,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
      if(!p1) continue;
-     Double_t prob = 1.;
+     Double_t prob = 0.;
      Int_t etaBin = -1;
      for(Int_t ieta = 1; ieta<neta; ++ieta) {
        Double_t etaMin = fMapEtaRanges.at(ieta);

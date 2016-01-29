@@ -2,6 +2,7 @@
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/lwMuonProducer.h"
 #include "UserCode/diall/interface/pfParticleProducer.h"
+//#include "UserCode/diall/interface/pfParticleProducerVector.h"
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
@@ -15,6 +16,7 @@
 #include "UserCode/diall/interface/anaMuonMatcher.h"
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaPuppiParticles.h"
+#include "UserCode/diall/interface/anaZJetMCResponse.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
 
 #include <TList.h>
@@ -27,14 +29,24 @@
 
 using namespace std;
 
-bool doPuppi         = true;
+bool doPuppi         = false;
 bool doJetFinding    = true;
 bool useMetric2      = false;
 bool storeTree       = false;
 bool doCSJets        = true;
+bool doJECCS         = true;
+bool doZJetResponse  = true;
+double alphaCS       = 1.; 
+
+TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
 
 void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
 
+  TString strL1 = Form("%s/75X_mcRun2_HeavyIon_v12_L1FastJet_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2Rel = Form("%s/75X_mcRun2_HeavyIon_v12_L2Relative_AK4PF_offline.txt",baseJEC.Data());
+  TString strL3Abs = Form("%s/75X_mcRun2_HeavyIon_v12_L3Absolute_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2L3Res = Form("%s/75X_mcRun2_HeavyIon_v12_L2L3Residual_AK4PF_offline.txt",baseJEC.Data());
+  
   /*
     ptminType: minimum raw pt for particles used by puppi
     0 : 0 GeV
@@ -120,6 +132,13 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   p_pf->SetpfParticlesName("pfParticles");
   p_pf->SetEventObjects(fEventObjects);
 
+  /*
+  pfParticleProducerVector *p_pf = new pfParticleProducerVector("pfPartProd");
+  p_pf->SetInput(chain);
+  p_pf->SetpfParticlesName("pfParticles");
+  p_pf->SetEventObjects(fEventObjects);
+  */
+
   genParticleProducer *p_gen = new genParticleProducer("genParticleProd");
   p_gen->SetInput(chain);
   p_gen->SetGenParticlesName("genParticles");
@@ -151,6 +170,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   pupProd->SetStoreTree(storeTree);
   pupProd->SetConeRadius(0.2);
   pupProd->SetPuppiWeightType(anaPuppiProducer::kAlpha);//kMeanPt);
+  pupProd->SetWeightCut(0.9);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0
@@ -233,6 +253,15 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProd->SetHiEvtName("hiEventContainer");
     rhoProd->SetNExcl(2);
     rhoProd->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProd->SetEtaLimit(1,-5.);//bin,eta
+    rhoProd->SetEtaLimit(2,-3.);
+    rhoProd->SetEtaLimit(3,-2.1);
+    rhoProd->SetEtaLimit(4,-1.3);
+    rhoProd->SetEtaLimit(5, 1.3);
+    rhoProd->SetEtaLimit(6, 2.1);
+    rhoProd->SetEtaLimit(7, 3.);
+    rhoProd->SetEtaLimit(8, 5.);
+
     handler->Add(rhoProd);
 
     //anti-kt jet finder on reconstructed pf candidates
@@ -246,6 +275,14 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     lwjaktCS->SetJetContName("JetsAKTR040");
     lwjaktCS->SetCSJetContName("JetsAKTR040CS");
     lwjaktCS->SetDoConstituentSubtraction(kTRUE);
+    lwjaktCS->SetAlpha(alphaCS);
+    if(doJECCS) {
+      lwjaktCS->SetDoJECCS(true);
+      lwjaktCS->SetL1Fastjet(strL1);
+      lwjaktCS->SetL2Relative(strL2Rel);
+      lwjaktCS->SetL3Absolute(strL3Abs);
+      //lwjaktCS->SetL2L3Residual(strL2L3Res);
+    }
     lwjaktCS->SetRhoMapName("rhoMap");
     lwjaktCS->SetRhoMMapName("rhoMMap");
     handler->Add(lwjaktCS);
@@ -272,14 +309,35 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     anajesRaw->SetRecJetsName("JetsAKTR040");
     anajesRaw->SetNCentBins(4);
     handler->Add(anajesRaw);
+
+    if(doZJetResponse) {
+      //Z to mumu
+      anaZToMuMu *ZToMuMu = new anaZToMuMu("ZToMuMu","ZToMuMu");
+      ZToMuMu->ConnectEventObject(fEventObjects);
+      ZToMuMu->SetHiEvtName("hiEventContainer");
+      ZToMuMu->SetMuonsName("genParticles");
+      ZToMuMu->SetCheckPid(true);
+      ZToMuMu->SetZsName("zMuMuBosons");
+      handler->Add(ZToMuMu);
+
+      anaZJetMCResponse *ZResp = new anaZJetMCResponse("ZJetMCResponse","ZJetMCResponse");
+      ZResp->ConnectEventObject(fEventObjects);
+      ZResp->SetHiEvtName("hiEventContainer");
+      ZResp->SetZsName("zMuMuBosons");
+      ZResp->SetJetsName("JetsAKTR040CS");
+      ZResp->SetGenJetsName("akt4Gen");
+      ZResp->SetUseForestMatching(false);
+      handler->Add(ZResp);
+    }
   }
  
   //---------------------------------------------------------------
   //Event loop
   //---------------------------------------------------------------
-  Long64_t entries_tot =  chain->GetEntriesFast(); //93064
+  Long64_t entries_tot =  chain->GetEntries(); //93064
+  Printf("total number of events: %lld",entries_tot);
   if(nentries<0) lastEvent = chain->GetEntries();
-  Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
+  Printf("nentries: %lld firstEvent: %d  lastEvent: %d",nentries,firstEvent,lastEvent);
   for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
     if(jentry%10000==0) cout << "entry: "<< jentry << endl;
     //Run producers
