@@ -64,6 +64,7 @@ public :
    Float_t         refeta[maxJets];   //[nref]
    Float_t         refy[maxJets];   //[nref]
    Float_t         refphi[maxJets];   //[nref]
+   Float_t         refm[maxJets];   //[nref]
    Float_t         refdphijt[maxJets];   //[nref]
    Float_t         refdrjt[maxJets];   //[nref]
    Float_t         refparton_pt[maxJets];   //[nref]
@@ -84,6 +85,7 @@ public :
    Float_t         geneta[maxGenJets];   //[ngen]
    Float_t         geny[maxGenJets];   //[ngen]
    Float_t         genphi[maxGenJets];   //[ngen]
+   Float_t         genm[maxGenJets] = {0.};   //[ngen]
    Float_t         gendphijt[maxGenJets];   //[ngen]
    Float_t         gendrjt[maxGenJets];   //[ngen]
    Int_t           gensubid[maxGenJets];   //[ngen]
@@ -145,6 +147,7 @@ public :
    TBranch        *b_refeta;   //!
    TBranch        *b_refy;   //!
    TBranch        *b_refphi;   //!
+   TBranch        *b_refm;   //!
    TBranch        *b_refdphijt;   //!
    TBranch        *b_refdrjt;   //!
    TBranch        *b_refparton_pt;   //!
@@ -163,6 +166,7 @@ public :
    TBranch        *b_geneta;   //!
    TBranch        *b_geny;   //!
    TBranch        *b_genphi;   //!
+   TBranch        *b_genm;   //!
    TBranch        *b_gendphijt;   //!
    TBranch        *b_gendrjt;   //!
    TBranch        *b_gensubid;   //!

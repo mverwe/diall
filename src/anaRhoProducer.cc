@@ -12,15 +12,18 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
   fRhoMMap(0x0),
   fJetsName(""),
   fJetsCont(),
+  fNcentBins(4),
   fNExcl(2),
   fMinEta(-5.),
   fMaxEta(5.),
   fMapEtaRanges(),
+  fUseMean(false),
   fh3PtEtaPhi(),
   fh3PtEtaArea(),
   fh2RhoCent(),
   fh2RhoMCent(),
-  fh3RhoCentEtaJet()
+  fh3RhoCentEtaJet(),
+  fh3PtEtaPhiExcl()
 {
 
   //Set default eta ranges
@@ -31,6 +34,12 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
   fMapEtaRanges[4] =  2.1;
   fMapEtaRanges[5] =  3.;
   fMapEtaRanges[6] =  5.;
+
+  fh3PtEtaPhiExcl = new TH3F*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    fh3PtEtaPhiExcl[i] = 0;
+  }
 }
 
 //----------------------------------------------------------
@@ -61,6 +70,18 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
    if(!fJetsCont) return;
 
+   //Determine centrality bin
+   Double_t cent = 0.;
+   if(fHiEvent) cent = fHiEvent->GetCentrality();
+   Int_t fCentBin = 0;
+   if(fNcentBins==4) {
+     if(cent>=0. && cent<10.)       fCentBin = 0;
+     else if(cent>=10. && cent<30.) fCentBin = 1;
+     else if(cent>=30. && cent<50.) fCentBin = 2;
+     else if(cent>=50. && cent<80.) fCentBin = 3;
+     else fCentBin = -1;
+   }
+   
    Double_t radius = fJetsCont->GetJetRadius();
    TClonesArray *jets = fJetsCont->GetJets();
    if(!jets) {
@@ -74,6 +95,8 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
    Int_t nacc = 0;
    Int_t iexcl = 0;
    double maxMd = -999.;
+   double rhoSum = 0.;
+   double rhomSum = 0.;
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
      lwJet *jet = static_cast<lwJet*>(jets->At(i));
      if(!jet) continue;
@@ -87,7 +110,11 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      fh3PtEtaArea->Fill(pt,eta,area);
 
      if(eta<fMinEta || eta>fMaxEta) continue;
-     if(iexcl<fNExcl) { iexcl++; continue; }
+     if(iexcl<fNExcl && fabs(eta)<2.1 && pt>20.) {
+       if(fCentBin>=0 && fCentBin<fNcentBins) fh3PtEtaPhiExcl[fCentBin]->Fill(pt,eta,phi);
+       iexcl++;
+       continue;
+     }
      
      if(area>0.) {
        rhoVec[nacc] = pt/area;
@@ -95,6 +122,8 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
        if(md>maxMd) maxMd = md;
        rhomVec[nacc] = md/area;
        etaVec[nacc] = eta;
+       rhoSum += rhoVec[nacc];
+       rhomSum += rhomVec[nacc];
        ++nacc;
        if(fHiEvent) fh3RhoCentEtaJet->Fill(fHiEvent->GetCentrality(),pt/area,eta);
      }
@@ -105,8 +134,13 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
    Double_t rho = 0.;
    Double_t rhom = 0.;
    if(nacc>0) {
-     rho = TMath::Median(nacc, rhoVec);
-     rhom = TMath::Median(nacc, rhomVec);
+     if(fUseMean) {
+       rho = rhoSum / ((double)nacc);
+       rhom = rhomSum / ((double)nacc);
+     } else {
+       rho = TMath::Median(nacc, rhoVec);
+       rhom = TMath::Median(nacc, rhomVec);
+     }
    }
    fh2RhoCent->Fill(fHiEvent->GetCentrality(),rho);
    fh2RhoMCent->Fill(fHiEvent->GetCentrality(),rhom);
@@ -121,16 +155,27 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      Double_t etaMax = fMapEtaRanges.at(ieta+1)-radius;
 
      Int_t naccCur = 0;
+     double rhoCurSum = 0.;
+     double rhomCurSum = 0.;
      for(Int_t i = 0; i<nacc; i++) {
        if(etaVec[i]>=etaMin && etaVec[i]<etaMax) {
          rhoVecCur[naccCur] = rhoVec[i];
          rhomVecCur[naccCur] = rhomVec[i];
+         rhoCurSum += rhoVec[i];
+         rhomCurSum += rhomVec[i];
          ++naccCur;
        }//eta selection
      }//accepted jet loop
      if(naccCur>0) {
-       Double_t rhoCur = TMath::Median(naccCur, rhoVecCur);
-       Double_t rhomCur = TMath::Median(naccCur, rhomVecCur);
+       double rhoCur = 0.;
+       double rhomCur = 0.;
+       if(fUseMean) {
+         rhoCur = rhoCurSum / ((double)naccCur);
+         rhomCur = rhomCurSum / ((double)naccCur);
+       } else {
+         rhoCur = TMath::Median(naccCur, rhoVecCur);
+         rhomCur = TMath::Median(naccCur, rhomVecCur);
+       }
        fRhoMap->SetValue(ieta,rhoCur);
        fRhoMMap->SetValue(ieta,rhomCur);
        
@@ -150,6 +195,9 @@ void anaRhoProducer::CreateOutputObjects() {
     return;
   }
 
+  TString histTitle = "";
+  TString histName  = "";
+
   fh1NJets = new TH1F("fh1NJets","fh1NJets;N_{jets}",500,0,500);
   fOutput->Add(fh1NJets);
   
@@ -159,13 +207,13 @@ void anaRhoProducer::CreateOutputObjects() {
   fh3PtEtaArea = new TH3F("fh3PtEtaArea","fh3PtEtaArea;pt;eta;A",500,0,500,100,-5,5,100,0,1);
   fOutput->Add(fh3PtEtaArea);
 
-  fh2RhoCent = new TH2F("fh2RhoCent","fh2RhoCent;centrality;#rho",100,0,100,400,0,400);
+  fh2RhoCent = new TH2F("fh2RhoCent","fh2RhoCent;centrality;#rho",100,0,100,500,0,500);
   fOutput->Add(fh2RhoCent);
 
   fh2RhoMCent = new TH2F("fh2RhoMCent","fh2RhoMCent;centrality;#rho_{m}",100,0,100,500,0,5);
   fOutput->Add(fh2RhoMCent);
 
-  fh3RhoCentEtaJet = new TH3F("fh3RhoCentEtaJet","fh3RhoCentEtaJet;centrality;#rho_{jet};#eta_{jet}",100,0,100,400,0,400,100,-5.,5.);
+  fh3RhoCentEtaJet = new TH3F("fh3RhoCentEtaJet","fh3RhoCentEtaJet;centrality;#rho_{jet};#eta_{jet}",100,0,100,500,0,500,100,-5.,5.);
   fOutput->Add(fh3RhoCentEtaJet);
 
   Int_t fgkNCentBins = 100;
@@ -196,6 +244,13 @@ void anaRhoProducer::CreateOutputObjects() {
 
   fh3RhoMCentEtaBin = new TH3F("fh3RhoMCentEtaBin","fh3RhoMCentEtaBin;centrality;#rho;#eta",fgkNCentBins,binsCent,fgkNRhoMBins,binsRhoM,fgkNEtaBins,binsEta);
   fOutput->Add(fh3RhoMCentEtaBin);
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    histName = Form("fh3PtEtaPhiExcl_%d",i);
+    histTitle = Form("%s;#it{p}_{T};#eta;#varphi",histName.Data());
+    fh3PtEtaPhiExcl[i] = new TH3F(histName.Data(),histTitle.Data(),100.,0.,500.,100,-5,5,72,-TMath::Pi(),TMath::Pi());
+    fOutput->Add(fh3PtEtaPhiExcl[i]);
+  }
 
   delete [] binsCent;
   delete [] binsRho;

@@ -97,7 +97,7 @@ void anaHadronIsolation::Exec(Option_t * /*option*/)
    for (int i = 0; i < fPFParticles->GetEntriesFast(); i++) {
      pfParticle *pfProbe = static_cast<pfParticle*>(fPFParticles->At(i));
      if(!pfProbe) continue;
-     if(pfProbe->Pt()<fPtMinProbe || abs(pfProbe->Eta())>2. || pfProbe->GetId()!=1) continue;
+     if(pfProbe->Pt()<fPtMinProbe || fabs(pfProbe->Eta())>2. || pfProbe->GetId()!=1) continue;
 
      partInCone.clear();
      Double_t conePt = 0.;

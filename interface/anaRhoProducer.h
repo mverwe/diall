@@ -23,11 +23,14 @@ public:
    void SetRhoName(TString name)   { fRhoName  = name ; }
    void SetRhoMName(TString name)  { fRhoMName = name ; }
    void SetJetsName(TString name)  { fJetsName = name ; }
+   void SetUseMean(bool b)         { fUseMean  = b    ; }
+   
+   void SetNCentBins(Int_t n)          { fNcentBins    = n;  }
+
    void SetNExcl(Int_t n)          { fNExcl    = n    ; }
    void SetEtaRangeAll(Double_t min, Double_t max) {fMinEta = min; fMaxEta = max;}
    void SetEtaLimit(Int_t i, Double_t eta) {fMapEtaRanges[i]=eta;}
-   
-   
+      
  protected:
    Double_t          calcMd(const lwJet *jet);
 
@@ -40,11 +43,13 @@ public:
    TString           fJetsName;          //name of jet container
    lwJetContainer   *fJetsCont;          //!jet container
    //members
+   Int_t             fNcentBins;
    Int_t             fNExcl;             //exclude N leading jets
    Double_t          fMinEta;            //min eta
    Double_t          fMaxEta;            //max eta
    std::map<int,double> fMapEtaRanges;   //eta ranges
-    
+   bool              fUseMean;           //use mean instead of median
+   
    TH1F             *fh1NJets;           //!number of jets in event
    TH3F             *fh3PtEtaPhi;        //!jet pt vs eta vs phi
    TH3F             *fh3PtEtaArea;       //!jet pt vs eta vs area
@@ -53,7 +58,8 @@ public:
    TH3F             *fh3RhoCentEtaJet;   //!rho vs cent vs eta per jet
    TH3F             *fh3RhoCentEtaBin;   //!rho vs cent vs eta bin
    TH3F             *fh3RhoMCentEtaBin;  //!rho vs cent vs eta bin
+   TH3F            **fh3PtEtaPhiExcl;    //!pt,eta,phi of jet excluded from rho calculation
    
-   ClassDef(anaRhoProducer,1)
+   ClassDef(anaRhoProducer,2)
 };
 #endif

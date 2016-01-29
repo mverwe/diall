@@ -52,7 +52,12 @@ public:
    TH3F      **fh3PtTrueEtaDeltaPtRel;//!
    TH3F      **fh3PtTrueEtaScalePt;   //!
    TH3F      **fh3PtTruePtSubEta;     //!
-   
-   ClassDef(anaJetEnergyScale,1)
+  
+   TH3F      **fh3PtTrueEtaDeltaM;    //!
+   TH3F      **fh3PtTrueEtaDeltaMRel; //!
+   TH3F      **fh3PtTrueEtaScaleM;    //!
+   TH3F      **fh3PtTrueMTrueScaleM;  //!
+
+   ClassDef(anaJetEnergyScale,2)
 };
 #endif

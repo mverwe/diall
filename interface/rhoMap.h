@@ -18,6 +18,7 @@ class rhoMap : public TNamed {
   rhoMap(const char *name);
   virtual ~rhoMap() {;}
 
+  Int_t    GetNEtaBins()      const {Int_t neta = (Int_t)fMapToVal.size()-1; return neta;} 
   Int_t    GetIndex(double e) const {return fMapToIndex(e);}
   Double_t GetValue(double e) const;// {return fMapToVal.at(fMapToIndex(e));}
   Double_t GetValue(int index) const;

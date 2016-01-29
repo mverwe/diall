@@ -2,6 +2,7 @@
 #include "UserCode/diall/interface/ForestElectrons.h"
 #include "UserCode/diall/interface/ForestMuons.h"
 #include "UserCode/diall/interface/ForestPFs.h"
+#include "UserCode/diall/interface/ForestPFsVector.h"
 #include "UserCode/diall/interface/ForestGenParticles.h"
 #include "UserCode/diall/interface/ForestGenParticlesOld.h"
 #include "UserCode/diall/interface/ForestJets.h"
@@ -22,6 +23,7 @@
 #include "UserCode/diall/interface/particleBase.h"
 #include "UserCode/diall/interface/pfParticle.h"
 #include "UserCode/diall/interface/pfParticleProducer.h"
+#include "UserCode/diall/interface/pfParticleProducerVector.h"
 #include "UserCode/diall/interface/rhoMap.h"
 #include "UserCode/diall/interface/trackProducer.h"
 #include "UserCode/diall/interface/triggerMap.h"
@@ -80,6 +82,7 @@
 #pragma link C++ class particleBase;
 #pragma link C++ class pfParticle;
 #pragma link C++ class pfParticleProducer;
+#pragma link C++ class pfParticleProducerVector;
 #pragma link C++ class rhoMap;
 #pragma link C++ class trackProducer;
 #pragma link C++ class triggerMap;
