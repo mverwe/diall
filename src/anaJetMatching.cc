@@ -78,6 +78,15 @@ void anaJetMatching::MatchJetsGeo() {
      return;
   }
 
+  for (int i = 0; i < nJets1; i++) {
+    lwJet *jet1 = fJetsContBase->GetJet(i);
+    jet1->SetMatchId1(-1);
+  }
+  for (int i = 0; i < nJets2; i++) {
+    lwJet *jet2 = fJetsContTag->GetJet(i);
+    jet2->SetMatchId1(-1);
+  }
+
   TArrayI faMatchIndex1;
   faMatchIndex1.Set(nJets2+1);
   faMatchIndex1.Reset(-1);
@@ -92,7 +101,8 @@ void anaJetMatching::MatchJetsGeo() {
   iFlag.Reset(0);
 
   Double_t maxDist = 0.4; //limit CPU time
-  if(fMatchingType==1) maxDist = 0.1;
+  if(fMatchingType==1) maxDist = 0.3;
+  if(fMatchingType==2) maxDist = 0.2;
   
   //Find the clostest tag jet to base jet
   Double_t dist = maxDist;
@@ -100,13 +110,14 @@ void anaJetMatching::MatchJetsGeo() {
     lwJet *jet1 = fJetsContBase->GetJet(i);
     if(!jet1) continue;
     if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
-
+    dist = maxDist;
     for (int j = 0; j < nJets2; j++) {
       lwJet *jet2 = fJetsContTag->GetJet(j);
       if(!jet2) continue;
       if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
 
       Double_t dR = jet1->DeltaR(jet2);
+      if(fMatchingType==2) dR = dR/jet2->Pt();
       if(dR<dist && dR<maxDist){
 	faMatchIndex2[i]=j;
 	dist = dR;
@@ -117,20 +128,21 @@ void anaJetMatching::MatchJetsGeo() {
   }//jet1 loop
   
 
-  if(fMatchingType==0) {
+  if(fMatchingType==0 || fMatchingType==2) {
     //other way around
     dist = maxDist;
     for (int j = 0; j < nJets2; j++) {
       lwJet *jet2 = fJetsContTag->GetJet(j);
       if(!jet2) continue;
       if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
-
+      dist = maxDist;
       for (int i = 0; i < nJets1; i++) {
         lwJet *jet1 = fJetsContBase->GetJet(i);
         if(!jet1) continue;
         if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
 
         Double_t dR = jet1->DeltaR(jet2);
+        if(fMatchingType==2) dR = dR/jet2->Pt();
         if(dR<dist && dR<maxDist){
           faMatchIndex1[j]=i;
           dist = dR;
@@ -145,7 +157,7 @@ void anaJetMatching::MatchJetsGeo() {
       lwJet *jet1 = fJetsContBase->GetJet(i);
       if(!jet1) continue;
       if(fabs(jet1->Pt())<1e-6) continue; //remove ghosts
-
+      //bool match = false;
       for (int j = 0; j < nJets2; j++) {
         lwJet *jet2 = fJetsContTag->GetJet(j);
         if(!jet2) continue;
@@ -155,7 +167,7 @@ void anaJetMatching::MatchJetsGeo() {
         if(iFlag[i*nJets2+j]==3) {
           jet1->SetMatchId1(j);
           jet2->SetMatchId1(i);
-
+          //Printf("%f matched to %f",jet1->Pt(),jet2->Pt());
           //Fill histograms
           if(fCentBin>-1 && fCentBin<fNcentBins) {
             Double_t dR = jet1->DeltaR(jet2);
@@ -163,8 +175,10 @@ void anaJetMatching::MatchJetsGeo() {
             fh2PtJet1VsPtJet2[fCentBin]->Fill(jet1->Pt(),jet2->Pt());
             if(jet2->Pt()>0.) fh2PtJet2VsRelPt[fCentBin]->Fill(jet2->Pt(),(jet1->Pt()-jet2->Pt())/jet2->Pt());
           }
+        //match = true;
         }
       }
+    //if(!match) Printf("%f not matched",jet1->Pt());
     }
   }
   else if(fMatchingType==1) {
