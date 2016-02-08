@@ -11,6 +11,7 @@
 
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
+#include <UserCode/diall/interface/rhoMap.h>
 
 class anaJetEnergyScale : public anaBaseTask {
    
@@ -25,7 +26,10 @@ public:
    void SetGenJetsName(TString name)   { fJetsName = name ;  }
    void SetRecJetsName(TString name)   { fJets2Name = name ; }
    void SetUseForestMatching(bool b)   { fUseForestMatching = b; }
-      
+   void SetRhoMapName(TString n)       { fRhoMapName    = n ; }
+   void SetMaxDistance(double dr)      { fMaxDist       = dr; }
+   void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
+ 
  protected:
    Int_t             fNcentBins;
    TString           fJetsName;       //name of jet container
@@ -34,7 +38,13 @@ public:
    lwJetContainer   *fJets2Cont;      //!jet container
 
    bool              fUseForestMatching; //use matched ref jet from forest
-   
+   bool              fUseRawPt;          //use raw pt
+
+   TString           fRhoMapName;             //rho map name
+   rhoMap           *fRhoMap;                 //!rho map
+
+   double            fMaxDist;                //max distance between matched jets  
+ 
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;
    TH1F      *fhNPV;
@@ -58,6 +68,6 @@ public:
    TH3F      **fh3PtTrueEtaScaleM;    //!
    TH3F      **fh3PtTrueMTrueScaleM;  //!
 
-   ClassDef(anaJetEnergyScale,2)
+   ClassDef(anaJetEnergyScale,3)
 };
 #endif
