@@ -112,13 +112,15 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      fh3PtEtaPhi->Fill(pt,eta,phi);
      fh3PtEtaArea->Fill(pt,eta,area);
 
-     if(eta<fMinEta || eta>fMaxEta) continue;
+     //if(eta<fMinEta || eta>fMaxEta) continue;
      if(iexcl<fNExcl && eta>fMinEtaExcl && eta<fMaxEtaExcl && pt>fMinPtExcl) {
        if(fCentBin>=0 && fCentBin<fNcentBins) fh3PtEtaPhiExcl[fCentBin]->Fill(pt,eta,phi);
        iexcl++;
        continue;
      }
-     
+   
+     if(eta<fMinEta || eta>fMaxEta) continue;
+  
      if(area>0.) {
        rhoVec[nacc] = pt/area;
        Double_t md = calcMd(jet);

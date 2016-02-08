@@ -33,10 +33,10 @@ bool doPuppi         = false;
 bool doJetFinding    = true;
 bool useMetric2      = false;
 bool storeTree       = false;
-bool doCSJets        = false;//true;
-bool doJECCS         = false;//true;
+bool doCSJets        = true;
+bool doJECCS         = true;
 bool doZJetResponse  = false;
-bool doRhoVariation  = true;
+bool doRhoVariation  = false;
 double alphaCS       = 1.; 
 
 TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
@@ -254,7 +254,9 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProd->SetJetsName("JetsKTR020");
     rhoProd->SetHiEvtName("hiEventContainer");
     rhoProd->SetNExcl(2);
-    rhoProd->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProd->SetMinPtExcl(0.);
+    rhoProd->SetEtaRangeExcl(-10.,10.);
+    rhoProd->SetEtaRangeAll(-5.,5.);
     rhoProd->SetEtaLimit(1,-5.);//bin,eta
     rhoProd->SetEtaLimit(2,-3.);
     rhoProd->SetEtaLimit(3,-2.1);
