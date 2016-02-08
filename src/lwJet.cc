@@ -18,6 +18,7 @@ particleBase(),
   fRawM(-1),
   fRefPt(-1),
   fRefEta(-999),
+  fRefPhi(-999),
   fRefM(-1),
   fRefDr(-1),
   fSube(-1),
@@ -55,6 +56,7 @@ lwJet::lwJet(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id, Int_
   fRawM(-1),
   fRefPt(-1),
   fRefEta(-999),
+  fRefPhi(-999),
   fRefM(-1),
   fRefDr(-1),
   fSube(-1),
@@ -92,6 +94,7 @@ lwJet::lwJet(const lwJet &obj) :
   fRawM(obj.fRawM),
   fRefPt(obj.fRefPt),
   fRefEta(obj.fRefEta),
+  fRefPhi(obj.fRefPhi),
   fRefM(obj.fRefM),
   fRefDr(obj.fRefDr),
   fSube(obj.fSube),
@@ -133,6 +136,7 @@ lwJet &lwJet::operator=(const lwJet &other)
     fRawM           = other.fRawM;
     fRefPt          = other.fRefPt;
     fRefEta         = other.fRefEta;
+    fRefPhi         = other.fRefPhi;
     fRefM           = other.fRefM;
     fRefDr          = other.fRefDr;
     fSube           = other.fSube;

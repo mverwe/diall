@@ -66,6 +66,8 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("refpt", &fForestJets.refpt, &fForestJets.b_refpt);}
     if (fChain->GetBranch("refeta"))
       fChain->SetBranchAddress("refeta", &fForestJets.refeta, &fForestJets.b_refeta);
+    if (fChain->GetBranch("refphi"))
+      fChain->SetBranchAddress("refphi", &fForestJets.refphi, &fForestJets.b_refphi);
     if (fChain->GetBranch("refm"))
       fChain->SetBranchAddress("refm", &fForestJets.refm, &fForestJets.b_refm);
     if (fChain->GetBranch("refdrjt"))
@@ -205,6 +207,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetRawPt(fForestJets.rawpt[i]);
     jet->SetRefPt(fForestJets.refpt[i]);
     jet->SetRefEta(fForestJets.refeta[i]);
+    jet->SetRefPhi(fForestJets.refphi[i]);
     jet->SetRefM(fForestJets.refm[i]);
     jet->SetRefDr(fForestJets.refdrjt[i]);
     jet->SetCsvSimpleDiscr(fForestJets.discr_csvSimple[i]);
@@ -229,10 +232,12 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
       Int_t genJetCount = 0;
       for(Int_t i = 0; i<fForestJets.ngen; i++) {
         //if(fForestJets.genmatchindex[i]<0) continue;
+        if(fForestJets.genpt[i]<10.) continue;
         lwJet *genjet = new lwJet(fForestJets.genpt[i],
                                   fForestJets.geneta[i],
                                   fForestJets.genphi[i],
                                   fForestJets.genm[i]);
+        genjet->SetRefPt(fForestJets.jtpt[fForestJets.genmatchindex[i]]);
         flwGenJetContainer->AddJet(genjet,genJetCount);
         ++genJetCount;
       }

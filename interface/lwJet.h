@@ -24,6 +24,7 @@ class lwJet : public particleBase {
   float       GetRawM()                 const { return fRawM           ; }
   float       GetRefPt()                const { return fRefPt          ; }
   float       GetRefEta()               const { return fRefEta         ; }
+  float       GetRefPhi()               const { return fRefPhi         ; }
   float       GetRefM()                 const { return fRefM           ; }
   float       GetRefDr()                const { return fRefDr          ; }
   int         GetSubEvent()             const { return fSube           ; }
@@ -59,9 +60,10 @@ class lwJet : public particleBase {
   void        SetRawM(Double_t m)          { fRawM = m; }
   void        SetRefPt(Double_t pt)        { fRefPt = pt; }
   void        SetRefEta(Double_t eta)      { fRefEta = eta; }
+  void        SetRefPhi(Double_t phi)      { fRefPhi = phi; }
   void        SetRefM(Double_t m)          { fRefM = m; }
   void        SetRefDr(Double_t dr)        { fRefDr = dr; }
-  void        SetSubEvent(Int_t su)          { fSube  = su; }
+  void        SetSubEvent(Int_t su)        { fSube  = su; }
 
   void        AddConstituent(Int_t i )     { fConstIds.push_back(i); }
   void        SetRefToParton(Int_t i)      { fRefParton = i;}
@@ -86,6 +88,7 @@ class lwJet : public particleBase {
   float             fRawM;          //raw mass (no jec)
   float             fRefPt;         //matched gen-level jet pt
   float             fRefEta;        //matched gen-level jet eta
+  float             fRefPhi;        //matched gen-level jet phi
   float             fRefM;          //matched gen-level jet mass
   float             fRefDr;         //distance between reco and gen jet
   int               fSube;          //sub-event id (0=hard process)
