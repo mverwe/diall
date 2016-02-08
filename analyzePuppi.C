@@ -1,8 +1,8 @@
 #include "UserCode/diall/interface/genParticleProducer.h"
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/lwMuonProducer.h"
-#include "UserCode/diall/interface/pfParticleProducer.h"
-//#include "UserCode/diall/interface/pfParticleProducerVector.h"
+//#include "UserCode/diall/interface/pfParticleProducer.h"
+#include "UserCode/diall/interface/pfParticleProducerVector.h"
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
@@ -29,13 +29,13 @@
 
 using namespace std;
 
-bool doPuppi         = false;
+bool doPuppi         = true;//false;
 bool doJetFinding    = true;
 bool useMetric2      = false;
 bool storeTree       = false;
 bool doCSJets        = true;
 bool doJECCS         = true;
-bool doZJetResponse  = true;
+bool doZJetResponse  = false;
 double alphaCS       = 1.; 
 
 TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
@@ -127,17 +127,17 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
+  /*
   pfParticleProducer *p_pf = new pfParticleProducer("pfPartProd");
   p_pf->SetInput(chain);
   p_pf->SetpfParticlesName("pfParticles");
   p_pf->SetEventObjects(fEventObjects);
+  */
 
-  /*
   pfParticleProducerVector *p_pf = new pfParticleProducerVector("pfPartProd");
   p_pf->SetInput(chain);
   p_pf->SetpfParticlesName("pfParticles");
   p_pf->SetEventObjects(fEventObjects);
-  */
 
   genParticleProducer *p_gen = new genParticleProducer("genParticleProd");
   p_gen->SetInput(chain);
@@ -236,7 +236,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
 
   if(doCSJets) {
     //kt jet finder
-    LWJetProducer *lwjkt = new LWJetProducer("LWJetProducerKTR020","LWJetProducerKTR020");
+    LWJetProducer *lwjkt = new LWJetProducer("LWJetProducerKT","LWJetProducerKT");
     lwjkt->ConnectEventObject(fEventObjects);
     lwjkt->SetJetType(LWJetProducer::kKT);
     lwjkt->SetRadius(0.2);
@@ -261,7 +261,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProd->SetEtaLimit(6, 2.1);
     rhoProd->SetEtaLimit(7, 3.);
     rhoProd->SetEtaLimit(8, 5.);
-
+    rhoProd->SetUseMean(false);//true);
     handler->Add(rhoProd);
 
     //anti-kt jet finder on reconstructed pf candidates
@@ -294,20 +294,57 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     matchCS->SetJetsNameTag("akt4Gen");//GenJetsAKTR040");
     handler->Add(matchCS);
 
-    anaJetEnergyScale *anajesCS = new anaJetEnergyScale("anajesCS","anajesCS");
-    anajesCS->ConnectEventObject(fEventObjects);
-    anajesCS->SetHiEvtName("hiEventContainer");
-    anajesCS->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
-    anajesCS->SetRecJetsName("JetsAKTR040CS");
-    anajesCS->SetNCentBins(4);
-    handler->Add(anajesCS);
+    anaJetEnergyScale *anajesCSMaxDist04 = new anaJetEnergyScale("anajesCSMaxDist04","anajesCSMaxDist04");
+    anajesCSMaxDist04->ConnectEventObject(fEventObjects);
+    anajesCSMaxDist04->SetHiEvtName("hiEventContainer");
+    anajesCSMaxDist04->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesCSMaxDist04->SetRecJetsName("JetsAKTR040CS");
+    anajesCSMaxDist04->SetNCentBins(4);
+    anajesCSMaxDist04->SetMaxDistance(0.4);
+    handler->Add(anajesCSMaxDist04);
 
+    anaJetEnergyScale *anajesCSMaxDist03 = new anaJetEnergyScale("anajesCSMaxDist03","anajesCSMaxDist03");
+    anajesCSMaxDist03->ConnectEventObject(fEventObjects);
+    anajesCSMaxDist03->SetHiEvtName("hiEventContainer");
+    anajesCSMaxDist03->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesCSMaxDist03->SetRecJetsName("JetsAKTR040CS");
+    anajesCSMaxDist03->SetNCentBins(4);
+    anajesCSMaxDist03->SetMaxDistance(0.3);
+    handler->Add(anajesCSMaxDist03);
+
+    anaJetEnergyScale *anajesCSMaxDist02 = new anaJetEnergyScale("anajesCSMaxDist02","anajesCSMaxDist02");
+    anajesCSMaxDist02->ConnectEventObject(fEventObjects);
+    anajesCSMaxDist02->SetHiEvtName("hiEventContainer");
+    anajesCSMaxDist02->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesCSMaxDist02->SetRecJetsName("JetsAKTR040CS");
+    anajesCSMaxDist02->SetNCentBins(4);
+    anajesCSMaxDist02->SetMaxDistance(0.2);
+    handler->Add(anajesCSMaxDist02);
+
+    anaJetEnergyScale *anajesCSMaxDist01 = new anaJetEnergyScale("anajesCSMaxDist01","anajesCSMaxDist01");
+    anajesCSMaxDist01->ConnectEventObject(fEventObjects);
+    anajesCSMaxDist01->SetHiEvtName("hiEventContainer");
+    anajesCSMaxDist01->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesCSMaxDist01->SetRecJetsName("JetsAKTR040CS");
+    anajesCSMaxDist01->SetNCentBins(4);
+    anajesCSMaxDist01->SetMaxDistance(0.1);
+    handler->Add(anajesCSMaxDist01);
+
+    anaJetMatching *matchRaw = new anaJetMatching("jetMatchingRaw","jetMatchingRaw");
+    matchRaw->ConnectEventObject(fEventObjects);
+    matchRaw->SetHiEvtName("hiEventContainer");
+    matchRaw->SetJetsNameBase("JetsAKTR040");
+    matchRaw->SetJetsNameTag("akt4Gen");
+    handler->Add(matchRaw);
+    
     anaJetEnergyScale *anajesRaw = new anaJetEnergyScale("anajesRaw","anajesRaw");
     anajesRaw->ConnectEventObject(fEventObjects);
     anajesRaw->SetHiEvtName("hiEventContainer");
-    anajesRaw->SetGenJetsName("akt4Gen");//GenJetsAKTR040");
+    anajesRaw->SetGenJetsName("akt4Gen");
     anajesRaw->SetRecJetsName("JetsAKTR040");
     anajesRaw->SetNCentBins(4);
+    anajesRaw->SetRhoMapName("rhoMap");
+    anajesRaw->SetMaxDistance(0.4);
     handler->Add(anajesRaw);
 
     if(doZJetResponse) {
