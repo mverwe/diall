@@ -14,6 +14,9 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
   fJetsCont(),
   fNcentBins(4),
   fNExcl(2),
+  fMinPtExcl(20.),
+  fMinEtaExcl(-2.1),
+  fMaxEtaExcl(2.1),
   fMinEta(-5.),
   fMaxEta(5.),
   fMapEtaRanges(),
@@ -110,7 +113,7 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
      fh3PtEtaArea->Fill(pt,eta,area);
 
      if(eta<fMinEta || eta>fMaxEta) continue;
-     if(iexcl<fNExcl && fabs(eta)<2.1 && pt>20.) {
+     if(iexcl<fNExcl && eta>fMinEtaExcl && eta<fMaxEtaExcl && pt>fMinPtExcl) {
        if(fCentBin>=0 && fCentBin<fNcentBins) fh3PtEtaPhiExcl[fCentBin]->Fill(pt,eta,phi);
        iexcl++;
        continue;

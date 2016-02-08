@@ -28,6 +28,8 @@ public:
    void SetNCentBins(Int_t n)          { fNcentBins    = n;  }
 
    void SetNExcl(Int_t n)          { fNExcl    = n    ; }
+   void SetMinPtExcl(double pt)    { fMinPtExcl = pt  ; }
+   void SetEtaRangeExcl(Double_t min, Double_t max) {fMinEtaExcl = min; fMaxEtaExcl = max;}
    void SetEtaRangeAll(Double_t min, Double_t max) {fMinEta = min; fMaxEta = max;}
    void SetEtaLimit(Int_t i, Double_t eta) {fMapEtaRanges[i]=eta;}
       
@@ -45,6 +47,9 @@ public:
    //members
    Int_t             fNcentBins;
    Int_t             fNExcl;             //exclude N leading jets
+   double            fMinPtExcl;         //min pt of excluded jets
+   Double_t          fMinEtaExcl;        //min eta excluded jets
+   Double_t          fMaxEtaExcl;        //max eta excluded jets
    Double_t          fMinEta;            //min eta
    Double_t          fMaxEta;            //max eta
    std::map<int,double> fMapEtaRanges;   //eta ranges
@@ -60,6 +65,6 @@ public:
    TH3F             *fh3RhoMCentEtaBin;  //!rho vs cent vs eta bin
    TH3F            **fh3PtEtaPhiExcl;    //!pt,eta,phi of jet excluded from rho calculation
    
-   ClassDef(anaRhoProducer,2)
+   ClassDef(anaRhoProducer,3)
 };
 #endif

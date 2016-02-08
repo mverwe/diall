@@ -29,13 +29,14 @@
 
 using namespace std;
 
-bool doPuppi         = true;//false;
+bool doPuppi         = false;
 bool doJetFinding    = true;
 bool useMetric2      = false;
 bool storeTree       = false;
-bool doCSJets        = true;
-bool doJECCS         = true;
+bool doCSJets        = false;//true;
+bool doJECCS         = false;//true;
 bool doZJetResponse  = false;
+bool doRhoVariation  = true;
 double alphaCS       = 1.; 
 
 TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
@@ -193,7 +194,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   lwjaktGen->SetPtMinConst(0.);
   lwjaktGen->SetParticlesName("genParticles");
   lwjaktGen->SetJetContName("GenJetsAKTR040");
-  if(doJetFinding) handler->Add(lwjaktGen);
+  //if(doJetFinding) handler->Add(lwjaktGen);
  
   //Initialization of all analysis modules
   anaPuppiParticles *pupAna = new anaPuppiParticles("pupAna","pupAna");
@@ -224,7 +225,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   matchGen->SetHiEvtName("hiEventContainer");
   matchGen->SetJetsNameBase("GenJetsAKTR040"); //gen jets from gen particles
   matchGen->SetJetsNameTag("akt4Gen");         //forest gen jets
-  if(doJetFinding) handler->Add(matchGen);
+  //if(doJetFinding) handler->Add(matchGen);
  
   anaJetEnergyScale *anajesgen = new anaJetEnergyScale("anajesgen","anajesgen");
   anajesgen->ConnectEventObject(fEventObjects);
@@ -232,9 +233,9 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   anajesgen->SetGenJetsName("akt4Gen");
   anajesgen->SetRecJetsName("GenJetsAKTR040");
   anajesgen->SetNCentBins(4);
-  if(doJetFinding) handler->Add(anajesgen);
+  //if(doJetFinding) handler->Add(anajesgen);
 
-  if(doCSJets) {
+  if(doCSJets || doRhoVariation) {
     //kt jet finder
     LWJetProducer *lwjkt = new LWJetProducer("LWJetProducerKT","LWJetProducerKT");
     lwjkt->ConnectEventObject(fEventObjects);
@@ -246,7 +247,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     lwjkt->SetJetContName("JetsKTR020");
     lwjkt->SetDoConstituentSubtraction(kFALSE);
     handler->Add(lwjkt);
-
+  }
+  if(doCSJets) {
     anaRhoProducer *rhoProd = new anaRhoProducer("anaRhoProducerKTR020","anaRhoProducerKTR020");
     rhoProd->ConnectEventObject(fEventObjects);
     rhoProd->SetJetsName("JetsKTR020");
@@ -367,7 +369,153 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
       handler->Add(ZResp);
     }
   }
- 
+
+  if(doRhoVariation) {
+    Printf("doRhoVariation");
+    if(!doCSJets) {
+      //anti-kt jet finder on reconstructed pf candidates
+      LWJetProducer *lwjaktRaw = new LWJetProducer("LWRawJetProducerAKTR040","LWRawJetProducerAKTR040");
+      lwjaktRaw->ConnectEventObject(fEventObjects);
+      lwjaktRaw->SetJetType(LWJetProducer::kAKT);
+      lwjaktRaw->SetRadius(0.4);
+      lwjaktRaw->SetGhostArea(0.005);
+      lwjaktRaw->SetPtMinConst(0.);
+      lwjaktRaw->SetParticlesName("pfParticles");
+      lwjaktRaw->SetJetContName("JetsAKTR040");
+      lwjaktRaw->SetDoConstituentSubtraction(kFALSE);
+      handler->Add(lwjaktRaw);
+     
+      anaJetMatching *matchRaw = new anaJetMatching("jetMatchingRaw","jetMatchingRaw");
+      matchRaw->ConnectEventObject(fEventObjects);
+      matchRaw->SetHiEvtName("hiEventContainer");
+      matchRaw->SetJetsNameBase("JetsAKTR040");
+      matchRaw->SetJetsNameTag("akt4Gen");
+      handler->Add(matchRaw);
+    }
+      
+    anaRhoProducer *rhoProdEta2 = new anaRhoProducer("anaRhoProducerKTR020Eta2","anaRhoProducerKTR020Eta2");
+    rhoProdEta2->ConnectEventObject(fEventObjects);
+    rhoProdEta2->SetJetsName("JetsKTR020");
+    rhoProdEta2->SetHiEvtName("hiEventContainer");
+    rhoProdEta2->SetNExcl(2);
+    rhoProdEta2->SetMinPtExcl(20.);
+    rhoProdEta2->SetEtaRangeExcl(-2.1,2.1);
+    rhoProdEta2->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProdEta2->SetEtaLimit(1,-5.);//bin,eta
+    rhoProdEta2->SetEtaLimit(2,-3.);
+    rhoProdEta2->SetEtaLimit(3,-2.1);
+    rhoProdEta2->SetEtaLimit(4,-1.3);
+    rhoProdEta2->SetEtaLimit(5, 1.3);
+    rhoProdEta2->SetEtaLimit(6, 2.1);
+    rhoProdEta2->SetEtaLimit(7, 3.);
+    rhoProdEta2->SetEtaLimit(8, 5.);
+    rhoProdEta2->SetUseMean(false);//true);
+    rhoProdEta2->SetRhoName("rhoMapEta2");
+    handler->Add(rhoProdEta2);
+    
+    anaJetEnergyScale *anajesRawEta2 = new anaJetEnergyScale("anajesRawEta2","anajesRawEta2");
+    anajesRawEta2->ConnectEventObject(fEventObjects);
+    anajesRawEta2->SetHiEvtName("hiEventContainer");
+    anajesRawEta2->SetGenJetsName("akt4Gen");
+    anajesRawEta2->SetRecJetsName("JetsAKTR040");
+    anajesRawEta2->SetNCentBins(4);
+    anajesRawEta2->SetRhoMapName("rhoMapEta2");
+    anajesRawEta2->SetMaxDistance(0.4);
+    handler->Add(anajesRawEta2);
+
+    anaRhoProducer *rhoProdEta13 = new anaRhoProducer("anaRhoProducerKTR020Eta13","anaRhoProducerKTR020Eta13");
+    rhoProdEta13->ConnectEventObject(fEventObjects);
+    rhoProdEta13->SetJetsName("JetsKTR020");
+    rhoProdEta13->SetHiEvtName("hiEventContainer");
+    rhoProdEta13->SetNExcl(2);
+    rhoProdEta13->SetMinPtExcl(20.);
+    rhoProdEta13->SetEtaRangeExcl(-1.3,1.3);
+    rhoProdEta13->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProdEta13->SetEtaLimit(1,-5.);//bin,eta
+    rhoProdEta13->SetEtaLimit(2,-3.);
+    rhoProdEta13->SetEtaLimit(3,-2.1);
+    rhoProdEta13->SetEtaLimit(4,-1.3);
+    rhoProdEta13->SetEtaLimit(5, 1.3);
+    rhoProdEta13->SetEtaLimit(6, 2.1);
+    rhoProdEta13->SetEtaLimit(7, 3.);
+    rhoProdEta13->SetEtaLimit(8, 5.);
+    rhoProdEta13->SetUseMean(false);//true);
+    rhoProdEta13->SetRhoName("rhoMapEta13");
+    handler->Add(rhoProdEta13);
+    
+    anaJetEnergyScale *anajesRawEta13 = new anaJetEnergyScale("anajesRawEta13","anajesRawEta13");
+    anajesRawEta13->ConnectEventObject(fEventObjects);
+    anajesRawEta13->SetHiEvtName("hiEventContainer");
+    anajesRawEta13->SetGenJetsName("akt4Gen");
+    anajesRawEta13->SetRecJetsName("JetsAKTR040");
+    anajesRawEta13->SetNCentBins(4);
+    anajesRawEta13->SetRhoMapName("rhoMapEta13");
+    anajesRawEta13->SetMaxDistance(0.4);
+    handler->Add(anajesRawEta13);
+
+    anaRhoProducer *rhoProdEta3Ex5 = new anaRhoProducer("anaRhoProducerKTR020Eta3Ex5","anaRhoProducerKTR020Eta3Ex5");
+    rhoProdEta3Ex5->ConnectEventObject(fEventObjects);
+    rhoProdEta3Ex5->SetJetsName("JetsKTR020");
+    rhoProdEta3Ex5->SetHiEvtName("hiEventContainer");
+    rhoProdEta3Ex5->SetNExcl(5);
+    rhoProdEta3Ex5->SetMinPtExcl(20.);
+    rhoProdEta3Ex5->SetEtaRangeExcl(-3.,3.);
+    rhoProdEta3Ex5->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProdEta3Ex5->SetEtaLimit(1,-5.);//bin,eta
+    rhoProdEta3Ex5->SetEtaLimit(2,-3.);
+    rhoProdEta3Ex5->SetEtaLimit(3,-2.1);
+    rhoProdEta3Ex5->SetEtaLimit(4,-1.3);
+    rhoProdEta3Ex5->SetEtaLimit(5, 1.3);
+    rhoProdEta3Ex5->SetEtaLimit(6, 2.1);
+    rhoProdEta3Ex5->SetEtaLimit(7, 3.);
+    rhoProdEta3Ex5->SetEtaLimit(8, 5.);
+    rhoProdEta3Ex5->SetUseMean(false);//true);
+    rhoProdEta3Ex5->SetRhoName("rhoMapEta3Ex5");
+    handler->Add(rhoProdEta3Ex5);
+    
+    anaJetEnergyScale *anajesRawEta3Ex5 = new anaJetEnergyScale("anajesRawEta3Ex5","anajesRawEta3Ex5");
+    anajesRawEta3Ex5->ConnectEventObject(fEventObjects);
+    anajesRawEta3Ex5->SetHiEvtName("hiEventContainer");
+    anajesRawEta3Ex5->SetGenJetsName("akt4Gen");
+    anajesRawEta3Ex5->SetRecJetsName("JetsAKTR040");
+    anajesRawEta3Ex5->SetNCentBins(4);
+    anajesRawEta3Ex5->SetRhoMapName("rhoMapEta3Ex5");
+    anajesRawEta3Ex5->SetMaxDistance(0.4);
+    handler->Add(anajesRawEta3Ex5);
+
+    
+    anaRhoProducer *rhoProdEta10Ex3 = new anaRhoProducer("anaRhoProducerKTR020Eta10Ex3","anaRhoProducerKTR020Eta10Ex3");
+    rhoProdEta10Ex3->ConnectEventObject(fEventObjects);
+    rhoProdEta10Ex3->SetJetsName("JetsKTR020");
+    rhoProdEta10Ex3->SetHiEvtName("hiEventContainer");
+    rhoProdEta10Ex3->SetNExcl(3);
+    rhoProdEta10Ex3->SetMinPtExcl(20.);
+    rhoProdEta10Ex3->SetEtaRangeExcl(-1.,1.);
+    rhoProdEta10Ex3->SetEtaRangeAll(-5.+0.2,5.-0.2);
+    rhoProdEta10Ex3->SetEtaLimit(1,-5.);//bin,eta
+    rhoProdEta10Ex3->SetEtaLimit(2,-3.);
+    rhoProdEta10Ex3->SetEtaLimit(3,-2.1);
+    rhoProdEta10Ex3->SetEtaLimit(4,-1.3);
+    rhoProdEta10Ex3->SetEtaLimit(5, 1.3);
+    rhoProdEta10Ex3->SetEtaLimit(6, 2.1);
+    rhoProdEta10Ex3->SetEtaLimit(7, 3.);
+    rhoProdEta10Ex3->SetEtaLimit(8, 5.);
+    rhoProdEta10Ex3->SetUseMean(false);//true);
+    rhoProdEta10Ex3->SetRhoName("rhoMapEta10Ex3");
+    handler->Add(rhoProdEta10Ex3);
+    
+    anaJetEnergyScale *anajesRawEta10Ex3 = new anaJetEnergyScale("anajesRawEta10Ex3","anajesRawEta10Ex3");
+    anajesRawEta10Ex3->ConnectEventObject(fEventObjects);
+    anajesRawEta10Ex3->SetHiEvtName("hiEventContainer");
+    anajesRawEta10Ex3->SetGenJetsName("akt4Gen");
+    anajesRawEta10Ex3->SetRecJetsName("JetsAKTR040");
+    anajesRawEta10Ex3->SetNCentBins(4);
+    anajesRawEta10Ex3->SetRhoMapName("rhoMapEta10Ex3");
+    anajesRawEta10Ex3->SetMaxDistance(0.4);
+    handler->Add(anajesRawEta10Ex3);
+
+  }
+
   //---------------------------------------------------------------
   //Event loop
   //---------------------------------------------------------------
