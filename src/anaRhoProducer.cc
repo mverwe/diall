@@ -213,7 +213,7 @@ void anaRhoProducer::CreateOutputObjects() {
   fh2RhoMCent = new TH2F("fh2RhoMCent","fh2RhoMCent;centrality;#rho_{m}",100,0,100,500,0,5);
   fOutput->Add(fh2RhoMCent);
 
-  fh3RhoCentEtaJet = new TH3F("fh3RhoCentEtaJet","fh3RhoCentEtaJet;centrality;#rho_{jet};#eta_{jet}",100,0,100,500,0,500,100,-5.,5.);
+  fh3RhoCentEtaJet = new TH3F("fh3RhoCentEtaJet","fh3RhoCentEtaJet;centrality;#rho_{jet};#eta_{jet}",100,0,100,500,0,1000,100,-5.,5.);
   fOutput->Add(fh3RhoCentEtaJet);
 
   Int_t fgkNCentBins = 100;
