@@ -48,7 +48,7 @@ void lwJetContainer::AddJet(lwJet *jet,Int_t pos) {
 
 //__________________________________________________________
 lwJet* lwJetContainer::GetJet(Int_t i) const {
-
+  if(!fJets) return 0;
   if(i<0 || i>fJets->GetEntriesFast()) return 0;
   lwJet *jet = static_cast<lwJet*>(fJets->At(i));
   return jet;
