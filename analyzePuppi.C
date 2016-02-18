@@ -29,19 +29,20 @@
 
 using namespace std;
 
-bool doPuppi         = false;
+bool doPuppi         = true;
+bool doJECPuppi      = true;
 bool doJetFinding    = true;
 bool useMetric2      = false;
 bool storeTree       = false;
-bool doCSJets        = true;
-bool doJECCS         = true;
+bool doCSJets        = false;//true;
+bool doJECCS         = false;//true;
 bool doZJetResponse  = false;
 bool doRhoVariation  = false;
 double alphaCS       = 1.; 
 
 TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
 
-void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0) {
+void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int ptminType = 0, int jetSignalType = 0, int weightType = 0) {
 
   TString strL1 = Form("%s/75X_mcRun2_HeavyIon_v12_L1FastJet_AK4PF_offline.txt",baseJEC.Data());
   TString strL2Rel = Form("%s/75X_mcRun2_HeavyIon_v12_L2Relative_AK4PF_offline.txt",baseJEC.Data());
@@ -57,6 +58,13 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     jetSignalType: jets used to select jetty region in events
     0 : detector-level jets (akPu4PF)
     1 : particle-level jets (gen jets)
+
+    weightType: metric used for puppi
+    0: alpha (pt/r^2)
+    1: alpha2 (pt/r)
+    2: sumpt
+    3: meanpt
+    4: metric2 (mass)
    */
 
   double ptMinPuppi = 0.;
@@ -74,8 +82,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   // Printf("anaFile: %d",anaFile);
   
   std::cout << "nfiles: " << urls.size() << std::endl;
-  for (auto i = urls.begin(); i != urls.end(); ++i)
-    std::cout << *i << std::endl;
+  //  for (auto i = urls.begin(); i != urls.end(); ++i)
+  //std::cout << *i << std::endl;
 
   size_t firstFile = 0;
   size_t lastFile = urls.size();
@@ -112,6 +120,11 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   chain->AddFriend(jetTree);
   Printf("jetTree done");
+
+  TChain *csJetTree = new TChain("akCs4PFJetAnalyzer/t");
+  for(size_t i=firstFile; i<lastFile; i++) csJetTree->Add(urls[i].c_str());
+  chain->AddFriend(csJetTree);
+  Printf("csJetTree done");
 
   TChain *genTree = new TChain("HiGenParticleAna/hi");
   for(size_t i=firstFile; i<lastFile; i++) genTree->Add(urls[i].c_str());
@@ -151,6 +164,13 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   p_PUJet->SetGenJetContName("akt4Gen");
   p_PUJet->SetEventObjects(fEventObjects);
   p_PUJet->SetRadius(0.4);
+
+  lwJetFromForestProducer *p_CSJet = new lwJetFromForestProducer("lwJetForestProdCS");
+  p_CSJet->SetInput(csJetTree);
+  p_CSJet->SetJetContName("aktCSR040");
+  p_CSJet->SetGenJetContName("");
+  p_CSJet->SetEventObjects(fEventObjects);
+  p_CSJet->SetRadius(0.4);
   
   //---------------------------------------------------------------
   //analysis modules
@@ -169,9 +189,18 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   //pupProd->SetAddMetricType(anaPuppiProducer::kMass);
   pupProd->SetPtMinParticle(ptMinPuppi);//1.);
   pupProd->SetStoreTree(storeTree);
-  pupProd->SetConeRadius(0.2);
-  pupProd->SetPuppiWeightType(anaPuppiProducer::kAlpha);//kMeanPt);
-  pupProd->SetWeightCut(0.9);
+  pupProd->SetConeRadius(0.3);
+  if(weightType==0)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kAlpha);
+  else if(weightType==1)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kAlpha2);
+  else if(weightType==2)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kSumPt);
+  else if(weightType==3)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kMeanPt);
+  else if(weightType==4)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kMetric2);
+  pupProd->SetWeightCut(0.01);
   if(doPuppi) handler->Add(pupProd);
 
   //anti-kt jet finder on reconstructed PUPPI particles ptmin=0
@@ -183,6 +212,12 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   lwjakt->SetPtMinConst(ptMinPuppi);//0.);
   lwjakt->SetParticlesName("puppiParticles");
   lwjakt->SetJetContName("JetsAKTR040Puppi");
+  if(doJECPuppi) {
+    lwjakt->SetDoJECCS(true);
+    lwjakt->SetL1Fastjet(strL1);
+    lwjakt->SetL2Relative(strL2Rel);
+    lwjakt->SetL3Absolute(strL3Abs);
+  }
   if(doPuppi && doJetFinding) handler->Add(lwjakt);
 
   //anti-kt jet finder on generated particles
@@ -351,6 +386,22 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     anajesRaw->SetMaxDistance(0.4);
     handler->Add(anajesRaw);
 
+    anaJetMatching *matchCSCS = new anaJetMatching("jetMatchingCSCS","jetMatchingCSCS");
+    matchCSCS->ConnectEventObject(fEventObjects);
+    matchCSCS->SetHiEvtName("hiEventContainer");
+    matchCSCS->SetJetsNameBase("JetsAKTR040CS");
+    matchCSCS->SetJetsNameTag("aktCSR040");
+    handler->Add(matchCSCS);
+
+    anaJetEnergyScale *anajesCSCS = new anaJetEnergyScale("anajesCSCS","anajesCSCS");
+    anajesCSCS->ConnectEventObject(fEventObjects);
+    anajesCSCS->SetHiEvtName("hiEventContainer");
+    anajesCSCS->SetGenJetsName("aktCSR040");
+    anajesCSCS->SetRecJetsName("JetsAKTR040CS");
+    anajesCSCS->SetNCentBins(4);
+    anajesCSCS->SetMaxDistance(0.4);
+    handler->Add(anajesCSCS);
+
     if(doZJetResponse) {
       //Z to mumu
       anaZToMuMu *ZToMuMu = new anaZToMuMu("ZToMuMu","ZToMuMu");
@@ -400,8 +451,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProdEta2->SetJetsName("JetsKTR020");
     rhoProdEta2->SetHiEvtName("hiEventContainer");
     rhoProdEta2->SetNExcl(2);
-    rhoProdEta2->SetMinPtExcl(20.);
-    rhoProdEta2->SetEtaRangeExcl(-2.1,2.1);
+    rhoProdEta2->SetMinPtExcl(0.);
+    rhoProdEta2->SetEtaRangeExcl(-2.,2.);
     rhoProdEta2->SetEtaRangeAll(-5.+0.2,5.-0.2);
     rhoProdEta2->SetEtaLimit(1,-5.);//bin,eta
     rhoProdEta2->SetEtaLimit(2,-3.);
@@ -443,7 +494,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProdEta13->SetEtaLimit(8, 5.);
     rhoProdEta13->SetUseMean(false);//true);
     rhoProdEta13->SetRhoName("rhoMapEta13");
-    handler->Add(rhoProdEta13);
+    //  handler->Add(rhoProdEta13);
     
     anaJetEnergyScale *anajesRawEta13 = new anaJetEnergyScale("anajesRawEta13","anajesRawEta13");
     anajesRawEta13->ConnectEventObject(fEventObjects);
@@ -453,7 +504,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     anajesRawEta13->SetNCentBins(4);
     anajesRawEta13->SetRhoMapName("rhoMapEta13");
     anajesRawEta13->SetMaxDistance(0.4);
-    handler->Add(anajesRawEta13);
+    // handler->Add(anajesRawEta13);
 
     anaRhoProducer *rhoProdEta3Ex5 = new anaRhoProducer("anaRhoProducerKTR020Eta3Ex5","anaRhoProducerKTR020Eta3Ex5");
     rhoProdEta3Ex5->ConnectEventObject(fEventObjects);
@@ -473,7 +524,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProdEta3Ex5->SetEtaLimit(8, 5.);
     rhoProdEta3Ex5->SetUseMean(false);//true);
     rhoProdEta3Ex5->SetRhoName("rhoMapEta3Ex5");
-    handler->Add(rhoProdEta3Ex5);
+    //  handler->Add(rhoProdEta3Ex5);
     
     anaJetEnergyScale *anajesRawEta3Ex5 = new anaJetEnergyScale("anajesRawEta3Ex5","anajesRawEta3Ex5");
     anajesRawEta3Ex5->ConnectEventObject(fEventObjects);
@@ -483,7 +534,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     anajesRawEta3Ex5->SetNCentBins(4);
     anajesRawEta3Ex5->SetRhoMapName("rhoMapEta3Ex5");
     anajesRawEta3Ex5->SetMaxDistance(0.4);
-    handler->Add(anajesRawEta3Ex5);
+    //  handler->Add(anajesRawEta3Ex5);
 
     
     anaRhoProducer *rhoProdEta10Ex3 = new anaRhoProducer("anaRhoProducerKTR020Eta10Ex3","anaRhoProducerKTR020Eta10Ex3");
@@ -504,7 +555,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     rhoProdEta10Ex3->SetEtaLimit(8, 5.);
     rhoProdEta10Ex3->SetUseMean(false);//true);
     rhoProdEta10Ex3->SetRhoName("rhoMapEta10Ex3");
-    handler->Add(rhoProdEta10Ex3);
+    //  handler->Add(rhoProdEta10Ex3);
     
     anaJetEnergyScale *anajesRawEta10Ex3 = new anaJetEnergyScale("anajesRawEta10Ex3","anajesRawEta10Ex3");
     anajesRawEta10Ex3->ConnectEventObject(fEventObjects);
@@ -514,7 +565,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     anajesRawEta10Ex3->SetNCentBins(4);
     anajesRawEta10Ex3->SetRhoMapName("rhoMapEta10Ex3");
     anajesRawEta10Ex3->SetMaxDistance(0.4);
-    handler->Add(anajesRawEta10Ex3);
+    // handler->Add(anajesRawEta10Ex3);
 
   }
 
@@ -536,7 +587,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     p_gen->Run(jentry);   //generated particles
     //Printf("produce PU jets");
     p_PUJet->Run(jentry); //forest jets
-	    
+    p_CSJet->Run(jentry);
+    
     //Execute all analysis tasks
     handler->ExecuteTask();
   }
