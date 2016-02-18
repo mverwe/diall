@@ -43,8 +43,8 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   std::cout << "analyzing JES for: " << jetName << std::endl; 
  
   std::cout << "nfiles: " << urls.size() << std::endl;
-  for (auto i = urls.begin(); i != urls.end(); ++i)
-    std::cout << *i << std::endl;
+  //for (auto i = urls.begin(); i != urls.end(); ++i)
+  //  std::cout << *i << std::endl;
 
   size_t firstFile = 0;
   size_t lastFile = urls.size();
@@ -103,7 +103,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   anajesForest->SetRecJetsName(jetName);
   anajesForest->SetNCentBins(4);
   anajesForest->SetUseForestMatching(true);
-  //handler->Add(anajesForest);
+  handler->Add(anajesForest);
 
   anaJetEnergyScale *anajesForestRaw = new anaJetEnergyScale("anaJESForestRaw","anaJESForestRaw");
   anajesForestRaw->ConnectEventObject(fEventObjects);
@@ -113,7 +113,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   anajesForestRaw->SetNCentBins(4);
   anajesForestRaw->SetUseForestMatching(true);
   anajesForestRaw->SetUseRawPt(true);
-  //handler->Add(anajesForestRaw);
+  handler->Add(anajesForestRaw);
 
   //particle-detector-level jet matching
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
@@ -142,7 +142,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   anajesRaw->SetNCentBins(4);
   anajesRaw->SetUseForestMatching(false);
   anajesRaw->SetUseRawPt(true);
-  //handler->Add(anajesRaw);
+  handler->Add(anajesRaw);
 
  
   //---------------------------------------------------------------
