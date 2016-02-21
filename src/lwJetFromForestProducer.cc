@@ -191,7 +191,6 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
   //Printf("%s: njets: %d",GetName(),fForestJets.nref);
 
   for(Int_t i = 0; i<fForestJets.nref; i++) {
-    //std::cout<<fForestJets.chargedSum[i]<<std::endl;
 
     if( fDoPFJetID && !IsGoodPFJet(i)) {
       //Printf("jet not accepted");
