@@ -200,6 +200,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     pupProd->SetPuppiWeightType(anaPuppiProducer::kMeanPt);
   else if(weightType==4)
     pupProd->SetPuppiWeightType(anaPuppiProducer::kMetric2);
+  else if(weightType==5)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kMeanPtMd);
   pupProd->SetWeightCut(0.01);
   if(doPuppi) handler->Add(pupProd);
 
