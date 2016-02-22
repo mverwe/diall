@@ -401,20 +401,20 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
            var = p1->GetPuppiMeanPt();
          else if(fPuppiWeightType==kMetric2)
            var = p1->GetPuppiMetric2();
-         //chiMetric = (var - medMetric) * fabs(var - medMetric) / rmsMetric / rmsMetric;
-         chiMetric = (var - medMetric) * (var - medMetric) / rmsMetric / rmsMetric;
+         chiMetric = (var - medMetric) * fabs(var - medMetric) / rmsMetric / rmsMetric;
+         //chiMetric = (var - medMetric) * (var - medMetric) / rmsMetric / rmsMetric;
          prob = ROOT::Math::chisquared_cdf(chiMetric,1.);
        } else if( fPuppiWeightType==kMeanPtMd ) {
          double meanPt = p1->GetPuppiMeanPt();
          double medMeanPt = fMapMedianMeanPt[etaBin];
          double rmsMeanPt = fMapRmsMeanPt[etaBin];
-         //double chiMeanPt = (meanPt - medMeanPt) * fabs(meanPt - medMeanPt) / rmsMeanPt / rmsMeanPt;
-         double chiMeanPt = (meanPt - medMeanPt) * (meanPt - medMeanPt) / rmsMeanPt / rmsMeanPt;
+         double chiMeanPt = (meanPt - medMeanPt) * fabs(meanPt - medMeanPt) / rmsMeanPt / rmsMeanPt;
+         //double chiMeanPt = (meanPt - medMeanPt) * (meanPt - medMeanPt) / rmsMeanPt / rmsMeanPt;
          double meanMd = p1->GetPuppiMeanMd();
          double medMeanMd = fMapMedianMeanMd[etaBin];
          double rmsMeanMd = fMapRmsMeanMd[etaBin];
-         //double chiMeanMd = (meanMd - medMeanMd) * fabs(meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
-         double chiMeanMd = (meanMd - medMeanMd) * (meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
+         double chiMeanMd = (meanMd - medMeanMd) * fabs(meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
+         //double chiMeanMd = (meanMd - medMeanMd) * (meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
          chiMetric = chiMeanPt + chiMeanMd;
          prob = ROOT::Math::chisquared_cdf(chiMetric,2.);
        }
@@ -433,50 +433,50 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t probMeanPt   = 0.;
      Double_t probMetric2  = 0.;
      
-     // if(fMapRmsAlpha[etaBin]>0.) {
-     //   chiAlpha = (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) * fabs(p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) / fMapRmsAlpha[etaBin] / fMapRmsAlpha[etaBin];
-     //   probAlpha = ROOT::Math::chisquared_cdf(chiAlpha,1.);
-     // }
-     // if(fMapRmsAlpha2[etaBin]>0.) {
-     //   chiAlpha2 = (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) * fabs(p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) / fMapRmsAlpha2[etaBin] / fMapRmsAlpha2[etaBin];
-     //   probAlpha2 = ROOT::Math::chisquared_cdf(chiAlpha2,1.);
-     // }
-     // if(fMapRmsSumPt[etaBin]>0.) {
-     //   chiSumPt = (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) * fabs(p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) / fMapRmsSumPt[etaBin] / fMapRmsSumPt[etaBin];
-     //   probSumPt = ROOT::Math::chisquared_cdf(chiSumPt,1.);
-     // }
-     // if(fMapRmsMeanPt[etaBin]>0.) {
-     //   chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * fabs(p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
-     //   probMeanPt = ROOT::Math::chisquared_cdf(chiMeanPt,1.);
-     // }
-     // if(fMapRmsMetric2[etaBin]>0.) {
-     //   chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * fabs(p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
-     //   probMetric2 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
-     // }
-
      if(fMapRmsAlpha[etaBin]>0.) {
-       chiAlpha = (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) * (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) / fMapRmsAlpha[etaBin] / fMapRmsAlpha[etaBin];
+       chiAlpha = (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) * fabs(p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) / fMapRmsAlpha[etaBin] / fMapRmsAlpha[etaBin];
        probAlpha = ROOT::Math::chisquared_cdf(chiAlpha,1.);
      }
      if(fMapRmsAlpha2[etaBin]>0.) {
-       chiAlpha2 = (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) * (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) / fMapRmsAlpha2[etaBin] / fMapRmsAlpha2[etaBin];
+       chiAlpha2 = (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) * fabs(p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) / fMapRmsAlpha2[etaBin] / fMapRmsAlpha2[etaBin];
        probAlpha2 = ROOT::Math::chisquared_cdf(chiAlpha2,1.);
      }
      if(fMapRmsSumPt[etaBin]>0.) {
-       chiSumPt = (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) * (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) / fMapRmsSumPt[etaBin] / fMapRmsSumPt[etaBin];
+       chiSumPt = (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) * fabs(p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) / fMapRmsSumPt[etaBin] / fMapRmsSumPt[etaBin];
        probSumPt = ROOT::Math::chisquared_cdf(chiSumPt,1.);
      }
      if(fMapRmsMeanPt[etaBin]>0.) {
-       chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
+       chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * fabs(p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
        probMeanPt = ROOT::Math::chisquared_cdf(chiMeanPt,1.);
      }
      if(fMapRmsMetric2[etaBin]>0.) {
-       chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
+       chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * fabs(p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
        probMetric2 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
      }
+
+     // if(fMapRmsAlpha[etaBin]>0.) {
+     //   chiAlpha = (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) * (p1->GetPuppiAlpha() - fMapMedianAlpha[etaBin]) / fMapRmsAlpha[etaBin] / fMapRmsAlpha[etaBin];
+     //   probAlpha = ROOT::Math::chisquared_cdf(chiAlpha,1.);
+     // }
+     // if(fMapRmsAlpha2[etaBin]>0.) {
+     //   chiAlpha2 = (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) * (p1->GetPuppiAlpha2() - fMapMedianAlpha2[etaBin]) / fMapRmsAlpha2[etaBin] / fMapRmsAlpha2[etaBin];
+     //   probAlpha2 = ROOT::Math::chisquared_cdf(chiAlpha2,1.);
+     // }
+     // if(fMapRmsSumPt[etaBin]>0.) {
+     //   chiSumPt = (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) * (p1->GetPuppiSumPt() - fMapMedianSumPt[etaBin]) / fMapRmsSumPt[etaBin] / fMapRmsSumPt[etaBin];
+     //   probSumPt = ROOT::Math::chisquared_cdf(chiSumPt,1.);
+     // }
+     // if(fMapRmsMeanPt[etaBin]>0.) {
+     //   chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
+     //   probMeanPt = ROOT::Math::chisquared_cdf(chiMeanPt,1.);
+     // }
+     // if(fMapRmsMetric2[etaBin]>0.) {
+     //   chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
+     //   probMetric2 = ROOT::Math::chisquared_cdf(chiMetric2,1.);
+     // }
      
      //weight metric+metric2
-     Double_t prob2 = ROOT::Math::chisquared_cdf(chiMetric+chiMetric2,1.);
+     Double_t prob2 = ROOT::Math::chisquared_cdf(chiMetric+chiMetric2,2.);
      p1->SetPuppiWeight2(prob2);
      p1->SetPuppiWeight3(probMetric2);
      
