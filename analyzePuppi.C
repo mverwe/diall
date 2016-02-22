@@ -122,9 +122,11 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
   Printf("jetTree done");
 
   TChain *csJetTree = new TChain("akCs4PFJetAnalyzer/t");
-  for(size_t i=firstFile; i<lastFile; i++) csJetTree->Add(urls[i].c_str());
-  chain->AddFriend(csJetTree);
-  Printf("csJetTree done");
+  if(doCSJets) {
+    for(size_t i=firstFile; i<lastFile; i++) csJetTree->Add(urls[i].c_str());
+    chain->AddFriend(csJetTree);
+    Printf("csJetTree done");
+  }
 
   TChain *genTree = new TChain("HiGenParticleAna/hi");
   for(size_t i=firstFile; i<lastFile; i++) genTree->Add(urls[i].c_str());
@@ -589,7 +591,7 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     p_gen->Run(jentry);   //generated particles
     //Printf("produce PU jets");
     p_PUJet->Run(jentry); //forest jets
-    p_CSJet->Run(jentry);
+    if(doCSJets) p_CSJet->Run(jentry);
     
     //Execute all analysis tasks
     handler->ExecuteTask();

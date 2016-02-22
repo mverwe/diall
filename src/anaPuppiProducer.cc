@@ -9,6 +9,8 @@
 #include "TClass.h"
 #include "TMath.h"
 
+#include <iostream>
+
 ClassImp(anaPuppiProducer)
    
 anaPuppiProducer::anaPuppiProducer(const char *name, const char *title) 
@@ -66,7 +68,7 @@ anaPuppiProducer::~anaPuppiProducer() {
 //----------------------------------------------------------
 void anaPuppiProducer::Exec(Option_t * /*option*/)
 {
-  // printf("anaPuppiProducer executing\n");
+  //printf("anaPuppiProducer executing\n");
   anaBaseTask::Exec();
     if(!fInitOutput) CreateOutputObjects();
 
@@ -135,7 +137,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        fnSigJets++;
      }
    }
-   
+   //Printf("signal jets located"); 
    //pf candidate loop to calculate puppi metrics for each particle
 
    //plan: apply pt cut to particles, put particles passing in std::vector and work with those for the rest of the algo
@@ -146,7 +148,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      if(p1->Pt()<fPtMinParticle) continue;
      fSelPFParticles.push_back(p1);
    }
-
+   //Printf("pf candidates selected");
    double drmin = 0.02;
    for (unsigned int i = 0; i < fSelPFParticles.size(); i++) {
      pfParticle *p1 = fSelPFParticles[i];
@@ -184,7 +186,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      if(nconst>0) p1->SetPuppiMeanPt(sumpt/((double)nconst));
      if(nconst>0) p1->SetPuppiMeanMd(meanmd/((double)nconst));
    }//particles loop
-
+   //Printf("metrics stored");
    //calculation of median and RMS alpha in eta ranges
    std::map<int,double> fMapMedianMetric;  //median selected metric in eta regions
    std::map<int,double> fMapRmsMetric;     //rms selected in eta regions
@@ -288,7 +290,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Printf("medMetric2: %f", medMetric2);
      Printf("medMeanMd: %f", medMeanMd);
      Printf("---------");
-     */
+     */ 
      //Calculate LHS RMS. LHS defined as all entries up to median
      Int_t nias = TMath::FloorNint((Double_t)count/2.);
      Double_t rmsMetric   = 0.;
@@ -366,7 +368,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
    fMedMeanPt  =  fMapMedianMeanPt[3];
    fMedMetric2 =  fMapMedianMetric2[3];
    fMedMeanMd  =  fMapMedianMeanMd[3];
-   
+   //Printf("medians calculated"); 
    //Set puppi weight for each particle
    int npup = 0;
    int ntree = 0;
@@ -388,7 +390,9 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t medMetric = fMapMedianMetric[etaBin];
      Double_t rmsMetric = fMapRmsMetric[etaBin];
      Double_t chiMetric = 1.;
-     if(rmsMetric>0.) {
+//     std::cout << "fPuppiWeightType: " << fPuppiWeightType << "  " << kMeanPtMd << std::endl;
+     //Printf("etaBin: %d",etaBin);
+     
        double var = p1->GetPuppiAlpha();
        if(fPuppiWeightType==kAlpha2 || fPuppiWeightType==kSumPt || fPuppiWeightType==kMeanPt || fPuppiWeightType==kMetric2 || fPuppiWeightType==kAlpha) {
          if(fPuppiWeightType==kAlpha)
@@ -401,7 +405,7 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
            var = p1->GetPuppiMeanPt();
          else if(fPuppiWeightType==kMetric2)
            var = p1->GetPuppiMetric2();
-         chiMetric = (var - medMetric) * fabs(var - medMetric) / rmsMetric / rmsMetric;
+         if(rmsMetric>0.) chiMetric = (var - medMetric) * fabs(var - medMetric) / rmsMetric / rmsMetric;
          //chiMetric = (var - medMetric) * (var - medMetric) / rmsMetric / rmsMetric;
          prob = ROOT::Math::chisquared_cdf(chiMetric,1.);
        } else if( fPuppiWeightType==kMeanPtMd ) {
@@ -417,8 +421,10 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
          //double chiMeanMd = (meanMd - medMeanMd) * (meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
          chiMetric = chiMeanPt + chiMeanMd;
          prob = ROOT::Math::chisquared_cdf(chiMetric,2.);
+         //Printf("meanpt: %f medMeanPt: %f meanMd: %f medMeanMd: %f",meanPt,medMeanPt,meanMd,medMeanMd);
+         //Printf("chiMetric: %f prob: %f",chiMetric,prob);
        }
-     }
+     //}
      p1->SetPuppiWeight(prob);
 
      Double_t chiAlpha     = 0.;
