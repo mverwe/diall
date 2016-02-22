@@ -39,12 +39,16 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
    */
 
 
-  TString jetName = "aktCSR040";
-  std::cout << "analyzing JES for: " << jetName << std::endl; 
- 
+  TString jetName = "aktPuppiR040";
+  TString jetTreeName = "akPuppi4PFJetAnalyzer";
+  jetName = "aktVsR040";
+  jetTreeName = "akVs4PFJetAnalyzer";
+
+  std::cout << "analyzing JES for: " << jetName << " tree: " << jetTreeName << std::endl;
+   
   std::cout << "nfiles: " << urls.size() << std::endl;
-  //for (auto i = urls.begin(); i != urls.end(); ++i)
-  //  std::cout << *i << std::endl;
+  for (auto i = urls.begin(); i != urls.end(); ++i)
+    std::cout << *i << std::endl;
 
   size_t firstFile = 0;
   size_t lastFile = urls.size();
@@ -67,7 +71,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
   
-  TChain *jetTree = new TChain("akCs4PFJetAnalyzer/t");
+  TChain *jetTree = new TChain(Form("%s/t",jetTreeName.Data()));
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   chain->AddFriend(jetTree);
   Printf("jetTree done");
@@ -142,7 +146,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   anajesRaw->SetNCentBins(4);
   anajesRaw->SetUseForestMatching(false);
   anajesRaw->SetUseRawPt(true);
-  handler->Add(anajesRaw);
+  //handler->Add(anajesRaw);
 
  
   //---------------------------------------------------------------
