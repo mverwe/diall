@@ -32,7 +32,8 @@ public:
      kMetric2      = 2,
      kSumPt        = 3,
      kMeanPt       = 4,
-     kAlpha2       = 5
+     kAlpha2       = 5,
+     kMeanPtMd     = 6
    };
 
    anaPuppiProducer() {;}
@@ -91,6 +92,7 @@ public:
    float             fMedSumPt;
    float             fMedMeanPt;
    float             fMedMetric2;
+   float             fMedMeanMd;
    float             fpt[200000];
    float             feta[200000];
    float             fphi[200000];

@@ -23,6 +23,7 @@ class pfParticle : public particleBase {
   void           SetPuppiSumPt(double a)    { fPupSumPt = a;  }
   void           SetPuppiAlpha2(double a)   { fPupAlpha2= a;  }
   void           SetPuppiMeanPt(double a)   { fPupMeanPt = a; }
+  void           SetPuppiMeanMd(double a)   { fPupMeanMd = a; }
 
   void           SetPuppiWeight(double w)   { fPupWeight = w; }
   void           SetPuppiWeight2(double w)  { fPupWeight2= w; }
@@ -36,6 +37,7 @@ class pfParticle : public particleBase {
   double         GetPuppiSumPt() const   { return fPupSumPt;  }
   double         GetPuppiAlpha2() const  { return fPupAlpha2; }
   double         GetPuppiMeanPt() const  { return fPupMeanPt; }
+  double         GetPuppiMeanMd() const  { return fPupMeanMd; }
 
   double         GetPuppiWeight() const  { return fPupWeight; }
   double         GetPuppiWeight2() const { return fPupWeight2;}
@@ -49,11 +51,12 @@ class pfParticle : public particleBase {
   double       fPupSumPt;    //puppi sum pt
   double       fPupAlpha2;   //pt/r
   double       fPupMeanPt;   //mean pt
+  double       fPupMeanMd;   //mean md
   double       fPupWeight;   //puppi weight
   double       fPupWeight2;  //puppi weight2
   double       fPupWeight3;  //puppi weight3
   double       fPtVS;        //subtracted pt from HF-Voronoi algo
   
-  ClassDef(pfParticle,3)
+  ClassDef(pfParticle,4)
 };
 #endif
