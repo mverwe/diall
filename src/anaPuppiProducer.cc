@@ -421,8 +421,18 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
          //double chiMeanMd = (meanMd - medMeanMd) * (meanMd - medMeanMd) / rmsMeanMd / rmsMeanMd;
          chiMetric = chiMeanPt + chiMeanMd;
          prob = ROOT::Math::chisquared_cdf(chiMetric,2.);
-         //Printf("meanpt: %f medMeanPt: %f meanMd: %f medMeanMd: %f",meanPt,medMeanPt,meanMd,medMeanMd);
-         //Printf("chiMetric: %f prob: %f",chiMetric,prob);
+       } else if( fPuppiWeightType==kSumPtAlpha2 ) {
+         double sumPt = p1->GetPuppiSumPt();
+         double medSumPt = fMapMedianSumPt[etaBin];
+         double rmsSumPt = fMapRmsSumPt[etaBin];
+         double chiSumPt = (sumPt - medSumPt) * fabs(sumPt - medSumPt) / rmsSumPt / rmsSumPt;
+         double alpha2 = p1->GetPuppiAlpha2();
+         double medAlpha2 = fMapMedianAlpha2[etaBin];
+         double rmsAlpha2 = fMapRmsAlpha2[etaBin];
+         double chiAlpha2 = (alpha2 - medAlpha2) * fabs(alpha2 - medAlpha2) / rmsAlpha2 / rmsAlpha2;
+         //double chiAlpha2 = (alpha2 - medAlpha2) * (alpha2 - medAlpha2) / rmsAlpha2 / rmsAlpha2;
+         chiMetric = chiSumPt + chiAlpha2;
+         prob = ROOT::Math::chisquared_cdf(chiMetric,2.);
        }
      //}
      p1->SetPuppiWeight(prob);

@@ -31,9 +31,9 @@ using namespace std;
 
 bool doPuppi         = true;
 bool doJECPuppi      = true;
-bool doJetFinding    = false;//true;
+bool doJetFinding    = true;
 bool useMetric2      = false;
-bool storeTree       = true;//false;
+bool storeTree       = false;
 bool doCSJets        = false;//true;
 bool doJECCS         = false;//true;
 bool doZJetResponse  = false;
@@ -204,6 +204,8 @@ void analyzePuppi(std::vector<std::string> urls, const char *outname = "eventObj
     pupProd->SetPuppiWeightType(anaPuppiProducer::kMetric2);
   else if(weightType==5)
     pupProd->SetPuppiWeightType(anaPuppiProducer::kMeanPtMd);
+  else if(weightType==6)
+    pupProd->SetPuppiWeightType(anaPuppiProducer::kSumPtAlpha2);
   pupProd->SetWeightCut(0.01);
   if(doPuppi) handler->Add(pupProd);
 

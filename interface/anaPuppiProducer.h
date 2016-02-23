@@ -33,7 +33,8 @@ public:
      kSumPt        = 3,
      kMeanPt       = 4,
      kAlpha2       = 5,
-     kMeanPtMd     = 6
+     kMeanPtMd     = 6,
+     kSumPtAlpha2  = 7
    };
 
    anaPuppiProducer() {;}
