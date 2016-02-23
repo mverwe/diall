@@ -31,9 +31,9 @@ using namespace std;
 
 bool doPuppi         = true;
 bool doJECPuppi      = true;
-bool doJetFinding    = true;
+bool doJetFinding    = false;//true;
 bool useMetric2      = false;
-bool storeTree       = false;
+bool storeTree       = true;//false;
 bool doCSJets        = false;//true;
 bool doJECCS         = false;//true;
 bool doZJetResponse  = false;

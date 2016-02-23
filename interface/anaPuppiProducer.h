@@ -103,11 +103,14 @@ public:
    float             fsumpt[200000];
    float             falpha2[200000];
    float             fmeanpt[200000];
+   float             fmeanmd[200000];
    float             fwalpha[200000];
    float             fwmetric2[200000];
    float             fwsumpt[200000];
    float             fwalpha2[200000];
    float             fwmeanpt[200000];
+   float             fwmeanmd[200000];
+   float             fwmeanptmd[200000];
    float             fptjet[200000];
    float             fdrjet[200000];
    //signal jets

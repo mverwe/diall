@@ -431,12 +431,14 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      Double_t chiAlpha2    = 0.;
      Double_t chiSumPt     = 0.;
      Double_t chiMeanPt    = 0.;
+     Double_t chiMeanMd    = 0.;
      Double_t chiMetric2   = 0.;
 
      Double_t probAlpha    = 0.;
      Double_t probAlpha2   = 0.;
      Double_t probSumPt    = 0.;
      Double_t probMeanPt   = 0.;
+     Double_t probMeanMd   = 0.;
      Double_t probMetric2  = 0.;
      
      if(fMapRmsAlpha[etaBin]>0.) {
@@ -454,6 +456,10 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
      if(fMapRmsMeanPt[etaBin]>0.) {
        chiMeanPt = (p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) * fabs(p1->GetPuppiMeanPt() - fMapMedianMeanPt[etaBin]) / fMapRmsMeanPt[etaBin] / fMapRmsMeanPt[etaBin];
        probMeanPt = ROOT::Math::chisquared_cdf(chiMeanPt,1.);
+     }
+     if(fMapRmsMeanMd[etaBin]>0.) {
+       chiMeanMd = (p1->GetPuppiMeanMd() - fMapMedianMeanMd[etaBin]) * fabs(p1->GetPuppiMeanMd() - fMapMedianMeanMd[etaBin]) / fMapRmsMeanMd[etaBin] / fMapRmsMeanMd[etaBin];
+       probMeanMd = ROOT::Math::chisquared_cdf(chiMeanMd,1.);
      }
      if(fMapRmsMetric2[etaBin]>0.) {
        chiMetric2 = (p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) * fabs(p1->GetPuppiMetric2() - fMapMedianMetric2[etaBin]) / fMapRmsMetric2[etaBin] / fMapRmsMetric2[etaBin];
@@ -524,12 +530,14 @@ void anaPuppiProducer::Exec(Option_t * /*option*/)
        falpha2[ntree]   = p1->GetPuppiAlpha2();
        fsumpt[ntree]    = p1->GetPuppiSumPt();
        fmeanpt[ntree]   = p1->GetPuppiMeanPt();
+       fmeanmd[ntree]   = p1->GetPuppiMeanMd();
        fmetric2[ntree]  = p1->GetPuppiMetric2();
 
        fwalpha[ntree]   = probAlpha;
        fwalpha2[ntree]  = probAlpha2;
        fwsumpt[ntree]   = probSumPt;
        fwmeanpt[ntree]  = probMeanPt;
+       fwmeanmd[ntree]  = probMeanMd;
        fwmetric2[ntree] = probMetric2;
          
        //Get closest jet
@@ -594,6 +602,7 @@ void anaPuppiProducer::CreateOutputObjects() {
     fTreeOut->Branch("medAlpha2", &fMedAlpha2,  "medAlpha2/F");
     fTreeOut->Branch("medSumPt",  &fMedSumPt,   "medSumPt/F");
     fTreeOut->Branch("medMeanPt", &fMedMeanPt,  "medMeanPt/F");
+    fTreeOut->Branch("medMeanMd", &fMedMeanMd,  "medMeanMd/F");
     fTreeOut->Branch("medMetric2",&fMedMetric2, "medMetric2/F");
     
     fTreeOut->Branch("pt",     &fpt,      "pt[npart]/F");
@@ -605,12 +614,14 @@ void anaPuppiProducer::CreateOutputObjects() {
     fTreeOut->Branch("alpha2", &falpha2,  "alpha2[npart]/F");
     fTreeOut->Branch("sumpt" , &fsumpt,   "sumpt[npart]/F");
     fTreeOut->Branch("meanpt", &fmeanpt,  "meanpt[npart]/F");
+    fTreeOut->Branch("meanmd", &fmeanmd,  "meanmd[npart]/F");
     fTreeOut->Branch("metric2",&fmetric2, "metric2[npart]/F");
 
     fTreeOut->Branch("walpha",  &fwalpha,     "walpha[npart]/F");
     fTreeOut->Branch("walpha2", &fwalpha2,    "walpha2[npart]/F");
     fTreeOut->Branch("wsumpt" , &fwsumpt,     "wsumpt[npart]/F");
     fTreeOut->Branch("wmeanpt", &fwmeanpt,    "wmeanpt[npart]/F");
+    fTreeOut->Branch("wmeanmd", &fwmeanmd,    "wmeanmd[npart]/F");
     fTreeOut->Branch("wmetric2",&fwmetric2,   "wmetric2[npart]/F");
 
     fTreeOut->Branch("ptjet",&fptjet,     "ptjet[npart]/F");
