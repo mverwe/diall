@@ -21,5 +21,7 @@
   <bin name="runZToMuMu"              file="runZToMuMu.cc"></bin>
   <bin name="runHadronIsolation"      file="runHadronIsolation.cc"></bin>
   <bin name="runCSZJet"               file="runCSZJet.cc"></bin>
+  <bin name="runSubJet"               file="runSubJet.cc"></bin>
+  <bin name="runSubJetDataPbPb"       file="runSubJetDataPbPb.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

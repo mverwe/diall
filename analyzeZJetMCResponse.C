@@ -27,9 +27,10 @@ using namespace std;
 
 void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
-  // std::vector<std::string> urls = CollectFiles(list);
-
-  // Printf("anaFile: %d",anaFile);
+  TString jetName = "aktPuppiR040";
+  TString jetTreeName = "akPuppi4PFJetAnalyzer";
+  jetName = "aktCsR040";
+  jetTreeName = "akCs4PFJetAnalyzer"; //akCs4PFJetAnalyzer
   
   std::cout << "nfiles: " << urls.size() << std::endl;
   for (auto i = urls.begin(); i != urls.end(); ++i)
@@ -70,15 +71,15 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   chain->AddFriend(muTree);
   Printf("muTree done");
 
-  TChain *caloJetTree = new TChain("akPu4CaloJetAnalyzer/t");
-  for(size_t i=firstFile; i<lastFile; i++) caloJetTree->Add(urls[i].c_str());
-  //chain->AddFriend(caloJetTree);
-  Printf("caloJetTree done");
-
   TChain *genTree = new TChain("HiGenParticleAna/hi");
   for(size_t i=firstFile; i<lastFile; i++) genTree->Add(urls[i].c_str());
   //chain->AddFriend(genTree);
   Printf("genTree done: %d",(int)genTree->GetEntries());
+
+  TChain *jetTree = new TChain(Form("%s/t",jetTreeName.Data()));
+  for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
+  chain->AddFriend(jetTree);
+  Printf("jetTree done");
 
   TList *fEventObjects = new TList();
 
@@ -101,12 +102,12 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   p_gen->SetGenParticlesName("genParticles");
   p_gen->SetEventObjects(fEventObjects);
 
-  lwJetFromForestProducer *p_caloJet = new lwJetFromForestProducer("lwJetForestProdCalo");
-  p_caloJet->SetInput(caloJetTree);
-  p_caloJet->SetJetContName("akt4Calo");
-  p_caloJet->SetGenJetContName("");
-  p_caloJet->SetEventObjects(fEventObjects);
-  p_caloJet->SetRadius(0.4);
+  lwJetFromForestProducer *p_PUJet = new lwJetFromForestProducer("lwJetForestProd");
+  p_PUJet->SetInput(chain);
+  p_PUJet->SetJetContName(jetName);
+  p_PUJet->SetGenJetContName("");//akt4Gen");
+  p_PUJet->SetEventObjects(fEventObjects);
+  p_PUJet->SetRadius(0.4);
 
   //---------------------------------------------------------------
   //analysis modules
@@ -128,7 +129,7 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   ZResp->ConnectEventObject(fEventObjects);
   ZResp->SetHiEvtName("hiEventContainer");
   ZResp->SetZsName("zMuMuBosons");
-  ZResp->SetJetsName("akt4Calo");
+  ZResp->SetJetsName(jetName);
   handler->Add(ZResp);
 
 
@@ -146,8 +147,8 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
     p_evt->Run(jentry);   //hi event properties
 
     //Printf("produce pf particles");
-    p_gen->Run(jentry);     //gen particles
-    p_caloJet->Run(jentry); //calo jets
+    p_gen->Run(jentry);   //gen particles
+    p_PUJet->Run(jentry); //jets
     
     //Execute all analysis tasks
     handler->ExecuteTask();

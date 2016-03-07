@@ -20,17 +20,20 @@ anaZJetMCResponse::anaZJetMCResponse(const char *name, const char *title)
   fUseForestMatching(true),
   fh1ZPt(),
   fh3ZJetPtRecGen(),
-  fh3ZJetXJZRecGen()
+  fh3ZJetXJZRecGen(),
+  fh3PtTrueEtaScalePt(0)
 {
 
   fh1ZPt               = new TH1F*[fNcentBins];
   fh3ZJetPtRecGen      = new TH3F*[fNcentBins];
   fh3ZJetXJZRecGen     = new TH3F*[fNcentBins];
+  fh3PtTrueEtaScalePt  = new TH3F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh1ZPt[i]           = 0;
-    fh3ZJetPtRecGen[i]  = 0;
-    fh3ZJetXJZRecGen[i] = 0;
+    fh1ZPt[i]              = 0;
+    fh3ZJetPtRecGen[i]     = 0;
+    fh3ZJetXJZRecGen[i]    = 0;
+    fh3PtTrueEtaScalePt[i] = 0;
   }
 
 }
@@ -113,8 +116,12 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
        if(!jetGen) continue;
        refpt = jetGen->Pt();
       }
+
+      if(jet->GetRefDr()>0.2
+         || jet->GetRefPt()<10.)//e-3)
+        continue;
       
-      if(refpt<25. || fabs(jet->Eta())>2.) continue; //only select true jets
+      if(refpt<10. || fabs(jet->Eta())>2.) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
       double mindphi = 2*3.14159/3.;
@@ -122,6 +129,8 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
       if(fCentBin>-1 && fCentBin<fNcentBins) {
         fh3ZJetPtRecGen[fCentBin]->Fill(z->Pt(),jet->Pt(),refpt,weight);
         fh3ZJetXJZRecGen[fCentBin]->Fill(z->Pt(),jet->Pt()/z->Pt(),refpt/z->Pt(),weight);
+
+        fh3PtTrueEtaScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->Pt()/jet->GetRefPt(),weight);
       }
     }//jet loop
   }//Z loop
@@ -138,6 +147,30 @@ void anaZJetMCResponse::CreateOutputObjects() {
     return;
   }
 
+  const Int_t nBinsPtDet  = 200;
+  const Double_t minPtDet =  0.;
+  const Double_t maxPtDet = 400.;
+  double *binsPtDet = new double[nBinsPtDet+1];
+  for(int i=0; i<=nBinsPtDet; ++i) binsPtDet[i]=(double)minPtDet + (maxPtDet-minPtDet)/nBinsPtDet*(double)i ;
+
+  const Int_t nBinsPtPart  = 200;
+  const Double_t minPtPart = 0.;
+  const Double_t maxPtPart = 400.;
+  double *binsPtPart = new double[nBinsPtPart+1];
+  for(int i=0; i<=nBinsPtPart; ++i) binsPtPart[i]=(double)minPtPart + (maxPtPart-minPtPart)/nBinsPtPart*(double)i ;
+
+  const int nBinsEta = 30;
+  double etaEdge[nBinsEta+1] = {-5.191, -3.139, -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, -1.930, -1.653, -1.305, -1.044, -0.783, -0.522, -0.261, 0.000, 0.261, 0.522, 0.783, 1.044, 1.305, 1.653, 1.930, 2.172, 2.322, 2.500, 2.650, 2.853, 2.964, 3.139, 5.191};
+  double *binsEta = new double[nBinsEta];
+  for(int i = 0; i<=nBinsEta; ++i)
+    binsEta[i] = etaEdge[i];
+
+  const Int_t nBinsScalePt  = 300;
+  const Double_t minScalePt = 0.;
+  const Double_t maxScalePt = 3.;
+  double *binsScalePt = new double[nBinsScalePt+1];
+  for(int i=0; i<=nBinsScalePt; ++i) binsScalePt[i]=(double)minScalePt + (maxScalePt-minScalePt)/nBinsScalePt*(double)i ;
+  
   TString histTitle = "";
   TString histName  = "";
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -155,5 +188,15 @@ void anaZJetMCResponse::CreateOutputObjects() {
     histTitle = Form("%s;#it{p}_{T,Z};p_{T,jet}^{rec}/p_{T,Z};p_{T,jet}^{gen}/p_{T,Z}",histName.Data());
     fh3ZJetXJZRecGen[i] = new TH3F(histName.Data(),histTitle.Data(),200,0,200,40,0,2,40,0,2);
     fOutput->Add(fh3ZJetXJZRecGen[i]);
+
+    histName = Form("fh3PtTrueEtaScalePt_%d",i);
+    histTitle = Form("%s;#it{p}_{T,gen};Eta;#it{p}_{T,rec}/#it{p}_{T,gen}",histName.Data());
+    fh3PtTrueEtaScalePt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsScalePt,binsScalePt);
+    fOutput->Add(fh3PtTrueEtaScalePt[i]);
   }
+
+  if(binsPtPart)            delete [] binsPtPart;
+  if(binsPtDet)             delete [] binsPtDet;
+  if(binsEta)               delete [] binsEta;
+  if(binsScalePt)           delete [] binsScalePt;
 }

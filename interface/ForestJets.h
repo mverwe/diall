@@ -23,6 +23,14 @@ public :
    Float_t         jtphi[maxJets];   //[nref]
    Float_t         jtpu[maxJets];   //[nref]
    Float_t         jtm[maxJets];   //[nref]
+   Float_t         jtarea[maxJets];   //[nref]
+   Float_t         jttau1[maxJets] = {-999};   //[nref]
+   Float_t         jttau2[maxJets] = {-999};   //[nref]
+   Float_t         jttau3[maxJets] = {-999};   //[nref]
+   std::vector<std::vector<float> > *jtSubJetPt = 0;
+   std::vector<std::vector<float> > *jtSubJetEta = 0;
+   std::vector<std::vector<float> > *jtSubJetPhi= 0;
+   std::vector<std::vector<float> > *jtSubJetM = 0;
    Float_t         discr_fr01[maxJets];   //[nref]
    Float_t         trackMax[maxJets];   //[nref]
    Float_t         trackSum[maxJets];   //[nref]
@@ -65,6 +73,9 @@ public :
    Float_t         refy[maxJets];   //[nref]
    Float_t         refphi[maxJets];   //[nref]
    Float_t         refm[maxJets];   //[nref]
+   Float_t         reftau1[maxJets] = {-999};   //[nref]
+   Float_t         reftau2[maxJets] = {-999};   //[nref]
+   Float_t         reftau3[maxJets] = {-999};   //[nref]
    Float_t         refdphijt[maxJets];   //[nref]
    Float_t         refdrjt[maxJets];   //[nref]
    Float_t         refparton_pt[maxJets];   //[nref]
@@ -86,6 +97,9 @@ public :
    Float_t         geny[maxGenJets];   //[ngen]
    Float_t         genphi[maxGenJets];   //[ngen]
    Float_t         genm[maxGenJets] = {0.};   //[ngen]
+   Float_t         gentau1[maxGenJets] = {-999};   //[nref]
+   Float_t         gentau2[maxGenJets] = {-999};   //[nref]
+   Float_t         gentau3[maxGenJets] = {-999};   //[nref]
    Float_t         gendphijt[maxGenJets];   //[ngen]
    Float_t         gendrjt[maxGenJets];   //[ngen]
    Int_t           gensubid[maxGenJets];   //[ngen]
@@ -106,6 +120,14 @@ public :
    TBranch        *b_jtphi;   //!
    TBranch        *b_jtpu;   //!
    TBranch        *b_jtm;   //!
+   TBranch        *b_jtarea;   //!
+   TBranch        *b_jttau1;   //!
+   TBranch        *b_jttau2;   //!
+   TBranch        *b_jttau3;   //!
+   TBranch        *b_jtSubJetPt;   //!
+   TBranch        *b_jtSubJetEta;   //!
+   TBranch        *b_jtSubJetPhi;   //!
+   TBranch        *b_jtSubJetM;   //!
    TBranch        *b_discr_fr01;   //!
    TBranch        *b_trackMax;   //!
    TBranch        *b_trackSum;   //!
@@ -148,6 +170,9 @@ public :
    TBranch        *b_refy;   //!
    TBranch        *b_refphi;   //!
    TBranch        *b_refm;   //!
+   TBranch        *b_reftau1;   //!
+   TBranch        *b_reftau2;   //!
+   TBranch        *b_reftau3;   //!
    TBranch        *b_refdphijt;   //!
    TBranch        *b_refdrjt;   //!
    TBranch        *b_refparton_pt;   //!
@@ -167,6 +192,9 @@ public :
    TBranch        *b_geny;   //!
    TBranch        *b_genphi;   //!
    TBranch        *b_genm;   //!
+   TBranch        *b_gentau1;   //!
+   TBranch        *b_gentau2;   //!
+   TBranch        *b_gentau3;   //!
    TBranch        *b_gendphijt;   //!
    TBranch        *b_gendrjt;   //!
    TBranch        *b_gensubid;   //!

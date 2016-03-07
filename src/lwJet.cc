@@ -14,6 +14,10 @@ particleBase(),
   fRefParton(-1),
   fRefPartonForB(-1),
   fCsvSimpleDiscr(-1),
+  fSubJetPt(0),
+  fSubJetEta(0),
+  fSubJetPhi(0),
+  fSubJetM(0),
   fRawPt(-1),
   fRawM(-1),
   fRefPt(-1),
@@ -42,6 +46,10 @@ particleBase(),
   fMuN(-1)
 {
   //default constructor
+  for(int i = 0; i<3; ++i) {
+    fTau[i] = -1.;
+    fRefTau[i] = -1.;
+  }
 }
 
 //__________________________________________________________
@@ -52,6 +60,10 @@ lwJet::lwJet(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id, Int_
   fRefParton(-1),
   fRefPartonForB(-1),
   fCsvSimpleDiscr(-1),
+  fSubJetPt(0),
+  fSubJetEta(0),
+  fSubJetPhi(0),
+  fSubJetM(0),
   fRawPt(-1),
   fRawM(-1),
   fRefPt(-1),
@@ -80,6 +92,10 @@ lwJet::lwJet(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id, Int_
   fMuN(-1)
 {
   //standard constructor
+  for(int i = 0; i<3; ++i) {
+    fTau[i] = -1.;
+    fRefTau[i] = -1.;
+  }
 }
 
 //__________________________________________________________
@@ -90,6 +106,10 @@ lwJet::lwJet(const lwJet &obj) :
   fRefParton(obj.fRefParton),
   fRefPartonForB(obj.fRefPartonForB),
   fCsvSimpleDiscr(obj.fCsvSimpleDiscr),
+  fSubJetPt(obj.fSubJetPt),
+  fSubJetEta(obj.fSubJetEta),
+  fSubJetPhi(obj.fSubJetPhi),
+  fSubJetM(obj.fSubJetM),
   fRawPt(obj.fRawPt),
   fRawM(obj.fRawM),
   fRefPt(obj.fRefPt),
@@ -118,6 +138,10 @@ lwJet::lwJet(const lwJet &obj) :
   fMuN(obj.fMuN)
 {
   //copy constructor
+  for(int i = 0; i<3; ++i) {
+    fTau[i] = obj.fTau[i];
+    fRefTau[i] = obj.fRefTau[i];
+  }
 }
 
 //__________________________________________________________
@@ -132,6 +156,10 @@ lwJet &lwJet::operator=(const lwJet &other)
     fRefParton      = other.fRefParton;
     fRefPartonForB  = other.fRefPartonForB;
     fCsvSimpleDiscr = other.fCsvSimpleDiscr;
+    fSubJetPt = other.fSubJetPt;
+    fSubJetEta = other.fSubJetEta;
+    fSubJetPhi = other.fSubJetPhi;
+    fSubJetM = other.fSubJetM;
     fRawPt          = other.fRawPt;
     fRawM           = other.fRawM;
     fRefPt          = other.fRefPt;
@@ -158,6 +186,10 @@ lwJet &lwJet::operator=(const lwJet &other)
     fMuMax = other.fMuMax;
     fMuSum = other.fMuSum;
     fMuN = other.fMuN;
+  }
+  for(int i = 0; i<3; ++i) {
+    fTau[i] = other.fTau[i];
+    fRefTau[i] = other.fRefTau[i];
   }
   return *this;
 }

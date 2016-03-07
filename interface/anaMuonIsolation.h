@@ -79,6 +79,6 @@ public:
    TH2F            **fh2PtRecoIso;      //! isolation vs pt of reco muon
    TH2F            **fh2PtGenIso;       //! isolation vs pt,gen of reco muon
       
-   ClassDef(anaMuonIsolation,2)
+   ClassDef(anaMuonIsolation,3)
 };
 #endif

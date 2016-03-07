@@ -7,6 +7,7 @@
 #include "TDirectory.h"
 
 #include "UserCode/diall/interface/hiEventContainer.h"
+#include "UserCode/diall/interface/triggerMap.h"
 
 class anaBaseTask : public TTask {
    
@@ -23,7 +24,9 @@ public:
    
    TList *GetOutput()           const  { return fOutput; }
 
-   void SetHiEvtName(TString name)     { fEvtName  = name ; }
+   void SetHiEvtName(TString name)       { fEvtName  = name ; }
+   void SetTriggerMapName(TString name)  { fTriggerMapName  = name ; }
+   void AddTriggerSel(std::string s)     { fTriggerList.push_back(s); }
 
    bool   SelectEvent() const;
    void   DoCollionEventSel(bool b)    { fCollSel   = b; }
@@ -45,6 +48,9 @@ public:
    TList      *fOutput;                         //!list with output objects
    TString           fEvtName;                  //name of hi event container
    hiEventContainer *fHiEvent;                  //!event container
+   TString           fTriggerMapName;           //name of trigger map
+   triggerMap       *fTriggerMap;               //!trigger map
+   std::vector<std::string> fTriggerList;       // triggers to add to event
    bool        fCollSel;                        //flag to do collision event sel
    bool        fHBHENoise;                      //HBHE noise filter
    double      fCentMin;                        //cent min

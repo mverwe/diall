@@ -23,19 +23,20 @@ public:
    void CreateOutputObjects();
 
    void SetNCentBins(Int_t n)          { fNcentBins    = n;  }
-   void SetGenJetsName(TString name)   { fJetsName = name ;  }
-   void SetRecJetsName(TString name)   { fJets2Name = name ; }
+   void SetGenJetsName(TString name)   { fJetsGenName = name ;  }
+   void SetRecJetsName(TString name)   { fJetsRecName = name ; }
    void SetUseForestMatching(bool b)   { fUseForestMatching = b; }
    void SetRhoMapName(TString n)       { fRhoMapName    = n ; }
    void SetMaxDistance(double dr)      { fMaxDist       = dr; }
    void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
- 
+   void SetRefPartonFlavor(int min, int max)  { fRefPartonFlavorMin = min; fRefPartonFlavorMax = max;} 
+
  protected:
    Int_t             fNcentBins;
-   TString           fJetsName;       //name of jet container
-   lwJetContainer   *fJetsCont;       //!jet container
-   TString           fJets2Name;      //name of jet container
-   lwJetContainer   *fJets2Cont;      //!jet container
+   TString           fJetsGenName;       //name of gen jet container
+   lwJetContainer   *fJetsGenCont;       //!gen jet container
+   TString           fJetsRecName;      //name of rec jet container
+   lwJetContainer   *fJetsRecCont;      //!rec jet container
 
    bool              fUseForestMatching; //use matched ref jet from forest
    bool              fUseRawPt;          //use raw pt
@@ -44,7 +45,9 @@ public:
    rhoMap           *fRhoMap;                 //!rho map
 
    double            fMaxDist;                //max distance between matched jets  
- 
+   int               fRefPartonFlavorMin;     //required parton flavor
+   int               fRefPartonFlavorMax;     //required parton flavor
+
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;
    TH1F      *fhNPV;

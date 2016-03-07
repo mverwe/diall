@@ -4,7 +4,7 @@
 
 #include "UserCode/diall/interface/triggerProducer.h"
 
-#include <ostream>
+#include <iostream>
 using namespace std;
 
 ClassImp(triggerProducer)
@@ -13,7 +13,11 @@ ClassImp(triggerProducer)
 triggerProducer::triggerProducer() :
 inputBase("triggerProducer"),
   fTriggerMapName("hiEventContainer"),
-  fTriggerMap(0)
+  fTriggerMap(0),
+  fTriggerList(0),
+  fTrigVal(),
+  fTrigBranch(),
+  fNTriggers(0)
 {
   //default constructor
 }
@@ -22,7 +26,11 @@ inputBase("triggerProducer"),
 triggerProducer::triggerProducer(const char *name) :
   inputBase(name),
   fTriggerMapName("triggerMap"),
-  fTriggerMap(0)
+  fTriggerMap(0),
+  fTriggerList(0),
+  fTrigVal(),
+  fTrigBranch(),
+  fNTriggers(0)
 {
   //standard constructor
 }
@@ -31,14 +39,19 @@ triggerProducer::triggerProducer(const char *name) :
 void triggerProducer::SetInput(TChain *chain) {
 
   inputBase::SetInput(chain);
-  //Init();
-  
+  //Init(); 
 }
 
 //__________________________________________________________
 Bool_t triggerProducer::Init() {
 
   if(!inputBase::Init()) return kFALSE;
+
+ fNTriggers = 0;
+  for(std::vector<std::string>::const_iterator s = fTriggerList.begin(); s != fTriggerList.end(); ++s) {
+    if(fChain->SetBranchAddress((*s).c_str(),&fTrigVal[fNTriggers],&fTrigBranch[fNTriggers])<0) continue;
+  fNTriggers++;
+  }
 
   fInit = kTRUE;
   
@@ -70,8 +83,10 @@ Bool_t triggerProducer::Run(Long64_t entry) {
 
   if(!InitEventObjects()) return kFALSE;
 
-  int val[20000] = {0};
-  TBranch *br[20000];
+  //int val[20000] = {0};
+  //TBranch *br[20000];
+
+/*
   TObjArray *objarr = fChain->GetListOfBranches();
   for(int i = 0; i < objarr->GetEntries(); ++i) {
     TString str = objarr->At(i)->GetName();
@@ -84,6 +99,21 @@ Bool_t triggerProducer::Run(Long64_t entry) {
     fChain->GetEntry(entry);
     //Printf("%s val: %d",str.Data(),val[i]);
     fTriggerMap->AddTrigger(str.Data(),val[i]);
+  }
+*/
+/*
+  int i = 0;
+  for(std::vector<std::string>::const_iterator s = fTriggerList.begin(); s != fTriggerList.end(); ++s) {
+    //std::cout << *s << std::endl; // this will print all the contents of *fTriggerList*
+    if(fChain->SetBranchAddress((*s).c_str(),&val[i],&br[i])<0) continue;
+    fChain->GetEntry(entry);
+    fTriggerMap->AddTrigger((*s).c_str(),val[i]);
+    i++;
+  }
+*/
+  for(int i = 0; i<fNTriggers; ++i) {
+    fChain->GetEntry(entry);
+    fTriggerMap->AddTrigger(fTriggerList.at(i),fTrigVal[i]);
   }
  
   //fTriggerMap->PrintTriggers();

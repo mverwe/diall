@@ -42,7 +42,9 @@ public:
    TH1F            **fh1ZPt;                  //!# Z-pt
    TH3F            **fh3ZJetPtRecGen;         //!# Z-pt vs jet pt rec vs jet pt gen
    TH3F            **fh3ZJetXJZRecGen;        //!# Z-pt vs jet ZJZ rec vs jet XJZ gen
+
+   TH3F            **fh3PtTrueEtaScalePt;     //!jet pt scale for jets recoiling from Z
    
-   ClassDef(anaZJetMCResponse,2)
+   ClassDef(anaZJetMCResponse,3)
 };
 #endif

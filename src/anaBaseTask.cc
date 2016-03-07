@@ -13,6 +13,9 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fOutput(0),
   fEvtName(""),
   fHiEvent(),
+  fTriggerMapName(""),
+  fTriggerMap(),
+  fTriggerList(0),
   fCollSel(0),
   fHBHENoise(0),
   fCentMin(-999),
@@ -40,7 +43,16 @@ void anaBaseTask::Exec(Option_t * /*option*/)
      }
   }
 
-  if(!SelectEvent()) return;
+  //Get trigger map
+  if(!fTriggerMap && !fTriggerMapName.IsNull()) {
+    fTriggerMap = dynamic_cast<triggerMap*>(fEventObjects->FindObject(fTriggerMapName.Data()));
+    if(!fTriggerMap) {
+      Printf("%s: !!WARNING: Couldn't locate %s branch",GetName(),fTriggerMapName.Data());
+      return;
+    }
+  }
+
+  //if(!SelectEvent()) return;
 }
 
 //----------------------------------------------------------
@@ -110,6 +122,15 @@ bool anaBaseTask::SelectEvent() const {
     if(fPhoton30Excl && fHiEvent->GetPhoton30()) { accept = false;
  //     printf("accept 8 %d %d %d\n", accept, fPhoton30Excl, !fHiEvent->GetPhoton30() );
     }
+  }
+
+  if(fTriggerMap && accept) {
+    bool passTrig = false;
+    for(std::vector<std::string>::const_iterator s = fTriggerList.begin(); s != fTriggerList.end(); ++s) {
+       int fire = fTriggerMap->TriggerFired(*s);
+       if(fire>0) passTrig = true;
+    }
+    accept = passTrig;
   }
 
   return accept;

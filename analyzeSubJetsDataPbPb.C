@@ -5,6 +5,7 @@
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
+#include "UserCode/diall/interface/triggerProducer.h"
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include "UserCode/diall/interface/anaJetEnergyScale.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
@@ -15,6 +16,7 @@
 #include "UserCode/diall/interface/anaMuonMatcher.h"
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaPuppiParticles.h"
+#include "UserCode/diall/interface/anaSubJet.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
 
 #include <TList.h>
@@ -25,7 +27,7 @@
 
 using namespace std;
 
-void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
+void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0) {
 
   /*
     ptminType: minimum raw pt for particles used by puppi
@@ -38,15 +40,13 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     1 : particle-level jets (gen jets)
    */
 
+  double ptminjet = 80.;
+  TString jetName = "aktCs4PFSoftDrop";
+  TString jetTreeName = "akCs4PFSoftDropJetAnalyzer";
+  //jetName = "akCs4PFFilter";
+  //jetTreeName = "akCs4PFFilterJetAnalyzer";
 
-  TString jetName = "aktPuppiR040";
-  TString jetTreeName = "akPuppi4PFJetAnalyzer";
-  jetName = "aktCsR040";
-  jetTreeName = "akCs4PFJetAnalyzer";
-  jetName = "aktVsR040";
-  jetTreeName = "akVs4PFJetAnalyzer";
-
-  std::cout << "analyzing JES for: " << jetName << " tree: " << jetTreeName << std::endl;
+  std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
    
   std::cout << "nfiles: " << urls.size() << std::endl;
   for (auto i = urls.begin(); i != urls.end(); ++i)
@@ -72,11 +72,20 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   chain = new TChain("hiEvtAnalyzer/HiTree");
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
+
+  TChain *hltTree = new TChain("hltanalysis/HltTree");
+  for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
+  Printf("hltTree done");
   
   TChain *jetTree = new TChain(Form("%s/t",jetTreeName.Data()));
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   chain->AddFriend(jetTree);
   Printf("jetTree done");
+
+  // TChain *csJetTree = new TChain(Form("%s/t","akCs4PFJetAnalyzer"));
+  // for(size_t i=firstFile; i<lastFile; i++) csJetTree->Add(urls[i].c_str());
+  // chain->AddFriend(csJetTree);
+  // Printf("csJetTree done");
 
   TList *fEventObjects = new TList();
 
@@ -88,12 +97,25 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
+  triggerProducer *p_trg = new triggerProducer("trigProd");
+  p_trg->SetInput(hltTree);
+  p_trg->SetTriggerMapName("triggerMap");
+  p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  p_trg->SetEventObjects(fEventObjects);
+
   lwJetFromForestProducer *p_PUJet = new lwJetFromForestProducer("lwJetForestProd");
   p_PUJet->SetInput(chain);
   p_PUJet->SetJetContName(jetName);
-  p_PUJet->SetGenJetContName("akt4Gen");
+  p_PUJet->SetGenJetContName("");
   p_PUJet->SetEventObjects(fEventObjects);
   p_PUJet->SetRadius(0.4);
+  p_PUJet->SetMinJetPt(ptminjet);
+  // lwJetFromForestProducer *p_CSJet = new lwJetFromForestProducer("lwJetForestProd");
+  // p_CSJet->SetInput(csJetTree);
+  // p_CSJet->SetJetContName("aktCs4PF");
+  // p_CSJet->SetGenJetContName("");
+  // p_CSJet->SetEventObjects(fEventObjects);
+  // p_CSJet->SetRadius(0.4);
   
   //---------------------------------------------------------------
   //analysis modules
@@ -102,77 +124,51 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   //handler to which all modules will be added
   anaBaseTask *handler = new anaBaseTask("handler","handler");
 
-  anaJetEnergyScale *anajesForest = new anaJetEnergyScale("anaJESForest","anaJESForest");
-  anajesForest->ConnectEventObject(fEventObjects);
-  anajesForest->SetHiEvtName("hiEventContainer");
-  anajesForest->SetGenJetsName("akt4Gen");
-  anajesForest->SetRecJetsName(jetName);
-  anajesForest->SetNCentBins(4);
-  anajesForest->SetUseForestMatching(true);
-  //anajesForest->SetMaxDistance(0.2);
-  handler->Add(anajesForest);
+  anaSubJet *anasubjets = new anaSubJet("anaSubJets","anaSubJets");
+  anasubjets->ConnectEventObject(fEventObjects);
+  anasubjets->SetHiEvtName("hiEventContainer");
+  anasubjets->SetTriggerMapName("triggerMap");
+  anasubjets->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  anasubjets->SetJetsName(jetName);
+  anasubjets->SetNCentBins(4);
+  anasubjets->SetJetEtaRange(-2.,2.);
+  anasubjets->SetDoDijets(true);
+  anasubjets->AddLeadingJetPtBin(120.,150.);
+  anasubjets->AddLeadingJetPtBin(150.,180.);
+  anasubjets->AddLeadingJetPtBin(180.,220.);
+  anasubjets->AddLeadingJetPtBin(220.,260.);
+  anasubjets->AddLeadingJetPtBin(260.,300.);
+  anasubjets->AddLeadingJetPtBin(300.,500.);
+  anasubjets->SetPtMinSubleading(30.);
+  handler->Add(anasubjets);
 
-  anaJetEnergyScale *anajesForestQuarks = new anaJetEnergyScale("anaJESForestQuarks","anaJESForestQuarks");
-  anajesForestQuarks->ConnectEventObject(fEventObjects);
-  anajesForestQuarks->SetHiEvtName("hiEventContainer");
-  anajesForestQuarks->SetGenJetsName("akt4Gen");
-  anajesForestQuarks->SetRecJetsName(jetName);
-  anajesForestQuarks->SetNCentBins(4);
-  anajesForestQuarks->SetUseForestMatching(true);
-  //anajesForestQuarks->SetMaxDistance(0.2);
-  anajesForestQuarks->SetRefPartonFlavor(0,2);
-  handler->Add(anajesForestQuarks);
+  anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
+  anasubjetsMassCut->ConnectEventObject(fEventObjects);
+  anasubjetsMassCut->SetHiEvtName("hiEventContainer");
+  anasubjetsMassCut->SetTriggerMapName("triggerMap");
+  anasubjetsMassCut->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  anasubjetsMassCut->SetJetsName(jetName);
+  anasubjetsMassCut->SetNCentBins(4);
+  anasubjetsMassCut->SetJetEtaRange(-2.,2.);
+  anasubjetsMassCut->SetDoDijets(true);
+  anasubjetsMassCut->AddLeadingJetPtBin(120.,150.);
+  anasubjetsMassCut->AddLeadingJetPtBin(150.,180.);
+  anasubjetsMassCut->AddLeadingJetPtBin(180.,220.);
+  anasubjetsMassCut->AddLeadingJetPtBin(220.,260.);
+  anasubjetsMassCut->AddLeadingJetPtBin(260.,300.);
+  anasubjetsMassCut->AddLeadingJetPtBin(300.,500.);
+  anasubjetsMassCut->SetPtMinSubleading(30.);
+  anasubjetsMassCut->SetMinMassLeading(10.);
+  handler->Add(anasubjetsMassCut);
 
-  anaJetEnergyScale *anajesForestGluons = new anaJetEnergyScale("anaJESForestGluons","anaJESForestGluons");
-  anajesForestGluons->ConnectEventObject(fEventObjects);
-  anajesForestGluons->SetHiEvtName("hiEventContainer");
-  anajesForestGluons->SetGenJetsName("akt4Gen");
-  anajesForestGluons->SetRecJetsName(jetName);
-  anajesForestGluons->SetNCentBins(4);
-  anajesForestGluons->SetUseForestMatching(true);
-  //anajesForestGluons->SetMaxDistance(0.2);
-  anajesForestGluons->SetRefPartonFlavor(21,21);
-  handler->Add(anajesForestGluons);
-  
-  anaJetEnergyScale *anajesForestRaw = new anaJetEnergyScale("anaJESForestRaw","anaJESForestRaw");
-  anajesForestRaw->ConnectEventObject(fEventObjects);
-  anajesForestRaw->SetHiEvtName("hiEventContainer");
-  anajesForestRaw->SetGenJetsName("");
-  anajesForestRaw->SetRecJetsName(jetName);
-  anajesForestRaw->SetNCentBins(4);
-  anajesForestRaw->SetUseForestMatching(true);
-  anajesForestRaw->SetUseRawPt(true);
-  //handler->Add(anajesForestRaw);
-
-  //particle-detector-level jet matching
-  anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
-  match->ConnectEventObject(fEventObjects);
-  match->SetHiEvtName("hiEventContainer");
-  //match->SetJetsNameBase(jetName);
-  //match->SetJetsNameTag("akt4Gen");
-  match->SetJetsNameTag(jetName);
-  match->SetJetsNameBase("akt4Gen");
-  match->SetMatchingType(0);
-  //handler->Add(match);
-  
-  anaJetEnergyScale *anajes = new anaJetEnergyScale("anaJES","anaJES");
-  anajes->ConnectEventObject(fEventObjects);
-  anajes->SetHiEvtName("hiEventContainer");
-  anajes->SetGenJetsName("akt4Gen");
-  anajes->SetRecJetsName(jetName);
-  anajes->SetNCentBins(4);
-  //handler->Add(anajes);
-
-  anaJetEnergyScale *anajesRaw = new anaJetEnergyScale("anaJESRaw","anaJESRaw");
-  anajesRaw->ConnectEventObject(fEventObjects);
-  anajesRaw->SetHiEvtName("hiEventContainer");
-  anajesRaw->SetGenJetsName("akt4Gen");
-  anajesRaw->SetRecJetsName(jetName);
-  anajesRaw->SetNCentBins(4);
-  anajesRaw->SetUseForestMatching(false);
-  anajesRaw->SetUseRawPt(true);
-  //handler->Add(anajesRaw);
-
+  // anaSubJet *anasubjetsCSJets = new anaSubJet("anasubjetsCSJets","anasubjetsCSJets");
+  // anasubjetsCSJets->ConnectEventObject(fEventObjects);
+  // anasubjetsCSJets->SetHiEvtName("hiEventContainer");
+  // anasubjetsCSJets->SetJetsName("aktCs4PF");
+  // anasubjetsCSJets->SetNCentBins(4);
+  // anasubjetsCSJets->SetJetEtaRange(-2.,2.);
+  // anasubjetsCSJets->SetDoDijets(false);
+  // handler->Add(anasubjetsCSJets);
  
   //---------------------------------------------------------------
   //Event loop
@@ -187,7 +183,8 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     p_evt->Run(jentry);   //hi event properties
     //Printf("produce PU jets");
     p_PUJet->Run(jentry); //forest jets
-	    
+    p_trg->Run(jentry);	    
+
     //Execute all analysis tasks
     handler->ExecuteTask();
   }

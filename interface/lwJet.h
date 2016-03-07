@@ -20,12 +20,19 @@ class lwJet : public particleBase {
   lwJet& operator=(const lwJet& other); // assignment
 
   Double_t    GetArea()                 const { return fArea           ; }
+  float       GetTau(int num)           const { if(num>0 && num<4) {return fTau[num-1];} else return -1.; }
+
   float       GetRawPt()                const { return fRawPt          ; }
   float       GetRawM()                 const { return fRawM           ; }
   float       GetRefPt()                const { return fRefPt          ; }
   float       GetRefEta()               const { return fRefEta         ; }
   float       GetRefPhi()               const { return fRefPhi         ; }
   float       GetRefM()                 const { return fRefM           ; }
+  float       GetRefTau(int num)        const { if(num>0 && num<4) { return fRefTau[num-1];} else return -1.; }
+  std::vector<float> GetSubJetPt()      const { return fSubJetPt       ; }
+  std::vector<float> GetSubJetEta()     const { return fSubJetEta      ; }
+  std::vector<float> GetSubJetPhi()     const { return fSubJetPhi      ; }
+  std::vector<float> GetSubJetM()       const { return fSubJetM        ; }
   float       GetRefDr()                const { return fRefDr          ; }
   int         GetSubEvent()             const { return fSube           ; }
   
@@ -36,6 +43,7 @@ class lwJet : public particleBase {
   Int_t       GetRefParton()            const { return fRefParton      ; }
   Int_t       GetRefPartonForB()        const { return fRefPartonForB  ; }
   Float_t     GetCsvSimpleDiscr()       const { return fCsvSimpleDiscr ; }
+    
   Float_t       GetChargedSum()           const { return fChargedSum; }
   Float_t       GetChargedMax()           const { return fChargedMax; }
   Int_t         GetChargedN()             const { return fChargedN;   }
@@ -58,10 +66,17 @@ class lwJet : public particleBase {
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
   void        SetRawM(Double_t m)          { fRawM = m; }
+  void        SetTau(int num, float tau)   { if(num>0 && num<4) fTau[num-1] = tau; }
+  void        SetSubJetPt(std::vector<float> v)  { fSubJetPt  = v; }
+  void        SetSubJetEta(std::vector<float> v) { fSubJetEta = v; }
+  void        SetSubJetPhi(std::vector<float> v) { fSubJetPhi = v; }
+  void        SetSubJetM(std::vector<float> v)   { fSubJetM   = v; }
+  
   void        SetRefPt(Double_t pt)        { fRefPt = pt; }
   void        SetRefEta(Double_t eta)      { fRefEta = eta; }
   void        SetRefPhi(Double_t phi)      { fRefPhi = phi; }
   void        SetRefM(Double_t m)          { fRefM = m; }
+  void        SetRefTau(int num, float tau)   { if(num>0 && num<4) fRefTau[num-1] = tau; }
   void        SetRefDr(Double_t dr)        { fRefDr = dr; }
   void        SetSubEvent(Int_t su)        { fSube  = su; }
 
@@ -84,12 +99,20 @@ class lwJet : public particleBase {
   Int_t             fRefPartonForB; //ref to parton for b
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
 
+  float             fTau[3];
+  
+  std::vector<float>  fSubJetPt;  //list os subjet pt
+  std::vector<float>  fSubJetEta; //list os subjet eta
+  std::vector<float>  fSubJetPhi; //list os subjet phi
+  std::vector<float>  fSubJetM;   //list os subjet m
+
   float             fRawPt;         //raw pt (no jec)
   float             fRawM;          //raw mass (no jec)
   float             fRefPt;         //matched gen-level jet pt
   float             fRefEta;        //matched gen-level jet eta
   float             fRefPhi;        //matched gen-level jet phi
   float             fRefM;          //matched gen-level jet mass
+  float             fRefTau[3];
   float             fRefDr;         //distance between reco and gen jet
   int               fSube;          //sub-event id (0=hard process)
   float             fChargedMax;    //max track pt
@@ -111,6 +134,6 @@ class lwJet : public particleBase {
   float             fMuSum;
   int               fMuN;
     
-  ClassDef(lwJet,5)
+  ClassDef(lwJet,6)
 };
 #endif

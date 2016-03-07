@@ -7,15 +7,17 @@ ClassImp(anaJetEnergyScale)
 anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title) 
 :anaBaseTask(name,title),
   fNcentBins(4),
-  fJetsName(""),
-  fJetsCont(0x0),
-  fJets2Name(""),
-  fJets2Cont(0x0),
+  fJetsGenName(""),
+  fJetsGenCont(0x0),
+  fJetsRecName(""),
+  fJetsRecCont(0x0),
   fUseForestMatching(false),
   fUseRawPt(false),
   fRhoMapName(""),
   fRhoMap(0x0),
   fMaxDist(0.4),
+  fRefPartonFlavorMin(-1),
+  fRefPartonFlavorMax(-1),
   fhEventSel(0),
   fhCentrality(0),
   fhNPV(0),
@@ -93,21 +95,21 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
   }
   
   //Get base jets
-  if(!fJetsCont && !fJetsName.IsNull())
-    fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
-  if(!fJetsCont && !fUseForestMatching) {
-    Printf("%s: 1 Cannot find %s",GetName(),fJetsName.Data());
+  if(!fJetsGenCont && !fJetsGenName.IsNull())
+    fJetsGenCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsGenName.Data()));
+  if(!fJetsGenCont && !fUseForestMatching) {
+    Printf("%s: 1 Cannot find %s",GetName(),fJetsGenName.Data());
     return;
   }
    //Get tag jets
-   if(!fJets2Cont && !fJets2Name.IsNull())
-     fJets2Cont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJets2Name.Data()));
-   if(!fJets2Cont) {
-     Printf("%s: 2 Cannot find %s",GetName(),fJets2Name.Data());
+   if(!fJetsRecCont && !fJetsRecName.IsNull())
+     fJetsRecCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsRecName.Data()));
+   if(!fJetsRecCont) {
+     Printf("%s: 2 Cannot find %s",GetName(),fJetsRecName.Data());
      return;
    }
-   const Int_t nJets2 = fJets2Cont->GetNJets();
-   if(nJets2==0) return;
+   const Int_t nJetsRec = fJetsRecCont->GetNJets();
+   if(nJetsRec==0) return;
 
    //get rho background density map
    if(!fRhoMap && !fRhoMapName.IsNull())
@@ -139,22 +141,29 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
 
    fhEventSel->Fill(0.5);
 
-   //Printf("fMaxDist: %f",fMaxDist);
    bool debugMatching = false;
    bool printDebug = false;
-   //if(fJetsCont->GetJet(0)->Pt()>80.) printDebug = true;
-   //if(printDebug) Printf("Next event");
+   //if(fJetsGenCont->GetJet(0)->Pt()>80.) printDebug = true;
    
    if(fUseForestMatching) {
-     for(Int_t ij = 0; ij<fJets2Cont->GetNJets(); ij++) {
-       lwJet *jet = fJets2Cont->GetJet(ij);
+     for(Int_t ij = 0; ij<fJetsRecCont->GetNJets(); ij++) {
+       lwJet *jet = fJetsRecCont->GetJet(ij);
        if(!jet) continue;
-       //Printf("refpt: %f jtpt: %f dr: %f",jet->GetRefPt(),jet->Pt(),jet->GetRefDr());
+
+       //reject unmatched or badly matched jets
        if(jet->GetRefDr()>fMaxDist
           || jet->GetSubEvent()!=0
           || jet->GetRefPt()<10.)//e-3)
          continue;
 
+       //select jets originating from certain parton flavor
+       if(fRefPartonFlavorMin>-1 && fRefPartonFlavorMax>-1) {
+         if(std::abs(jet->GetRefParton())<std::abs(fRefPartonFlavorMin) || std::abs(jet->GetRefParton())>std::abs(fRefPartonFlavorMax)) continue;
+       }
+
+       if(fCentBin>-1 && fCentBin<fNcentBins)
+         fh3PtEtaPhiMatched[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->GetRefPhi(),weight);
+       
        double pt  = jet->Pt();
        if(fUseRawPt) pt = jet->GetRawPt();       
        double dpt = pt-jet->GetRefPt();
@@ -186,21 +195,30 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
              fh3PtTrueMTrueScaleM[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefM(),jet->M()/jet->GetRefM(),weight);
          }//eta selection
        }
-       
+     }
+
+     for(Int_t ij = 0; ij<fJetsGenCont->GetNJets(); ij++) {
+       lwJet *jet = fJetsGenCont->GetJet(ij);
+       if(!jet) continue;
+       if(fCentBin>-1 && fCentBin<fNcentBins) {
+         fh2PtEtaNoMatching[fCentBin]->Fill(jet->Pt(),jet->Eta(),weight);
+         if( jet->GetMatchId1()<0 || jet->GetMatchId1()>fJetsRecCont->GetNJets() )
+           fh3PtEtaPhiNotMatched[fCentBin]->Fill(jet->Pt(),jet->Eta(),jet->Phi(),weight);
+       }
      }
    } else { //use matching from anaJetMatching
-     const Int_t nJets1 = fJetsCont->GetNJets();
+     const Int_t nJets1 = fJetsGenCont->GetNJets();
      if(nJets1==0) return;
      
-     for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
-       lwJet *jet1 = fJetsCont->GetJet(ij);
+     for(Int_t ij = 0; ij<fJetsGenCont->GetNJets(); ij++) {
+       lwJet *jet1 = fJetsGenCont->GetJet(ij);
        if(!jet1) continue;
 
        if(fCentBin>-1 && fCentBin<fNcentBins) 
          fh2PtEtaNoMatching[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),weight);
           
        int id = jet1->GetMatchId1();
-       lwJet *jet2 = fJets2Cont->GetJet(id);
+       lwJet *jet2 = fJetsRecCont->GetJet(id);
        bool matched = true;
        if(!jet2) matched = false;
        double dR = 999.;
@@ -272,19 +290,19 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
       if(debugMatching && printDebug && fCentBin==0) {
         //loop over gen jets
         //Printf("gen jets");
-        for(Int_t ij = 0; ij<fJetsCont->GetNJets(); ij++) {
-            lwJet *jet = fJetsCont->GetJet(ij);
+        for(Int_t ij = 0; ij<fJetsGenCont->GetNJets(); ij++) {
+            lwJet *jet = fJetsGenCont->GetJet(ij);
             if(!jet) continue;
             //double matchpt = -999;
             int id = jet->GetMatchId1();
-            //lwJet *jet2 = fJets2Cont->GetJet(id);
+            //lwJet *jet2 = fJetsRecCont->GetJet(id);
             //if(jet2) matchpt = jet2->Pt();
             //Printf("pt: %f eta: %f phi: %f matchId: %d mvpt: %f refpt: %f",jet->Pt(),jet->Eta(),jet->Phi(),jet->GetMatchId1(),matchpt,jet->GetRefPt());
             
         }
         //Printf("\n reco jets");
-        for(Int_t ij = 0; ij<fJets2Cont->GetNJets(); ij++) {
-          lwJet *jet = fJets2Cont->GetJet(ij);
+        for(Int_t ij = 0; ij<fJetsRecCont->GetNJets(); ij++) {
+          lwJet *jet = fJetsRecCont->GetJet(ij);
           if(!jet) continue;
           //Printf("pt: %f eta: %f phi: %f matchId: %d refpt: %f refdr: %f",jet->Pt(),jet->Eta(),jet->Phi(),jet->GetMatchId1(),jet->GetRefPt(),jet->GetRefDr());
         }

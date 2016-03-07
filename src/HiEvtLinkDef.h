@@ -47,6 +47,7 @@
 #include "UserCode/diall/interface/anaPuppiParticles.h"
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaRhoProducer.h"
+#include "UserCode/diall/interface/anaSubJet.h"
 #include "UserCode/diall/interface/anaZJetMCResponse.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
 
@@ -105,6 +106,7 @@
 #pragma link C++ class anaPuppiParticles;
 #pragma link C++ class anaPuppiProducer;
 #pragma link C++ class anaRhoProducer;
+#pragma link C++ class anaSubJet;
 #pragma link C++ class anaZJetMCResponse;
 #pragma link C++ class anaZToMuMu;
 

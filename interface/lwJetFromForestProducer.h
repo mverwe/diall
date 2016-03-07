@@ -28,7 +28,7 @@ class lwJetFromForestProducer : public inputBase {
   void        SetJetContName(TString n)    { flwJetContName = n ; }
   void        SetGenJetContName(TString n) { flwGenJetContName = n ; }
   void        SetRadius(Double_t r)        { fRadius        = r ; }
-
+  void        SetMinJetPt(double pt)       { fMinJetPt      = pt; }
   void        DoPFJetID(bool b)            { fDoPFJetID = b; }
   
   const char* GetJetContName()    const { return flwJetContName.Data()    ; }
@@ -44,6 +44,7 @@ class lwJetFromForestProducer : public inputBase {
   lwJetContainer              *flwGenJetContainer;  //!lwGenJetContainer
   ForestJets                   fForestJets;         //!jets in forest tree
   Double_t                     fRadius;             // the R parameter to use
+  double                       fMinJetPt;           // min jet pt
   bool                         fDoPFJetID;          // do PF jet quality selection
 
  private:
