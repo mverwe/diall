@@ -55,6 +55,7 @@ public:
    TH2F      **fh2PtEtaNoMatching;    //!
    TH3F      **fh3PtEtaPhiNotMatched; //!
    TH3F      **fh3PtEtaPhiMatched;    //!
+   TH3F      **fh3PtEtaPhiMatched2;   //!
 
    TH3F      **fh3PtTrueNPVDeltaPt;   //!
    TH3F      **fh3PtTrueNPVDeltaPtRel;//!
@@ -65,7 +66,8 @@ public:
    TH3F      **fh3PtTrueEtaDeltaPtRel;//!
    TH3F      **fh3PtTrueEtaScalePt;   //!
    TH3F      **fh3PtTruePtSubEta;     //!
-  
+   TH3F      **fh3PtTrueEtaDeltaR;    //! 
+ 
    TH3F      **fh3PtTrueEtaDeltaM;    //!
    TH3F      **fh3PtTrueEtaDeltaMRel; //!
    TH3F      **fh3PtTrueEtaScaleM;    //!

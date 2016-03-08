@@ -43,8 +43,8 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   TString jetTreeName = "akPuppi4PFJetAnalyzer";
   jetName = "aktCsR040";
   jetTreeName = "akCs4PFJetAnalyzer";
-  jetName = "aktVsR040";
-  jetTreeName = "akVs4PFJetAnalyzer";
+  //jetName = "aktVsR040";
+  //jetTreeName = "akVs4PFJetAnalyzer";
 
   std::cout << "analyzing JES for: " << jetName << " tree: " << jetTreeName << std::endl;
    
