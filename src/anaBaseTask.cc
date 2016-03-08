@@ -96,6 +96,7 @@ bool anaBaseTask::SelectEvent() const {
   bool accept = true;
   
   if(fHiEvent) {
+    if(std::abs(fHiEvent->GetVz())>15.) accept = false;
     if(fCollSel && !fHiEvent->GetColl()) accept = false;
     //  printf("accept 1 %d %d %d\n", accept, fCollSel, !fHiEvent->GetColl()); }
     if(fHBHENoise && !fHiEvent->GetHBHENoise()) accept = false;
