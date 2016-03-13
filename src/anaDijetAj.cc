@@ -66,6 +66,14 @@ void anaDijetAj::Exec(Option_t * /*option*/)
     else if(cent>=50. && cent<80.) fCentBin = 3;
     else fCentBin = -1;
   }
+  if(fNcentBins==5) {
+    if(cent>=0. && cent<10.)       fCentBin = 0;
+    else if(cent>=10. && cent<30.) fCentBin = 1;
+    else if(cent>=30. && cent<50.) fCentBin = 2;
+    else if(cent>=50. && cent<80.) fCentBin = 3;
+    else if(cent>=80. && cent<100.) fCentBin = 4;
+    else fCentBin = -1;
+  }
 
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
      lwJet *jet = fJetsCont->GetJet(i);

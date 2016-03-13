@@ -131,7 +131,7 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAj->SetTriggerMapName("triggerMap");
   anadijetAj->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anadijetAj->SetJetsName(jetName);
-  anadijetAj->SetNCentBins(4);
+  anadijetAj->SetNCentBins(5);
   anadijetAj->SetJetEtaRange(-2.,2.);
   anadijetAj->SetDoDijets(true);
   anadijetAj->AddLeadingJetPtBin(120.,150.);
@@ -149,7 +149,7 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAjMassCut->SetTriggerMapName("triggerMap");
   anadijetAjMassCut->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anadijetAjMassCut->SetJetsName(jetName);
-  anadijetAjMassCut->SetNCentBins(4);
+  anadijetAjMassCut->SetNCentBins(5);
   anadijetAjMassCut->SetJetEtaRange(-2.,2.);
   anadijetAjMassCut->SetDoDijets(true);
   anadijetAjMassCut->AddLeadingJetPtBin(120.,150.);
