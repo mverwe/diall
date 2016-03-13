@@ -42,10 +42,12 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
    */
 
   double ptminjet = 30.;
-  TString jetName = "aktCs4PF";
-  TString jetTreeName = "akCs4PFJetAnalyzer";
+  TString jetName = "akt4PF";
+  TString jetTreeName = "ak4PFJetAnalyzer";
   //jetName = "akCs4PFFilter";
   //jetTreeName = "akCs4PFFilterJetAnalyzer";
+
+  TString triggerName = "HLT_AK4PFJet80_Eta5p1_v1";
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
    
@@ -101,7 +103,7 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   triggerProducer *p_trg = new triggerProducer("trigProd");
   p_trg->SetInput(hltTree);
   p_trg->SetTriggerMapName("triggerMap");
-  p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  p_trg->AddTrigger(triggerName.Data());
   p_trg->SetEventObjects(fEventObjects);
 
   lwJetFromForestProducer *p_PUJet = new lwJetFromForestProducer("lwJetForestProd");
@@ -129,9 +131,9 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAj->ConnectEventObject(fEventObjects);
   anadijetAj->SetHiEvtName("hiEventContainer");
   anadijetAj->SetTriggerMapName("triggerMap");
-  anadijetAj->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  anadijetAj->AddTriggerSel(triggerName.Data());
   anadijetAj->SetJetsName(jetName);
-  anadijetAj->SetNCentBins(4);
+  anadijetAj->SetNCentBins(1);
   anadijetAj->SetJetEtaRange(-2.,2.);
   anadijetAj->SetDoDijets(true);
   anadijetAj->AddLeadingJetPtBin(120.,150.);
@@ -147,9 +149,9 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAjMassCut->ConnectEventObject(fEventObjects);
   anadijetAjMassCut->SetHiEvtName("hiEventContainer");
   anadijetAjMassCut->SetTriggerMapName("triggerMap");
-  anadijetAjMassCut->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
+  anadijetAjMassCut->AddTriggerSel(triggerName.Data());
   anadijetAjMassCut->SetJetsName(jetName);
-  anadijetAjMassCut->SetNCentBins(4);
+  anadijetAjMassCut->SetNCentBins(1);
   anadijetAjMassCut->SetJetEtaRange(-2.,2.);
   anadijetAjMassCut->SetDoDijets(true);
   anadijetAjMassCut->AddLeadingJetPtBin(120.,150.);
