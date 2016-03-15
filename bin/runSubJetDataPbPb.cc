@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("config");
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
 
-  std::string outname = "AnaResultsSubJets.root";
+  std::string outname = "AnaResultsSoftDropJets.root";
   //std::string outname = "AnaResultsFilterJets.root";
   int maxEvts = runProcess.getParameter<int>("maxEvents");
     

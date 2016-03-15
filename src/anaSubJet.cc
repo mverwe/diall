@@ -31,11 +31,21 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtSubjetPtFrac3(),
   fh2PtSubjetPtFrac4(),
   fh2PtZg(),
+  fh2PtZgTrue(),
+  fh2PtZgNoRef(),
   fh2SLPtSubjetPtRatio21(),
   fh2SLPtSubjetPtRatio32(),
   fh2SLPtSubjetPtRatio43(),
   fh2SLPtSubjetPtRatio54(),
-  fh2SLPtZg()
+  fh2SLPtZg(),
+  fh2SLPtZgTrue(),
+  fh2SLPtZgNoRef(),
+  fh2SLPtDeltaPhi(),
+  fh2SLPtDeltaPhiTrue(),
+  fh2SLPtDeltaPhiNoRef(),
+  fStoreTree(false),
+  fTreeOut(0x0),
+  fSubjetTreeVars()
 {
   
   fh3PtEtaPhi          = new TH3F*[fNcentBins];
@@ -50,6 +60,8 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtSubjetPtFrac3   = new TH2F*[fNcentBins];
   fh2PtSubjetPtFrac4   = new TH2F*[fNcentBins];
   fh2PtZg              = new TH2F*[fNcentBins];
+  fh2PtZgTrue          = new TH2F*[fNcentBins];
+  fh2PtZgNoRef         = new TH2F*[fNcentBins];
 
   for (int i = 0; i < fNcentBins; i++) {
     fh3PtEtaPhi[i]      = 0;
@@ -64,6 +76,8 @@ anaSubJet::anaSubJet(const char *name, const char *title)
     fh2PtSubjetPtFrac3[i]   = 0;
     fh2PtSubjetPtFrac4[i]   = 0;
     fh2PtZg[i]              = 0;
+    fh2PtZgTrue[i]          = 0;
+    fh2PtZgNoRef[i]         = 0;
   }
 
 }
@@ -135,7 +149,11 @@ void anaSubJet::Exec(Option_t * /*option*/)
          }
        }
        float zg = std::min(sjpt.at(0),sjpt.at(1))/(sjpt.at(0)+sjpt.at(1));
-       if(fCentBin>-1 && fCentBin<fNcentBins) fh2PtZg[fCentBin]->Fill(pt,zg);
+       if(fCentBin>-1 && fCentBin<fNcentBins) {
+         fh2PtZg[fCentBin]->Fill(pt,zg);
+         if(jet->GetRefPt()<0.) fh2PtZgNoRef[fCentBin]->Fill(pt,zg);
+         else                   fh2PtZgTrue[fCentBin]->Fill(pt,zg);
+       }
      }
      for(int is = 0; is<nsubjets; ++is) {
        float ptrat = sjpt.at(is)/pt;
@@ -167,8 +185,19 @@ void anaSubJet::Exec(Option_t * /*option*/)
            if(jet2->Pt()<fPtSubleadingMin) continue;
 
            foundSL = true;
-           
+
            double dphi = acos(cos(jet->Phi() - jet2->Phi()));
+
+           TH2F *hdphi = (fh2SLPtDeltaPhi.at(fCentBin)).at(l);
+           hdphi->Fill(jet2->Pt(),dphi);
+           if(jet2->GetRefPt()<0.) {
+             TH2F *hdphiNoRef = (fh2SLPtDeltaPhiNoRef.at(fCentBin)).at(l);
+             hdphiNoRef->Fill(jet2->Pt(),dphi);
+           } else {
+             TH2F *hdphiTrue = (fh2SLPtDeltaPhiTrue.at(fCentBin)).at(l);
+             hdphiTrue->Fill(jet2->Pt(),dphi);
+           }
+           
            if(dphi<fMinDPhi) continue;
            
            std::vector<float> sjptsl = jet2->GetSubJetPt();
@@ -199,6 +228,13 @@ void anaSubJet::Exec(Option_t * /*option*/)
            float zgsl = std::min(sjptsl.at(0),sjptsl.at(1))/(sjptsl.at(0)+sjptsl.at(1));
            TH2F *hsjzg = (fh2SLPtZg.at(fCentBin)).at(l);
            hsjzg->Fill(jet2->Pt(),zgsl);
+           if(jet2->GetRefPt()<0.) {
+             TH2F *hsjzgNoRef = (fh2SLPtZgNoRef.at(fCentBin)).at(l);
+             hsjzgNoRef->Fill(jet2->Pt(),zgsl);
+           } else {
+             TH2F *hsjzgTrue = (fh2SLPtZgTrue.at(fCentBin)).at(l);
+             hsjzgTrue->Fill(jet2->Pt(),zgsl);
+           }
          }
        }
      }
@@ -282,6 +318,16 @@ void anaSubJet::CreateOutputObjects() {
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtZg[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
     fOutput->Add(fh2PtZg[i]);
+
+    histName = Form("fh2PtZgTrue_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh2PtZgTrue[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
+    fOutput->Add(fh2PtZgTrue[i]);
+
+    histName = Form("fh2PtZgNoRef_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh2PtZgNoRef[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
+    fOutput->Add(fh2PtZgNoRef[i]);
   }
 
   int nBinsLJ = (int)fPtLeadingMin.size();
@@ -295,6 +341,12 @@ void anaSubJet::CreateOutputObjects() {
     std::vector<TH2F *> h2LJ43;
     std::vector<TH2F *> h2LJ54;
     std::vector<TH2F *> h2LJZg;
+    std::vector<TH2F *> h2LJZgTrue;
+    std::vector<TH2F *> h2LJZgNoRef;
+    std::vector<TH2F *> h2LJDeltaPhi;
+    std::vector<TH2F *> h2LJDeltaPhiTrue;
+    std::vector<TH2F *> h2LJDeltaPhiNoRef;
+    
     for(int j = 0; j < nBinsLJ; j++) {
       histName = Form("fh2SLPtSubjetPtRatio21_%d_LJ%d",i,j);
       histTitle = Form("%s;pt;p_{T,SJ2}/p_{T,SJ1};",histName.Data());
@@ -325,11 +377,46 @@ void anaSubJet::CreateOutputObjects() {
       TH2F *htmpzg = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
       h2LJZg.push_back(htmpzg);
       fOutput->Add(htmpzg);
+
+      histName = Form("fh2SLPtZgTrue_%d_LJ%d",i,j);
+      histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+      TH2F *htmpzgTrue = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
+      h2LJZgTrue.push_back(htmpzgTrue);
+      fOutput->Add(htmpzgTrue);
+
+      histName = Form("fh2SLPtZgNoRef_%d_LJ%d",i,j);
+      histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+      TH2F *htmpzgNoRef = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
+      h2LJZgNoRef.push_back(htmpzgNoRef);
+      fOutput->Add(htmpzgNoRef);
+
+      histName = Form("fh2SLPtDeltaPhi_%d_LJ%d",i,j);
+      histTitle = Form("%s;p_{T};#Delta_{#phi};",histName.Data());
+      TH2F *htmpDeltaPhi = new TH2F(histName.Data(),histTitle.Data(),500,0,500,36,0.,TMath::Pi());
+      h2LJDeltaPhi.push_back(htmpDeltaPhi);
+      fOutput->Add(htmpDeltaPhi);
+
+      histName = Form("fh2SLPtDeltaPhiTrue_%d_LJ%d",i,j);
+      histTitle = Form("%s;p_{T};#Delta_{#phi};",histName.Data());
+      TH2F *htmpDeltaPhiTrue = new TH2F(histName.Data(),histTitle.Data(),500,0,500,36,0.,TMath::Pi());
+      h2LJDeltaPhiTrue.push_back(htmpDeltaPhiTrue);
+      fOutput->Add(htmpDeltaPhiTrue);
+
+      histName = Form("fh2SLPtDeltaPhiNoRef_%d_LJ%d",i,j);
+      histTitle = Form("%s;p_{T};#Delta_{#phi};",histName.Data());
+      TH2F *htmpDeltaPhiNoRef = new TH2F(histName.Data(),histTitle.Data(),500,0,500,36,0.,TMath::Pi());
+      h2LJDeltaPhiNoRef.push_back(htmpDeltaPhiNoRef);
+      fOutput->Add(htmpDeltaPhiNoRef);
     }
     fh2SLPtSubjetPtRatio21.push_back(h2LJ21);
     fh2SLPtSubjetPtRatio32.push_back(h2LJ32);
     fh2SLPtSubjetPtRatio43.push_back(h2LJ43);
     fh2SLPtSubjetPtRatio54.push_back(h2LJ54);
     fh2SLPtZg.push_back(h2LJZg);
+    fh2SLPtZgTrue.push_back(h2LJZgTrue);
+    fh2SLPtZgNoRef.push_back(h2LJZgNoRef);
+    fh2SLPtDeltaPhi.push_back(h2LJDeltaPhi);
+    fh2SLPtDeltaPhiTrue.push_back(h2LJDeltaPhiTrue);
+    fh2SLPtDeltaPhiNoRef.push_back(h2LJDeltaPhiNoRef);
   }
 }

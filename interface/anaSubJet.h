@@ -61,6 +61,8 @@ public:
    TH2F           **fh2PtSubjetPtFrac4; //!jet pt vs subjetratio 4/jet
 
    TH2F           **fh2PtZg; //!jet pt vs zg
+   TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
+   TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
 
    //dijet analysis histos
    //subjet observables in leading, subleading jet
@@ -70,12 +72,28 @@ public:
    std::vector<std::vector<TH2F*>> fh2SLPtSubjetPtRatio43;
    std::vector<std::vector<TH2F*>> fh2SLPtSubjetPtRatio54;
    std::vector<std::vector<TH2F*>> fh2SLPtZg;
-      
-   //   TH2F          ***fh2SLPtSubjetPtRatio21; //!subleading jet pt vs subjetratio 2/1
-   /* TH2F          ***fh2SLPtSubjetPtRatio32; //!!subleading jet pt vs subjetratio 3/2 */
-   /* TH2F          ***fh2SLPtSubjetPtRatio43; //!!subleading jet pt vs subjetratio 4/3 */
-   /* TH2F          ***fh2SLPtSubjetPtRatio54; //!!subleading jet pt vs subjetratio 5/4 */
+   std::vector<std::vector<TH2F*>> fh2SLPtZgTrue; //!jets with mc match
+   std::vector<std::vector<TH2F*>> fh2SLPtZgNoRef; //!jets without mc match
+   std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhi; //!DPhi between leading and subleading jet
+   std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiTrue; //!DPhi between leading and subleading jet
+   std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiNoRef; //!DPhi between leading and subleading jet
+
+   bool               fStoreTree;
+   TTree             *fTreeOut;
+
+   struct subjetTreeVars {
+     std::vector<float> fPtLead;
+     std::vector<float> fEtaLead;
+     std::vector<float> fPhiLead;
+     std::vector<float> fMLead;
+     std::vector<float> fPtSubLead;
+     std::vector<float> fEtaSubLead;
+     std::vector<float> fPhiSubLead;
+     std::vector<float> fMSubLead;
+   };
+
+   subjetTreeVars fSubjetTreeVars;
    
-   ClassDef(anaSubJet,1)
+   ClassDef(anaSubJet,2)
 };
 #endif

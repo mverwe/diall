@@ -41,9 +41,9 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
 
 
   TString jetName = "aktCs4PFSoftDrop";
-  TString jetTreeName = "akCs4PFSoftDropJetAnalyzer";
-  jetName = "akCs4PFFilter";
-  jetTreeName = "akCs4PFFilterJetAnalyzer";
+  TString jetTreeName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
+  //jetName = "akCs4PFFilter";
+  //jetTreeName = "akCs4PFFilterJetAnalyzer";
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
    
@@ -120,7 +120,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anajesForest->SetRecJetsName(jetName);
   anajesForest->SetNCentBins(4);
   anajesForest->SetUseForestMatching(true);
-  handler->Add(anajesForest);
+  //handler->Add(anajesForest);
 
   anaSubJet *anasubjets = new anaSubJet("anaSubJets","anaSubJets");
   anasubjets->ConnectEventObject(fEventObjects);
