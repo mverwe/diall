@@ -77,7 +77,8 @@ public:
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhi; //!DPhi between leading and subleading jet
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiTrue; //!DPhi between leading and subleading jet
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiNoRef; //!DPhi between leading and subleading jet
-
+   std::vector<std::vector<TH3F*>> fh3SLPtZgDeltaPhi;
+   
    bool               fStoreTree;
    TTree             *fTreeOut;
 

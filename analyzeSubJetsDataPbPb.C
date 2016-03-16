@@ -40,7 +40,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
     1 : particle-level jets (gen jets)
    */
 
-  double ptminjet = 80.;
+  double ptminjet = 30.;
   TString jetName = "aktCs4PFSoftDrop";
   TString jetTreeName = "akCs4PFSoftDropJetAnalyzer";
   //jetName = "akCs4PFFilter";
