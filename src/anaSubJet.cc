@@ -30,6 +30,10 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtSubjetPtFrac2(),
   fh2PtSubjetPtFrac3(),
   fh2PtSubjetPtFrac4(),
+  fh2PtSubjetPtInvMass21(),
+  fh2PtSubjetPtInvMass32(),
+  fh2PtSubjetPtInvMass43(),
+  fh2PtSubjetPtInvMass54(),
   fh2PtZg(),
   fh2PtZgTrue(),
   fh2PtZgNoRef(),
@@ -37,6 +41,10 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2SLPtSubjetPtRatio32(),
   fh2SLPtSubjetPtRatio43(),
   fh2SLPtSubjetPtRatio54(),
+  fh2SLPtSubjetPtInvMass21(),
+  fh2SLPtSubjetPtInvMass32(),
+  fh2SLPtSubjetPtInvMass43(),
+  fh2SLPtSubjetPtInvMass54(),
   fh2SLPtZg(),
   fh2SLPtZgTrue(),
   fh2SLPtZgNoRef(),
@@ -63,6 +71,10 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtZg              = new TH2F*[fNcentBins];
   fh2PtZgTrue          = new TH2F*[fNcentBins];
   fh2PtZgNoRef         = new TH2F*[fNcentBins];
+  fh2PtSubjetPtInvMass21 = new TH2F*[fNcentBins];
+  fh2PtSubjetPtInvMass32 = new TH2F*[fNcentBins];
+  fh2PtSubjetPtInvMass43 = new TH2F*[fNcentBins];
+  fh2PtSubjetPtInvMass54 = new TH2F*[fNcentBins];
 
   for (int i = 0; i < fNcentBins; i++) {
     fh3PtEtaPhi[i]      = 0;
@@ -76,6 +88,10 @@ anaSubJet::anaSubJet(const char *name, const char *title)
     fh2PtSubjetPtFrac2[i]   = 0;
     fh2PtSubjetPtFrac3[i]   = 0;
     fh2PtSubjetPtFrac4[i]   = 0;
+    fh2PtSubjetPtInvMass21[i] = 0;
+    fh2PtSubjetPtInvMass32[i] = 0;
+    fh2PtSubjetPtInvMass43[i] = 0;
+    fh2PtSubjetPtInvMass54[i] = 0;
     fh2PtZg[i]              = 0;
     fh2PtZgTrue[i]          = 0;
     fh2PtZgNoRef[i]         = 0;
@@ -122,6 +138,7 @@ void anaSubJet::Exec(Option_t * /*option*/)
      Double_t eta = jet->Eta();
      Double_t m = jet->M();
      if(fabs(pt-0.)<1e-6) continue; //remove ghosts
+     if(pt<10.) continue;
      if(eta<fJetEtaMin || eta>fJetEtaMax) continue;
      if(fMinRefPt>-1. && jet->GetRefPt()<fMinRefPt) continue; //remove fakes in MC    
  
@@ -130,7 +147,10 @@ void anaSubJet::Exec(Option_t * /*option*/)
        fh2PtMass[fCentBin]->Fill(pt,m);
      }
        
-     std::vector<float> sjpt = jet->GetSubJetPt();
+     std::vector<float> sjpt  = jet->GetSubJetPt();
+     std::vector<float> sjeta = jet->GetSubJetEta();
+     std::vector<float> sjphi = jet->GetSubJetPhi();
+     std::vector<float> sjm   = jet->GetSubJetM();
      int nsubjets = (int)sjpt.size();
      //Printf("nsubjets: %d",nsubjets);
      if(fCentBin>-1 && fCentBin<fNcentBins) fh2PtNSubjets[fCentBin]->Fill(pt,nsubjets,weight);
@@ -141,11 +161,23 @@ void anaSubJet::Exec(Option_t * /*option*/)
          if(sjpt.at(is-1)>0.) {
            //Printf("jetpt: %f sjpt1: %f sjpt2: %f",pt,sjpt.at(is-1),sjpt.at(is));
            ptrat = sjpt.at(is)/sjpt.at(is-1);
+
+           TLorentzVector v1;
+           TLorentzVector v2;
+           v1.SetPtEtaPhiM(sjpt.at(is-1),sjeta.at(is-1),sjphi.at(is-1),sjm.at(is-1));
+           v2.SetPtEtaPhiM(sjpt.at(is),sjeta.at(is),sjphi.at(is),sjm.at(is));
+           TLorentzVector disj = v1 + v2;
+           
            if(fCentBin>-1 && fCentBin<fNcentBins) {
              if(is==1) fh2PtSubjetPtRatio21[fCentBin]->Fill(pt,ptrat);
              if(is==2) fh2PtSubjetPtRatio32[fCentBin]->Fill(pt,ptrat);
              if(is==3) fh2PtSubjetPtRatio43[fCentBin]->Fill(pt,ptrat);
              if(is==4) fh2PtSubjetPtRatio54[fCentBin]->Fill(pt,ptrat);
+
+             if(is==1) fh2PtSubjetPtInvMass21[fCentBin]->Fill(pt,disj.M());
+             if(is==2) fh2PtSubjetPtInvMass32[fCentBin]->Fill(pt,disj.M());
+             if(is==3) fh2PtSubjetPtInvMass43[fCentBin]->Fill(pt,disj.M());
+             if(is==4) fh2PtSubjetPtInvMass54[fCentBin]->Fill(pt,disj.M());
            }
          }
        }
@@ -201,38 +233,56 @@ void anaSubJet::Exec(Option_t * /*option*/)
            
            //if(dphi<fMinDPhi) continue;
            
-           std::vector<float> sjptsl = jet2->GetSubJetPt();
+           std::vector<float> sjptsl  = jet2->GetSubJetPt();
+           std::vector<float> sjetasl = jet2->GetSubJetEta();
+           std::vector<float> sjphisl = jet2->GetSubJetPhi();
+           std::vector<float> sjmsl   = jet2->GetSubJetM();
            int nsubjets2 = (int)sjptsl.size();
            if(nsubjets2<2) continue;
            
            for(int is = 1; is<nsubjets2; ++is) {
              if(sjptsl.at(is-1)>0.) {
                float ptrat = sjptsl.at(is)/sjptsl.at(is-1);
+
+               TLorentzVector v1;
+               TLorentzVector v2;
+               v1.SetPtEtaPhiM(sjptsl.at(is-1),sjetasl.at(is-1),sjphisl.at(is-1),sjmsl.at(is-1));
+               v2.SetPtEtaPhiM(sjptsl.at(is),sjetasl.at(is),sjphisl.at(is),sjmsl.at(is));
+               TLorentzVector disj = v1 + v2;
+               
                if(is==1) {
                  if(dphi>fMinDPhi) {
                    TH2F *h21 = (fh2SLPtSubjetPtRatio21.at(fCentBin)).at(l);
                    h21->Fill(jet2->Pt(),ptrat);
+                   TH2F *h21m = (fh2SLPtSubjetPtInvMass21.at(fCentBin)).at(l);
+                   h21m->Fill(jet2->Pt(),disj.M());
                  }
                }
                if(is==2) {
                  if(dphi>fMinDPhi) {
                    TH2F *h32 = (fh2SLPtSubjetPtRatio32.at(fCentBin)).at(l);
                    h32->Fill(jet2->Pt(),ptrat);
+                   TH2F *h32m = (fh2SLPtSubjetPtInvMass32.at(fCentBin)).at(l);
+                   h32m->Fill(jet2->Pt(),disj.M());
                  }
                }
                if(is==3) {
-                 if(dphi>fMinDPhi) {
-                   TH2F *h43 = (fh2SLPtSubjetPtRatio43.at(fCentBin)).at(l);
-                   h43->Fill(jet2->Pt(),ptrat);
-                 }
+                if(dphi>fMinDPhi) {
+                  TH2F *h43 = (fh2SLPtSubjetPtRatio43.at(fCentBin)).at(l);
+                  h43->Fill(jet2->Pt(),ptrat);
+                  TH2F *h43m = (fh2SLPtSubjetPtInvMass43.at(fCentBin)).at(l);
+                  h43m->Fill(jet2->Pt(),disj.M());
+                }
                }
                if(is==4) {
                  if(dphi>fMinDPhi) {
                    TH2F *h54 = (fh2SLPtSubjetPtRatio54.at(fCentBin)).at(l);
                    h54->Fill(jet2->Pt(),ptrat);
+                   TH2F *h54m = (fh2SLPtSubjetPtInvMass54.at(fCentBin)).at(l);
+                   h54m->Fill(jet2->Pt(),disj.M());
                  }
                }
-             }        
+             }      
            }
            float zgsl = std::min(sjptsl.at(0),sjptsl.at(1))/(sjptsl.at(0)+sjptsl.at(1));
            TH3F *hsjzgdphi = (fh3SLPtZgDeltaPhi.at(fCentBin)).at(l);
@@ -252,7 +302,6 @@ void anaSubJet::Exec(Option_t * /*option*/)
        }
      }
    }
-
 }
 
 //----------------------------------------------------------
@@ -326,6 +375,26 @@ void anaSubJet::CreateOutputObjects() {
     histTitle = Form("%s;pt;p_{T,SJ4}/p_{T,jet};",histName.Data());
     fh2PtSubjetPtFrac4[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,1);
     fOutput->Add(fh2PtSubjetPtFrac4[i]);
+
+    histName = Form("fh2PtSubjetPtInvMass21_%d",i);
+    histTitle = Form("%s;pt;p_{T,SJ2}/p_{T,SJ1};",histName.Data());
+    fh2PtSubjetPtInvMass21[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fOutput->Add(fh2PtSubjetPtInvMass21[i]);
+    
+    histName = Form("fh2PtSubjetPtInvMass32_%d",i);
+    histTitle = Form("%s;pt;p_{T,SJ3}/p_{T,SJ2};",histName.Data());
+    fh2PtSubjetPtInvMass32[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fOutput->Add(fh2PtSubjetPtInvMass32[i]);
+
+    histName = Form("fh2PtSubjetPtInvMass43_%d",i);
+    histTitle = Form("%s;pt;p_{T,SJ4}/p_{T,SJ3};",histName.Data());
+    fh2PtSubjetPtInvMass43[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fOutput->Add(fh2PtSubjetPtInvMass43[i]);
+
+    histName = Form("fh2PtSubjetPtInvMass54_%d",i);
+    histTitle = Form("%s;pt;p_{T,SJ5}/p_{T,SJ4};",histName.Data());
+    fh2PtSubjetPtInvMass54[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fOutput->Add(fh2PtSubjetPtInvMass54[i]);
     
     histName = Form("fh2PtZg_%d",i);
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
@@ -353,6 +422,10 @@ void anaSubJet::CreateOutputObjects() {
     std::vector<TH2F *> h2LJ32;
     std::vector<TH2F *> h2LJ43;
     std::vector<TH2F *> h2LJ54;
+    std::vector<TH2F *> h2LJM21;
+    std::vector<TH2F *> h2LJM32;
+    std::vector<TH2F *> h2LJM43;
+    std::vector<TH2F *> h2LJM54;
     std::vector<TH2F *> h2LJZg;
     std::vector<TH2F *> h2LJZgTrue;
     std::vector<TH2F *> h2LJZgNoRef;
@@ -385,6 +458,30 @@ void anaSubJet::CreateOutputObjects() {
       TH2F *htmp54 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,1);
       h2LJ54.push_back(htmp54);
       fOutput->Add(htmp54);
+
+      histName = Form("fh2SLPtSubjetPtInvMass21_%d_LJ%d",i,j);
+      histTitle = Form("%s;pt;m_{SJ1,SJ2}",histName.Data());
+      TH2F *htmpM21 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      h2LJM21.push_back(htmpM21);
+      fOutput->Add(htmpM21);
+
+      histName = Form("fh2SLPtSubjetPtInvMass32_%d_LJ%d",i,j);
+      histTitle = Form("%s;pt;m_{SJ2,SJ3}",histName.Data());
+      TH2F *htmpM32 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      h2LJM32.push_back(htmpM32);
+      fOutput->Add(htmpM32);
+
+      histName = Form("fh2SLPtSubjetPtInvMass43_%d_LJ%d",i,j);
+      histTitle = Form("%s;pt;m_{SJ3,SJ4}",histName.Data());
+      TH2F *htmpM43 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      h2LJM43.push_back(htmpM43);
+      fOutput->Add(htmpM43);
+
+      histName = Form("fh2SLPtSubjetPtInvMass54_%d_LJ%d",i,j);
+      histTitle = Form("%s;pt;m_{SJ4,SJ5}",histName.Data());
+      TH2F *htmpM54 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      h2LJM54.push_back(htmpM54);
+      fOutput->Add(htmpM54);
 
       histName = Form("fh2SLPtZg_%d_LJ%d",i,j);
       histTitle = Form("%s;p_{T};z_{g};",histName.Data());
@@ -432,6 +529,10 @@ void anaSubJet::CreateOutputObjects() {
     fh2SLPtSubjetPtRatio32.push_back(h2LJ32);
     fh2SLPtSubjetPtRatio43.push_back(h2LJ43);
     fh2SLPtSubjetPtRatio54.push_back(h2LJ54);
+    fh2SLPtSubjetPtInvMass21.push_back(h2LJM21);
+    fh2SLPtSubjetPtInvMass32.push_back(h2LJM32);
+    fh2SLPtSubjetPtInvMass43.push_back(h2LJM43);
+    fh2SLPtSubjetPtInvMass54.push_back(h2LJM54);
     fh2SLPtZg.push_back(h2LJZg);
     fh2SLPtZgTrue.push_back(h2LJZgTrue);
     fh2SLPtZgNoRef.push_back(h2LJZgNoRef);
