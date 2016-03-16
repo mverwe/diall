@@ -57,7 +57,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
 
   if(firstF>-1) {
     firstFile = (size_t)firstF;
-    lastFile = (size_t)lastF;
+    lastFile = std::min((size_t)lastF,lastFile);
   }
   std::cout << "firstFile: " << firstFile << "  lastFile: " << lastFile << std::endl;
 
