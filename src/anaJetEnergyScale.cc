@@ -18,6 +18,7 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fMaxDist(0.4),
   fRefPartonFlavorMin(-1),
   fRefPartonFlavorMax(-1),
+  fMinJetPtRec(0.),
   fhEventSel(0),
   fhCentrality(0),
   fhNPV(0),
@@ -161,19 +162,24 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
           || jet->GetSubEvent()!=0
           || jet->GetRefPt()<10.)//e-3)
          continue;
-
+       
        //select jets originating from certain parton flavor
        if(fRefPartonFlavorMin>-1 && fRefPartonFlavorMax>-1) {
          if(std::abs(jet->GetRefParton())<std::abs(fRefPartonFlavorMin) || std::abs(jet->GetRefParton())>std::abs(fRefPartonFlavorMax)) continue;
        }
 
-       if(fCentBin>-1 && fCentBin<fNcentBins)
-         fh3PtEtaPhiMatched[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->GetRefPhi(),weight);
-       
        double pt  = jet->Pt();
        if(fUseRawPt) pt = jet->GetRawPt();       
        double dpt = pt-jet->GetRefPt();
        double dm  = jet->M()-jet->GetRefM();
+       
+       if(fCentBin>-1 && fCentBin<fNcentBins)
+         fh3PtTruePtSubEta[fCentBin]->Fill(jet->GetRefPt(),pt,jet->GetRefEta(),weight);
+       
+       if(pt<fMinJetPtRec) continue;
+
+       if(fCentBin>-1 && fCentBin<fNcentBins)
+         fh3PtEtaPhiMatched[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->GetRefPhi(),weight);
 
        if(fCentBin>-1 && fCentBin<fNcentBins) {
          fh3PtTrueEtaDeltaPt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt,weight);
@@ -187,7 +193,6 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
            fh3PtTrueEtaDeltaMRel[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dm/jet->GetRefM(),weight);
            fh3PtTrueEtaScaleM[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->M()/jet->GetRefM(),weight);
          }
-         fh3PtTruePtSubEta[fCentBin]->Fill(jet->GetRefPt(),pt,jet->GetRefEta(),weight);
      
          if(abs(jet->GetRefEta())<1.3) {
          
