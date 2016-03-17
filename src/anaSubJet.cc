@@ -506,25 +506,25 @@ void anaSubJet::CreateOutputObjects() {
 
       histName = Form("fh2SLPtSubjetPtInvMass21_%d_LJ%d",i,j);
       histTitle = Form("%s;pt;m_{SJ1,SJ2}",histName.Data());
-      TH2F *htmpM21 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      TH2F *htmpM21 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
       h2LJM21.push_back(htmpM21);
       fOutput->Add(htmpM21);
 
       histName = Form("fh2SLPtSubjetPtInvMass32_%d_LJ%d",i,j);
       histTitle = Form("%s;pt;m_{SJ2,SJ3}",histName.Data());
-      TH2F *htmpM32 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      TH2F *htmpM32 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
       h2LJM32.push_back(htmpM32);
       fOutput->Add(htmpM32);
 
       histName = Form("fh2SLPtSubjetPtInvMass43_%d_LJ%d",i,j);
       histTitle = Form("%s;pt;m_{SJ3,SJ4}",histName.Data());
-      TH2F *htmpM43 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      TH2F *htmpM43 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
       h2LJM43.push_back(htmpM43);
       fOutput->Add(htmpM43);
 
       histName = Form("fh2SLPtSubjetPtInvMass54_%d_LJ%d",i,j);
       histTitle = Form("%s;pt;m_{SJ4,SJ5}",histName.Data());
-      TH2F *htmpM54 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+      TH2F *htmpM54 = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
       h2LJM54.push_back(htmpM54);
       fOutput->Add(htmpM54);
 
