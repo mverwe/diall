@@ -69,6 +69,10 @@ public:
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
 
+   TH2F           **fh2PtThetag; //!jet pt vs zg
+   TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
+   TH2F           **fh2PtThetagNoRef; //!jet pt vs zg for jets without MC match
+
    //dijet analysis histos
    //subjet observables in leading, subleading jet
 
@@ -83,6 +87,9 @@ public:
    std::vector<std::vector<TH2F*>> fh2SLPtZg;
    std::vector<std::vector<TH2F*>> fh2SLPtZgTrue; //!jets with mc match
    std::vector<std::vector<TH2F*>> fh2SLPtZgNoRef; //!jets without mc match
+   std::vector<std::vector<TH2F*>> fh2SLPtThetag;
+   std::vector<std::vector<TH2F*>> fh2SLPtThetagTrue; //!jets with mc match
+   std::vector<std::vector<TH2F*>> fh2SLPtThetagNoRef; //!jets without mc match
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhi; //!DPhi between leading and subleading jet
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiTrue; //!DPhi between leading and subleading jet
    std::vector<std::vector<TH2F*>> fh2SLPtDeltaPhiNoRef; //!DPhi between leading and subleading jet

@@ -45,6 +45,10 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   //jetName = "akCs4PFFilter";
   //jetTreeName = "akCs4PFFilterJetAnalyzer";
 
+  double minptjet = 30.;
+  bool doDijet = false;
+  if(!doDijet) minptjet = 80.;
+
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
    
   std::cout << "nfiles: " << urls.size() << std::endl;
@@ -97,6 +101,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   p_PUJet->SetJetContName(jetName);
   p_PUJet->SetGenJetContName("akt4Gen");
   p_PUJet->SetEventObjects(fEventObjects);
+  p_PUJet->SetMinJetPt(minptjet);
   p_PUJet->SetRadius(0.4);
 
   // lwJetFromForestProducer *p_CSJet = new lwJetFromForestProducer("lwJetForestProd");
@@ -128,7 +133,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->SetJetsName(jetName);
   anasubjets->SetNCentBins(4);
   anasubjets->SetJetEtaRange(-2.,2.);
-  anasubjets->SetDoDijets(true);
+  anasubjets->SetDoDijets(doDijet);
   anasubjets->AddLeadingJetPtBin(120.,150.);
   anasubjets->AddLeadingJetPtBin(150.,180.);
   anasubjets->AddLeadingJetPtBin(180.,220.);
@@ -144,7 +149,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsMassCut->SetJetsName(jetName);
   anasubjetsMassCut->SetNCentBins(4);
   anasubjetsMassCut->SetJetEtaRange(-2.,2.);
-  anasubjetsMassCut->SetDoDijets(true);
+  anasubjetsMassCut->SetDoDijets(doDijet);
   anasubjetsMassCut->AddLeadingJetPtBin(120.,150.);
   anasubjetsMassCut->AddLeadingJetPtBin(150.,180.);
   anasubjetsMassCut->AddLeadingJetPtBin(180.,220.);
@@ -153,7 +158,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsMassCut->AddLeadingJetPtBin(300.,500.);
   anasubjetsMassCut->SetPtMinSubleading(30.);
   anasubjetsMassCut->SetMinMassLeading(10.);
-  handler->Add(anasubjetsMassCut);
+  //handler->Add(anasubjetsMassCut);
 
   // anaSubJet *anasubjetsCSJets = new anaSubJet("anasubjetsCSJets","anasubjetsCSJets");
   // anasubjetsCSJets->ConnectEventObject(fEventObjects);
