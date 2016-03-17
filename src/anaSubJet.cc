@@ -405,22 +405,22 @@ void anaSubJet::CreateOutputObjects() {
 
     histName = Form("fh2PtSubjetPtInvMass21_%d",i);
     histTitle = Form("%s;pt;p_{T,SJ2}/p_{T,SJ1};",histName.Data());
-    fh2PtSubjetPtInvMass21[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fh2PtSubjetPtInvMass21[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
     fOutput->Add(fh2PtSubjetPtInvMass21[i]);
     
     histName = Form("fh2PtSubjetPtInvMass32_%d",i);
     histTitle = Form("%s;pt;p_{T,SJ3}/p_{T,SJ2};",histName.Data());
-    fh2PtSubjetPtInvMass32[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fh2PtSubjetPtInvMass32[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
     fOutput->Add(fh2PtSubjetPtInvMass32[i]);
 
     histName = Form("fh2PtSubjetPtInvMass43_%d",i);
     histTitle = Form("%s;pt;p_{T,SJ4}/p_{T,SJ3};",histName.Data());
-    fh2PtSubjetPtInvMass43[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fh2PtSubjetPtInvMass43[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
     fOutput->Add(fh2PtSubjetPtInvMass43[i]);
 
     histName = Form("fh2PtSubjetPtInvMass54_%d",i);
     histTitle = Form("%s;pt;p_{T,SJ5}/p_{T,SJ4};",histName.Data());
-    fh2PtSubjetPtInvMass54[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,100);
+    fh2PtSubjetPtInvMass54[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,150,0,150);
     fOutput->Add(fh2PtSubjetPtInvMass54[i]);
     
     histName = Form("fh2PtZg_%d",i);
