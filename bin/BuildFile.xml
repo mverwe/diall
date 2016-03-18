@@ -23,6 +23,7 @@
   <bin name="runCSZJet"               file="runCSZJet.cc"></bin>
   <bin name="runSubJet"               file="runSubJet.cc"></bin>
   <bin name="runSubJetDataPbPb"       file="runSubJetDataPbPb.cc"></bin>
+  <bin name="runSubJetDataPP"         file="runSubJetDataPP.cc"></bin>
   <bin name="runDijetAjDataPbPb"      file="runDijetAjDataPbPb.cc"></bin>
   <bin name="runDijetAjDataPP"        file="runDijetAjDataPP.cc"></bin>
 </environment>
