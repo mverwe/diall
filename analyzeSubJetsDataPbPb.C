@@ -41,7 +41,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
    */
 
   TString jetSDName = "aktCs4PFSoftDrop";
-  TString jetTreeSDName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
+  TString jetTreeSDName = "akCs4PFSoftDropJetAnalyzer";//"akCsSoftDrop4PFJetAnalyzer";//
   TString jetName = "aktCs4PF";
   TString jetTreeName = "akCs4PFJetAnalyzer";
 
@@ -79,6 +79,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
+  chain->AddFriend(hltTree);
   Printf("hltTree done");
 
   TChain *jetTreeSD = new TChain(Form("%s/t",jetTreeSDName.Data()));
@@ -101,7 +102,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   p_evt->SetEventObjects(fEventObjects);
 
   triggerProducer *p_trg = new triggerProducer("trigProd");
-  p_trg->SetInput(hltTree);
+  p_trg->SetInput(chain);
   p_trg->SetTriggerMapName("triggerMap");
   p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   p_trg->SetEventObjects(fEventObjects);
