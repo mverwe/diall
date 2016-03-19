@@ -62,6 +62,18 @@ class lwJet : public particleBase {
   Float_t       GetMuSum()                const { return fMuSum; }
   Float_t       GetMuMax()                const { return fMuMax; }
   Int_t         GetMuN()                  const { return fMuN; }
+
+  float         GetCHF()                  const { return fCHF; }
+  float         GetNHF()                  const { return fNHF; }
+  float         GetCEF()                  const { return fCEF; }
+  float         GetNEF()                  const { return fNEF; }
+  float         GetMUF()                  const { return fMUF; }
+
+  int           GetCHM()                  const { return fCHM; }
+  int           GetNHM()                  const { return fNHM; }
+  int           GetCEM()                  const { return fCEM; }
+  int           GetNEM()                  const { return fNEM; }
+  int           GetMUM()                  const { return fMUM; }
   
   void        SetArea(Double_t a)          { fArea = a; }
   void        SetRawPt(Double_t pt)        { fRawPt = pt; }
@@ -91,6 +103,18 @@ class lwJet : public particleBase {
   void        SetNeutralProp(Float_t max, Float_t sum, Int_t n);
   void        SetEmProp(Float_t max, Float_t sum, Int_t n);
   void        SetMuProp(Float_t max, Float_t sum, Int_t n);
+
+  void        SetCHF(float f) { fCHF = f; }
+  void        SetNHF(float f) { fNHF = f; }
+  void        SetCEF(float f) { fCEF = f; }
+  void        SetNEF(float f) { fNEF = f; }
+  void        SetMUF(float f) { fMUF = f; }
+
+  void        SetCHM(int f) { fCHM = f; }
+  void        SetNHM(int f) { fNHM = f; }
+  void        SetCEM(int f) { fCEM = f; }
+  void        SetNEM(int f) { fNEM = f; }
+  void        SetMUM(int f) { fMUM = f; }
   
  protected:
   Double_t          fArea;          //jet area
@@ -133,7 +157,18 @@ class lwJet : public particleBase {
   float             fMuMax;
   float             fMuSum;
   int               fMuN;
+
+  float             fCHF;
+  float             fNHF;
+  float             fCEF;
+  float             fNEF;
+  float             fMUF;
+  float             fCHM;
+  float             fNHM;
+  float             fCEM;
+  float             fNEM;
+  float             fMUM;
     
-  ClassDef(lwJet,6)
+  ClassDef(lwJet,7)
 };
 #endif

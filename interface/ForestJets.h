@@ -24,6 +24,16 @@ public :
    Float_t         jtpu[maxJets];   //[nref]
    Float_t         jtm[maxJets];   //[nref]
    Float_t         jtarea[maxJets];   //[nref]
+   Float_t         jtPfCHF[maxJets];   //[nref]
+   Float_t         jtPfNHF[maxJets];   //[nref]
+   Float_t         jtPfCEF[maxJets];   //[nref]
+   Float_t         jtPfNEF[maxJets];   //[nref]
+   Float_t         jtPfMUF[maxJets];   //[nref]
+   Int_t           jtPfCHM[maxJets];   //[nref]
+   Int_t           jtPfNHM[maxJets];   //[nref]
+   Int_t           jtPfCEM[maxJets];   //[nref]
+   Int_t           jtPfNEM[maxJets];   //[nref]
+   Int_t           jtPfMUM[maxJets];   //[nref]
    Float_t         jttau1[maxJets] = {-999};   //[nref]
    Float_t         jttau2[maxJets] = {-999};   //[nref]
    Float_t         jttau3[maxJets] = {-999};   //[nref]
@@ -121,6 +131,16 @@ public :
    TBranch        *b_jtpu;   //!
    TBranch        *b_jtm;   //!
    TBranch        *b_jtarea;   //!
+   TBranch        *b_jtPfCHF;   //!
+   TBranch        *b_jtPfNHF;   //!
+   TBranch        *b_jtPfCEF;   //!
+   TBranch        *b_jtPfNEF;   //!
+   TBranch        *b_jtPfMUF;   //!
+   TBranch        *b_jtPfCHM;   //!
+   TBranch        *b_jtPfNHM;   //!
+   TBranch        *b_jtPfCEM;   //!
+   TBranch        *b_jtPfNEM;   //!
+   TBranch        *b_jtPfMUM;   //!
    TBranch        *b_jttau1;   //!
    TBranch        *b_jttau2;   //!
    TBranch        *b_jttau3;   //!

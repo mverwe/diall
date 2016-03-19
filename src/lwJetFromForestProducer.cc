@@ -65,6 +65,26 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("jtm", &fForestJets.jtm, &fForestJets.b_jtm);}
     if (fChain->GetBranch("jtarea"))
       fChain->SetBranchAddress("jtarea", &fForestJets.jtarea, &fForestJets.b_jtarea);
+    if (fChain->GetBranch("jtPfCHF")){
+      fChain->SetBranchAddress("jtPfCHF", &fForestJets.jtPfCHF, &fForestJets.b_jtPfCHF);}
+    if (fChain->GetBranch("jtPfNHF")){
+      fChain->SetBranchAddress("jtPfNHF", &fForestJets.jtPfNHF, &fForestJets.b_jtPfNHF);}
+    if (fChain->GetBranch("jtPfCEF")){
+      fChain->SetBranchAddress("jtPfCEF", &fForestJets.jtPfCEF, &fForestJets.b_jtPfCEF);}
+    if (fChain->GetBranch("jtPfNEF")){
+      fChain->SetBranchAddress("jtPfNEF", &fForestJets.jtPfNEF, &fForestJets.b_jtPfNEF);}
+    if (fChain->GetBranch("jtPfMUF")){
+      fChain->SetBranchAddress("jtPfMUF", &fForestJets.jtPfMUF, &fForestJets.b_jtPfMUF);}
+    if (fChain->GetBranch("jtPfCHM")){
+      fChain->SetBranchAddress("jtPfCHM", &fForestJets.jtPfCHM, &fForestJets.b_jtPfCHM);}
+    if (fChain->GetBranch("jtPfNHM")){
+      fChain->SetBranchAddress("jtPfNHM", &fForestJets.jtPfNHM, &fForestJets.b_jtPfNHM);}
+    if (fChain->GetBranch("jtPfCEM")){
+      fChain->SetBranchAddress("jtPfCEM", &fForestJets.jtPfCEM, &fForestJets.b_jtPfCEM);}
+    if (fChain->GetBranch("jtPfNEM")){
+      fChain->SetBranchAddress("jtPfNEM", &fForestJets.jtPfNEM, &fForestJets.b_jtPfNEM);}
+    if (fChain->GetBranch("jtPfMUM")){
+      fChain->SetBranchAddress("jtPfMUM", &fForestJets.jtPfMUM, &fForestJets.b_jtPfMUM);}
     if (fChain->GetBranch("jttau1"))
       fChain->SetBranchAddress("jttau1", &fForestJets.jttau1, &fForestJets.b_jttau1);
     if (fChain->GetBranch("jttau2"))
@@ -260,6 +280,19 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetNeutralProp(fForestJets.neutralMax[i],fForestJets.neutralSum[i],fForestJets.neutralN[i]);
     jet->SetEmProp(fForestJets.eMax[i],fForestJets.eSum[i],fForestJets.eN[i]);
     jet->SetMuProp(fForestJets.muMax[i],fForestJets.muSum[i],fForestJets.muN[i]);
+
+    jet->SetCHF(fForestJets.jtPfCHF[i]);
+    jet->SetNHF(fForestJets.jtPfNHF[i]);
+    jet->SetCEF(fForestJets.jtPfCEF[i]);
+    jet->SetNEF(fForestJets.jtPfNEF[i]);
+    jet->SetMUF(fForestJets.jtPfMUF[i]);
+
+    jet->SetCHM(fForestJets.jtPfCHM[i]);
+    jet->SetNHM(fForestJets.jtPfNHM[i]);
+    jet->SetCEM(fForestJets.jtPfCEM[i]);
+    jet->SetNEM(fForestJets.jtPfNEM[i]);
+    jet->SetMUM(fForestJets.jtPfMUM[i]);
+    
     flwJetContainer->AddJet(jet,jetCount);
     ++jetCount;
   }
