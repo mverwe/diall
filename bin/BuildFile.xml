@@ -26,5 +26,6 @@
   <bin name="runSubJetDataPP"         file="runSubJetDataPP.cc"></bin>
   <bin name="runDijetAjDataPbPb"      file="runDijetAjDataPbPb.cc"></bin>
   <bin name="runDijetAjDataPP"        file="runDijetAjDataPP.cc"></bin>
+  <bin name="runSubJetMCPP"           file="runSubJetMCPP.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>
