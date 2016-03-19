@@ -163,11 +163,11 @@ class lwJet : public particleBase {
   float             fCEF;
   float             fNEF;
   float             fMUF;
-  float             fCHM;
-  float             fNHM;
-  float             fCEM;
-  float             fNEM;
-  float             fMUM;
+  int             fCHM;
+  int             fNHM;
+  int             fCEM;
+  int             fNEM;
+  int             fMUM;
     
   ClassDef(lwJet,7)
 };

@@ -37,34 +37,37 @@ anaJetQA::anaJetQA(const char *name, const char *title)
 //----------------------------------------------------------
 void anaJetQA::Exec(Option_t * /*option*/)
 {
-   //printf("anaJetQA executing\n");
+  //  printf("anaJetQA executing\n");
+  anaBaseTask::Exec();
+  if(!SelectEvent()) return;
+  
   if(!fInitOutput) CreateOutputObjects();
 
    if(!fJetsCont && !fJetsName.IsNull())
      fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
    if(!fJetsCont) return;
 
-   TClonesArray *jets = fJetsCont->GetJets();
-
    Double_t maxPt = 0.;
    Int_t njets = 0;
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
-     lwJet *jet = static_cast<lwJet*>(jets->At(i));
+     lwJet *jet = fJetsCont->GetJet(i);
      Double_t pt = jet->Pt();
      Double_t phi = jet->Phi();
      Double_t eta = jet->Eta();
      //      Double_t m = jet->M();
-     if(fabs(pt-0.)<1e-6) continue; //remove ghosts
+     
+     if(pt<1e-6) continue; //remove ghosts
+     
      fh3PtEtaPhi->Fill(pt,eta,phi);
      fh3PtEtaArea->Fill(pt,eta,jet->GetArea());
-
+     
      fh3PtEtaCHF->Fill(pt,eta,jet->GetCHF());
      fh3PtEtaNHF->Fill(pt,eta,jet->GetNHF());
      fh3PtEtaCEF->Fill(pt,eta,jet->GetCEF());
      fh3PtEtaNEF->Fill(pt,eta,jet->GetNEF());
      fh3PtEtaMUF->Fill(pt,eta,jet->GetMUF());
-
-     fh3PtEtaCHM->Fill(pt,eta,jet->GetCHM());
+     
+     fh3PtEtaCHM->Fill(pt,eta,(float)jet->GetCHM());
      fh3PtEtaNHM->Fill(pt,eta,jet->GetNHM());
      fh3PtEtaCEM->Fill(pt,eta,jet->GetCEM());
      fh3PtEtaNEM->Fill(pt,eta,jet->GetNEM());
@@ -72,7 +75,7 @@ void anaJetQA::Exec(Option_t * /*option*/)
 
      //pp 13 TeV cuts TightLepVeto
      int nconst = jet->GetCHM() + jet->GetNHM() + jet->GetCEM() + jet->GetNEM() + jet->GetMUM();
-     
+
      if(jet->GetNHF()<0.9 && jet->GetNEF()<0.9 && nconst>1 && jet->GetMUF()<0.8 && jet->GetCHM()>0 && jet->GetCEF()<0.9)
        fh3PtEtaCHFCut->Fill(pt,eta,jet->GetCHF());
      if(jet->GetNHF()<0.9 && jet->GetNEF()<0.9 && nconst>1 && jet->GetMUF()<0.8 && jet->GetCHF()>0. && jet->GetCEF()<0.9)
@@ -151,6 +154,31 @@ void anaJetQA::CreateOutputObjects() {
   fh3PtEtaMUF = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,101,0,1.01);
   fOutput->Add(fh3PtEtaMUF);
 
+  histName = "fh3PtEtaCHM";
+  histTitle = Form("%s;p_{T};#eta;CHF",histName.Data());
+  fh3PtEtaCHM = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,100,0,100);
+  fOutput->Add(fh3PtEtaCHM);
+
+  histName = "fh3PtEtaNHM";
+  histTitle = Form("%s;p_{T};#eta;NHF",histName.Data());
+  fh3PtEtaNHM = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,100,0,100);
+  fOutput->Add(fh3PtEtaNHM);
+
+  histName = "fh3PtEtaCEM";
+  histTitle = Form("%s;p_{T};#eta;CEF",histName.Data());
+  fh3PtEtaCEM = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,100,0,100);
+  fOutput->Add(fh3PtEtaCEM);
+
+  histName = "fh3PtEtaNEM";
+  histTitle = Form("%s;p_{T};#eta;NEF",histName.Data());
+  fh3PtEtaNEM = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,100,0,100);
+  fOutput->Add(fh3PtEtaNEM);
+
+  histName = "fh3PtEtaMUM";
+  histTitle = Form("%s;p_{T};#eta;MUF",histName.Data());
+  fh3PtEtaMUM = new TH3F(histName.Data(),histTitle.Data(),500,0,500,100,-5,5,100,0,100);
+  fOutput->Add(fh3PtEtaMUM);
+  
   //
   histName = "fh3PtEtaCHFCut";
   histTitle = Form("%s;p_{T};#eta;CHF",histName.Data());

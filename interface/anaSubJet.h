@@ -18,7 +18,8 @@ public:
    void CreateOutputObjects();
 
    void SetNCentBins(Int_t n)             { fNcentBins    = n;  }
-   void SetJetsName(TString name)         { fJetsName = name ; } 
+   void SetJetsName(TString name)         { fJetsName = name ; }
+   void SetJetsRefName(TString name)         { fJetsRefName = name ; } 
    void SetJetEtaRange(float min, float max) { fJetEtaMin = min; fJetEtaMax = max; }
    
    void SetMinRefPt(float min)            { fMinRefPt = min ; }
@@ -31,8 +32,10 @@ public:
    
  protected:
    int              fNcentBins;
-   TString          fJetsName;    //name of jet container
-   lwJetContainer  *fJetsCont;    //!jet container
+   TString          fJetsName;    //name of SD jet container
+   lwJetContainer  *fJetsCont;    //!SD jet container
+   TString          fJetsRefName;    //name of ref jet container (ungroomed)
+   lwJetContainer  *fJetsRefCont;    //!ref jet container (ungroomed)
    float            fJetEtaMin;   //min jet eta
    float            fJetEtaMax;   //max jet eta
    float            fMinRefPt;    //min pt of corresponding true jet: reject fakes
@@ -68,11 +71,13 @@ public:
    TH2F           **fh2PtZg; //!jet pt vs zg
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
-
+   TH3F           **fh3PtRecPtTrueZg; //!jet pt reco vs pt true vs zg
+   
    TH2F           **fh2PtThetag; //!jet pt vs zg
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtThetagNoRef; //!jet pt vs zg for jets without MC match
-
+   TH3F           **fh3PtRecPtTrueThetag; //!jet pt reco vs pt true vs thetag
+   
    //dijet analysis histos
    //subjet observables in leading, subleading jet
 

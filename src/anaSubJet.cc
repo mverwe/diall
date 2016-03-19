@@ -9,6 +9,8 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fNcentBins(4),
   fJetsName(""),
   fJetsCont(),
+  fJetsRefName(""),
+  fJetsRefCont(),
   fJetEtaMin(-5.),
   fJetEtaMax(5.),
   fMinRefPt(-10000.),
@@ -37,9 +39,11 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtZg(),
   fh2PtZgTrue(),
   fh2PtZgNoRef(),
+  fh3PtRecPtTrueZg(),
   fh2PtThetag(),
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
+  fh3PtRecPtTrueThetag(),
   fh2SLPtSubjetPtRatio21(),
   fh2SLPtSubjetPtRatio32(),
   fh2SLPtSubjetPtRatio43(),
@@ -77,9 +81,11 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtZg              = new TH2F*[fNcentBins];
   fh2PtZgTrue          = new TH2F*[fNcentBins];
   fh2PtZgNoRef         = new TH2F*[fNcentBins];
+  fh3PtRecPtTrueZg     = new TH3F*[fNcentBins];
   fh2PtThetag          = new TH2F*[fNcentBins];
   fh2PtThetagTrue      = new TH2F*[fNcentBins];
   fh2PtThetagNoRef     = new TH2F*[fNcentBins];
+  fh3PtRecPtTrueThetag = new TH3F*[fNcentBins];
   fh2PtSubjetPtInvMass21 = new TH2F*[fNcentBins];
   fh2PtSubjetPtInvMass32 = new TH2F*[fNcentBins];
   fh2PtSubjetPtInvMass43 = new TH2F*[fNcentBins];
@@ -104,9 +110,11 @@ anaSubJet::anaSubJet(const char *name, const char *title)
     fh2PtZg[i]              = 0;
     fh2PtZgTrue[i]          = 0;
     fh2PtZgNoRef[i]         = 0;
+    fh3PtRecPtTrueZg[i]         = 0;
     fh2PtThetag[i]              = 0;
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
+    fh3PtRecPtTrueThetag[i]     = 0;
   }
 
 }
@@ -123,6 +131,10 @@ void anaSubJet::Exec(Option_t * /*option*/)
   if(!fJetsCont && !fJetsName.IsNull())
     fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
   if(!fJetsCont) return;
+
+  if(!fJetsRefCont && !fJetsRefName.IsNull())
+    fJetsRefCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsRefName.Data()));
+  if(!fJetsRefCont) return;
 
   //Get MC weight
   float weight = 1.;
@@ -145,14 +157,19 @@ void anaSubJet::Exec(Option_t * /*option*/)
 
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
      lwJet *jet = fJetsCont->GetJet(i);
-     Double_t pt = jet->Pt();
-     Double_t phi = jet->Phi();
-     Double_t eta = jet->Eta();
-     Double_t m = jet->M();
+     int id = jet->GetMatchId1();
+     if( id<0 || id>fJetsRefCont->GetNJets() ) continue;
+     lwJet *jetNotGroomed = fJetsRefCont->GetJet(id);
+
+     Double_t pt  = jetNotGroomed->Pt();
+     //Double_t ptg = jet->Pt();
+     Double_t phi = jetNotGroomed->Phi();
+     Double_t eta = jetNotGroomed->Eta();
+     Double_t m = jetNotGroomed->M();
      if(fabs(pt-0.)<1e-6) continue; //remove ghosts
      if(pt<10.) continue;
      if(eta<fJetEtaMin || eta>fJetEtaMax) continue;
-     if(fMinRefPt>-1. && jet->GetRefPt()<fMinRefPt) continue; //remove fakes in MC    
+     if(fMinRefPt>-1. && jetNotGroomed->GetRefPt()<fMinRefPt) continue; //remove fakes in MC    
  
      if(fCentBin>-1 && fCentBin<fNcentBins) {
        fh3PtEtaPhi[fCentBin]->Fill(pt,eta,phi,weight);
@@ -205,13 +222,15 @@ void anaSubJet::Exec(Option_t * /*option*/)
        if(fCentBin>-1 && fCentBin<fNcentBins) {
          fh2PtZg[fCentBin]->Fill(pt,zg);
          fh2PtThetag[fCentBin]->Fill(pt,thetag);
-         if(jet->GetRefPt()<10.) {
+         if(jetNotGroomed->GetRefPt()<10.) {
            fh2PtZgNoRef[fCentBin]->Fill(pt,zg);
            fh2PtThetagNoRef[fCentBin]->Fill(pt,thetag);
          }
          else {
            fh2PtZgTrue[fCentBin]->Fill(pt,zg);
            fh2PtThetagTrue[fCentBin]->Fill(pt,thetag);
+           fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg);
+           fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag);
          }
        }
      }
@@ -438,6 +457,11 @@ void anaSubJet::CreateOutputObjects() {
     fh2PtZgNoRef[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,50,0,0.5);
     fOutput->Add(fh2PtZgNoRef[i]);
 
+    histName = Form("fh3PtRecPtTrueZg_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh3PtRecPtTrueZg[i] = new TH3F(histName.Data(),histTitle.Data(),500,0,500,500,0,500,50,0,0.5);
+    fOutput->Add(fh3PtRecPtTrueZg[i]);
+    
     histName = Form("fh2PtThetag_%d",i);
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtThetag[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,1.);
@@ -452,6 +476,11 @@ void anaSubJet::CreateOutputObjects() {
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtThetagNoRef[i] = new TH2F(histName.Data(),histTitle.Data(),500,0,500,100,0,1.);
     fOutput->Add(fh2PtThetagNoRef[i]);
+
+    histName = Form("fh3PtRecPtTrueThetag_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh3PtRecPtTrueThetag[i] = new TH3F(histName.Data(),histTitle.Data(),500,0,500,500,0,500,50,0,0.5);
+    fOutput->Add(fh3PtRecPtTrueThetag[i]);
   }
 
   int nBinsLJ = (int)fPtLeadingMin.size();

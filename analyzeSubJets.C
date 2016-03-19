@@ -40,16 +40,19 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
    */
 
 
-  TString jetName = "aktCs4PFSoftDrop";
-  TString jetTreeName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
+  TString jetSDName = "aktCs4PFSoftDrop";
+  TString jetTreeSDName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
+  TString jetName = "aktCs4PF";
+  TString jetTreeName = "akCs4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
   //jetName = "akCs4PFFilter";
   //jetTreeName = "akCs4PFFilterJetAnalyzer";
 
   double minptjet = 30.;
   bool doDijet = false;
-  if(!doDijet) minptjet = 80.;
+  if(!doDijet) minptjet = 40.;
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
+  std::cout << "analyzing subjets for: " << jetSDName << " tree: " << jetTreeSDName << std::endl;
    
   std::cout << "nfiles: " << urls.size() << std::endl;
   for (auto i = urls.begin(); i != urls.end(); ++i)
@@ -75,16 +78,15 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   chain = new TChain("hiEvtAnalyzer/HiTree");
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
-  
+
+  TChain *jetTreeSD = new TChain(Form("%s/t",jetTreeSDName.Data()));
+  for(size_t i=firstFile; i<lastFile; i++) jetTreeSD->Add(urls[i].c_str());
+  chain->AddFriend(jetTreeSD);
+  Printf("jetTreeSD done");
+
   TChain *jetTree = new TChain(Form("%s/t",jetTreeName.Data()));
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
-  chain->AddFriend(jetTree);
   Printf("jetTree done");
-
-  // TChain *csJetTree = new TChain(Form("%s/t","akCs4PFJetAnalyzer"));
-  // for(size_t i=firstFile; i<lastFile; i++) csJetTree->Add(urls[i].c_str());
-  // chain->AddFriend(csJetTree);
-  // Printf("csJetTree done");
 
   TList *fEventObjects = new TList();
 
@@ -96,20 +98,21 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
-  lwJetFromForestProducer *p_PUJet = new lwJetFromForestProducer("lwJetForestProd");
-  p_PUJet->SetInput(chain);
-  p_PUJet->SetJetContName(jetName);
-  p_PUJet->SetGenJetContName("akt4Gen");
-  p_PUJet->SetEventObjects(fEventObjects);
-  p_PUJet->SetMinJetPt(minptjet);
-  p_PUJet->SetRadius(0.4);
+  lwJetFromForestProducer *p_SDJet = new lwJetFromForestProducer("lwJetForestProdSD");
+  p_SDJet->SetInput(chain);
+  p_SDJet->SetJetContName(jetSDName);
+  p_SDJet->SetGenJetContName("");
+  p_SDJet->SetEventObjects(fEventObjects);
+  p_SDJet->SetMinJetPt(minptjet);
+  p_SDJet->SetRadius(0.4);
 
-  // lwJetFromForestProducer *p_CSJet = new lwJetFromForestProducer("lwJetForestProd");
-  // p_CSJet->SetInput(csJetTree);
-  // p_CSJet->SetJetContName("aktCs4PF");
-  // p_CSJet->SetGenJetContName("");
-  // p_CSJet->SetEventObjects(fEventObjects);
-  // p_CSJet->SetRadius(0.4);
+  lwJetFromForestProducer *p_Jet = new lwJetFromForestProducer("lwJetForestProd");
+  p_Jet->SetInput(jetTree);
+  p_Jet->SetJetContName(jetName);
+  p_Jet->SetGenJetContName("akt4Gen");
+  p_Jet->SetEventObjects(fEventObjects);
+  p_Jet->SetMinJetPt(minptjet);
+  p_Jet->SetRadius(0.4);
   
   //---------------------------------------------------------------
   //analysis modules
@@ -118,19 +121,24 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   //handler to which all modules will be added
   anaBaseTask *handler = new anaBaseTask("handler","handler");
 
-  anaJetEnergyScale *anajesForest = new anaJetEnergyScale("anaJESForest","anaJESForest");
-  anajesForest->ConnectEventObject(fEventObjects);
-  anajesForest->SetHiEvtName("hiEventContainer");
-  anajesForest->SetGenJetsName("");
-  anajesForest->SetRecJetsName(jetName);
-  anajesForest->SetNCentBins(4);
-  anajesForest->SetUseForestMatching(true);
-  //handler->Add(anajesForest);
+  anaJetQA *jetQA = new anaJetQA("anaJetQA","anaJetQA");
+  jetQA->ConnectEventObject(fEventObjects);
+  jetQA->SetJetsName(jetName);
+  handler->Add(jetQA);
+
+  anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
+  match->ConnectEventObject(fEventObjects);
+  match->SetHiEvtName("hiEventContainer");
+  match->SetJetsNameBase(jetName);
+  match->SetJetsNameTag(jetSDName);
+  match->SetMatchingType(0);
+  handler->Add(match);
 
   anaSubJet *anasubjets = new anaSubJet("anaSubJets","anaSubJets");
   anasubjets->ConnectEventObject(fEventObjects);
   anasubjets->SetHiEvtName("hiEventContainer");
-  anasubjets->SetJetsName(jetName);
+  anasubjets->SetJetsName(jetSDName);
+  anasubjets->SetJetsRefName(jetName);
   anasubjets->SetNCentBins(4);
   anasubjets->SetJetEtaRange(-2.,2.);
   anasubjets->SetDoDijets(doDijet);
@@ -146,7 +154,8 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
   anasubjetsMassCut->ConnectEventObject(fEventObjects);
   anasubjetsMassCut->SetHiEvtName("hiEventContainer");
-  anasubjetsMassCut->SetJetsName(jetName);
+  anasubjetsMassCut->SetJetsName(jetSDName);
+  anasubjetsMassCut->SetJetsRefName(jetName);
   anasubjetsMassCut->SetNCentBins(4);
   anasubjetsMassCut->SetJetEtaRange(-2.,2.);
   anasubjetsMassCut->SetDoDijets(doDijet);
@@ -160,19 +169,11 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsMassCut->SetMinMassLeading(10.);
   //handler->Add(anasubjetsMassCut);
 
-  // anaSubJet *anasubjetsCSJets = new anaSubJet("anasubjetsCSJets","anasubjetsCSJets");
-  // anasubjetsCSJets->ConnectEventObject(fEventObjects);
-  // anasubjetsCSJets->SetHiEvtName("hiEventContainer");
-  // anasubjetsCSJets->SetJetsName("aktCs4PF");
-  // anasubjetsCSJets->SetNCentBins(4);
-  // anasubjetsCSJets->SetJetEtaRange(-2.,2.);
-  // anasubjetsCSJets->SetDoDijets(false);
-  // handler->Add(anasubjetsCSJets);
-
   anaSubJet *anasubjetsNoFakes = new anaSubJet("anaSubJetsNoFakes","anaSubJetsNoFakes");
   anasubjetsNoFakes->ConnectEventObject(fEventObjects);
   anasubjetsNoFakes->SetHiEvtName("hiEventContainer");
-  anasubjetsNoFakes->SetJetsName(jetName);
+  anasubjetsNoFakes->SetJetsName(jetSDName);
+  anasubjetsNoFakes->SetJetsRefName(jetName);
   anasubjetsNoFakes->SetNCentBins(4);
   anasubjetsNoFakes->SetJetEtaRange(-2.,2.);
   anasubjetsNoFakes->SetMinRefPt(10.);
@@ -189,8 +190,9 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
     //Run producers
     //Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
-    //Printf("produce PU jets");
-    p_PUJet->Run(jentry); //forest jets
+    //Printf("produce jets");
+    p_SDJet->Run(jentry); //forest SoftDrop jets
+    p_Jet->Run(jentry); //forest jets
 	    
     //Execute all analysis tasks
     handler->ExecuteTask();
