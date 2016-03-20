@@ -17,14 +17,17 @@ public:
    void CreateOutputObjects();
    
    void SetJetsName(TString name) { fJetsName = name ; } 
+   void SetJetIdType(int t)       { fJetIdType = t   ; }
    
  protected:
    TString          fJetsName;    //name of jet container
    lwJetContainer  *fJetsCont;    //!jet container
+   int              fJetIdType;   //jet id type to be used
    
    
    TH1F            *fh1NJets;     //!number of jets in event
    TH3F            *fh3PtEtaPhi;  //!jet pt vs eta vs phi
+   TH3F            *fh3PtEtaPhiJetID;  //!jet pt vs eta vs phi with jet id
    TH3F            *fh3PtEtaArea; //!jet pt vs eta vs area
 
    TH3F            *fh3PtEtaCHF; //!
