@@ -92,6 +92,15 @@ public :
    Int_t           refparton_flavor[maxJets];   //[nref]
    Int_t           refparton_flavorForB[maxJets];   //[nref]
 
+   Float_t         refptG[maxJets];   //[nref]
+   Float_t         refetaG[maxJets];   //[nref]
+   Float_t         refphiG[maxJets];   //[nref]
+   Float_t         refmG[maxJets];   //[nref]
+   std::vector<std::vector<float> > *refSubJetPt = 0;
+   std::vector<std::vector<float> > *refSubJetEta = 0;
+   std::vector<std::vector<float> > *refSubJetPhi= 0;
+   std::vector<std::vector<float> > *refSubJetM = 0;
+
    Float_t         genChargedSum[maxJets];   //[nref]
    Float_t         genHardSum[maxJets];   //[nref]
 
@@ -199,6 +208,15 @@ public :
    TBranch        *b_refparton_flavor;   //!
    TBranch        *b_refparton_flavorForB;   //!
 
+   TBranch        *b_refptG;   //!
+   TBranch        *b_refetaG;   //!
+   TBranch        *b_refphiG;   //!
+   TBranch        *b_refmG;   //!
+   TBranch        *b_refSubJetPt;   //!
+   TBranch        *b_refSubJetEta;   //!
+   TBranch        *b_refSubJetPhi;   //!
+   TBranch        *b_refSubJetM;   //!
+   
    TBranch        *b_genChargedSum;   //!
    TBranch        *b_genHardSum;   //!
    TBranch        *b_signalChargedSum;   //!

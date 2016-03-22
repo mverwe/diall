@@ -28,12 +28,18 @@ class lwJet : public particleBase {
   float       GetRefEta()               const { return fRefEta         ; }
   float       GetRefPhi()               const { return fRefPhi         ; }
   float       GetRefM()                 const { return fRefM           ; }
+  float       GetRefDr()                const { return fRefDr          ; }
   float       GetRefTau(int num)        const { if(num>0 && num<4) { return fRefTau[num-1];} else return -1.; }
   std::vector<float> GetSubJetPt()      const { return fSubJetPt       ; }
   std::vector<float> GetSubJetEta()     const { return fSubJetEta      ; }
   std::vector<float> GetSubJetPhi()     const { return fSubJetPhi      ; }
   std::vector<float> GetSubJetM()       const { return fSubJetM        ; }
-  float       GetRefDr()                const { return fRefDr          ; }
+ 
+  std::vector<float> GetRefSubJetPt()   const { return fRefSubJetPt    ; }
+  std::vector<float> GetRefSubJetEta()  const { return fRefSubJetEta   ; }
+  std::vector<float> GetRefSubJetPhi()  const { return fRefSubJetPhi   ; }
+  std::vector<float> GetRefSubJetM()    const { return fRefSubJetM     ; }
+  
   int         GetSubEvent()             const { return fSube           ; }
   
   Int_t       GetNConstituents()        const { return fConstIds.size(); }
@@ -90,6 +96,12 @@ class lwJet : public particleBase {
   void        SetRefM(Double_t m)          { fRefM = m; }
   void        SetRefTau(int num, float tau)   { if(num>0 && num<4) fRefTau[num-1] = tau; }
   void        SetRefDr(Double_t dr)        { fRefDr = dr; }
+
+  void        SetRefSubJetPt(std::vector<float> v)  { fRefSubJetPt  = v; }
+  void        SetRefSubJetEta(std::vector<float> v) { fRefSubJetEta = v; }
+  void        SetRefSubJetPhi(std::vector<float> v) { fRefSubJetPhi = v; }
+  void        SetRefSubJetM(std::vector<float> v)   { fRefSubJetM   = v; }
+  
   void        SetSubEvent(Int_t su)        { fSube  = su; }
 
   void        AddConstituent(Int_t i )     { fConstIds.push_back(i); }
@@ -125,10 +137,10 @@ class lwJet : public particleBase {
 
   float             fTau[3];
   
-  std::vector<float>  fSubJetPt;  //list os subjet pt
-  std::vector<float>  fSubJetEta; //list os subjet eta
-  std::vector<float>  fSubJetPhi; //list os subjet phi
-  std::vector<float>  fSubJetM;   //list os subjet m
+  std::vector<float>  fSubJetPt;  //list of subjet pt
+  std::vector<float>  fSubJetEta; //list of subjet eta
+  std::vector<float>  fSubJetPhi; //list of subjet phi
+  std::vector<float>  fSubJetM;   //list of subjet m
 
   float             fRawPt;         //raw pt (no jec)
   float             fRawM;          //raw mass (no jec)
@@ -138,6 +150,12 @@ class lwJet : public particleBase {
   float             fRefM;          //matched gen-level jet mass
   float             fRefTau[3];
   float             fRefDr;         //distance between reco and gen jet
+
+  std::vector<float>  fRefSubJetPt;  //list of subjet pt
+  std::vector<float>  fRefSubJetEta; //list of subjet eta
+  std::vector<float>  fRefSubJetPhi; //list of subjet phi
+  std::vector<float>  fRefSubJetM;   //list of subjet m
+  
   int               fSube;          //sub-event id (0=hard process)
   float             fChargedMax;    //max track pt
   float             fChargedSum;    //summed track pt

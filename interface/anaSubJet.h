@@ -4,6 +4,7 @@
 #include "TString.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "THnSparse.h"
 
 #include "UserCode/diall/interface/anaBaseTask.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
@@ -77,6 +78,8 @@ public:
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtThetagNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueThetag; //!jet pt reco vs pt true vs thetag
+
+   THnSparse      **fhnZgResponse;                  //!response matrix
    
    //dijet analysis histos
    //subjet observables in leading, subleading jet

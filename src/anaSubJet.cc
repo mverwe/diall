@@ -44,6 +44,7 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
   fh3PtRecPtTrueThetag(),
+  fhnZgResponse(),
   fh2SLPtSubjetPtRatio21(),
   fh2SLPtSubjetPtRatio32(),
   fh2SLPtSubjetPtRatio43(),
@@ -91,6 +92,8 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtSubjetPtInvMass43 = new TH2F*[fNcentBins];
   fh2PtSubjetPtInvMass54 = new TH2F*[fNcentBins];
 
+  fhnZgResponse        = new THnSparse*[fNcentBins];
+
   for (int i = 0; i < fNcentBins; i++) {
     fh3PtEtaPhi[i]      = 0;
     fh2PtNSubjets[i]    = 0;
@@ -115,6 +118,7 @@ anaSubJet::anaSubJet(const char *name, const char *title)
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
     fh3PtRecPtTrueThetag[i]     = 0;
+    fhnZgResponse[i]        = 0;
   }
 
 }
@@ -231,6 +235,12 @@ void anaSubJet::Exec(Option_t * /*option*/)
            fh2PtThetagTrue[fCentBin]->Fill(pt,thetag);
            fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg);
            fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag);
+           std::vector<float> refsjpt  = jet->GetRefSubJetPt();
+           float refzg = -1.;
+           if(refsjpt.size()>1)
+             refzg = std::min(refsjpt.at(0),refsjpt.at(1))/(refsjpt.at(0)+refsjpt.at(1));
+           double var[4] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt()};
+           fhnZgResponse[fCentBin]->Fill(var);
          }
        }
      }
@@ -365,6 +375,20 @@ void anaSubJet::CreateOutputObjects() {
 
   TString histTitle = "";
   TString histName  = "";
+
+  //Binning for THnSparse
+  const int nBinsPt  = 100;
+  const double minPt = 0.;
+  const double maxPt = 500.;
+
+  const int nBinsZg = 50;
+  const double minZg = 0.;
+  const double maxZg = 0.5;
+  
+  const Int_t nBinsSparse0 = 4;
+  const Int_t nBins0[nBinsSparse0] = {nBinsZg,nBinsZg,nBinsPt,nBinsPt};
+  const Double_t xmin0[nBinsSparse0]  = { minZg, minZg, minPt, minPt};
+  const Double_t xmax0[nBinsSparse0]  = { maxZg, maxZg, maxPt, maxPt};
   
   for (Int_t i = 0; i < fNcentBins; i++) {
     histName = Form("fh2PtEtaPhi_%d",i);
@@ -481,6 +505,11 @@ void anaSubJet::CreateOutputObjects() {
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh3PtRecPtTrueThetag[i] = new TH3F(histName.Data(),histTitle.Data(),500,0,500,500,0,500,50,0,0.5);
     fOutput->Add(fh3PtRecPtTrueThetag[i]);
+
+    histName = Form("fhnZgResponse_%d",i);
+    histTitle = Form("%s;#it{z}_{g,det};#it{z}_{g,part};#it{p}_{T,det};#it{p}_{T,part}",histName.Data());
+    fhnZgResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
+    fOutput->Add(fhnZgResponse[i]);
   }
 
   int nBinsLJ = (int)fPtLeadingMin.size();
