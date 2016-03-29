@@ -140,7 +140,8 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->SetJetsName(jetSDName);
   anasubjets->SetJetsRefName(jetName);
   anasubjets->SetNCentBins(4);
-  anasubjets->SetJetEtaRange(-2.,2.);
+  anasubjets->SetJetEtaRange(-1.3,1.3);
+  //anasubjets->SetJetEtaRange(-2.,2.);
   anasubjets->SetDoDijets(doDijet);
   anasubjets->AddLeadingJetPtBin(120.,150.);
   anasubjets->AddLeadingJetPtBin(150.,180.);
@@ -149,6 +150,8 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->AddLeadingJetPtBin(260.,300.);
   anasubjets->AddLeadingJetPtBin(300.,500.);
   anasubjets->SetPtMinSubleading(30.);
+  anasubjets->SetStoreTree(true);
+  anasubjets->SetMinPtJetTree(80.);
   handler->Add(anasubjets);
 
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
@@ -177,7 +180,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsNoFakes->SetNCentBins(4);
   anasubjetsNoFakes->SetJetEtaRange(-2.,2.);
   anasubjetsNoFakes->SetMinRefPt(10.);
-  handler->Add(anasubjetsNoFakes);
+  //handler->Add(anasubjetsNoFakes);
  
   //---------------------------------------------------------------
   //Event loop

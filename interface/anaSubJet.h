@@ -30,6 +30,10 @@ public:
    void SetPtMinSubleading(float min)     { fPtSubleadingMin = min; }
    void SetMinDPhi(float dphi)            { fMinDPhi = dphi; }
    void SetMinMassLeading(float m)        { fMinMassLeading = m; }
+
+   void SetStoreTree(bool b)              { fStoreTree = b;     }
+   void SetMinPtJetTree(float min)        { fMinPtJetTree = min ; }
+   void ClearSubjetTreeVars();
    
  protected:
    int              fNcentBins;
@@ -73,6 +77,7 @@ public:
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueZg; //!jet pt reco vs pt true vs zg
+   TH3F           **fh3PtTrueDeltaPtDeltaZg; //!jet pt true vs deltaPt vs deltaZg
    
    TH2F           **fh2PtThetag; //!jet pt vs zg
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
@@ -105,16 +110,27 @@ public:
    
    bool               fStoreTree;
    TTree             *fTreeOut;
+   float              fMinPtJetTree;
 
    struct subjetTreeVars {
-     std::vector<float> fPtLead;
-     std::vector<float> fEtaLead;
-     std::vector<float> fPhiLead;
-     std::vector<float> fMLead;
-     std::vector<float> fPtSubLead;
-     std::vector<float> fEtaSubLead;
-     std::vector<float> fPhiSubLead;
-     std::vector<float> fMSubLead;
+     float              fCent;
+     std::vector<float> fPt;
+     std::vector<float> fEta;
+     std::vector<float> fPhi;
+     std::vector<float> fM;
+     std::vector<float> fPtG;
+     std::vector<float> fEtaG;
+     std::vector<float> fPhiG;
+     std::vector<float> fMG;
+     std::vector<float> fPtSJ1;
+     std::vector<float> fPtSJ2;
+     std::vector<float> fZg;
+     std::vector<float> fThetag;
+     std::vector<float> fPtRef;
+     std::vector<float> fPtSJ1Ref;
+     std::vector<float> fPtSJ2Ref;
+     std::vector<float> fZgRef;
+     std::vector<float> fThetagRef;
    };
 
    subjetTreeVars fSubjetTreeVars;

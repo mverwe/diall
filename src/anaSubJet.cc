@@ -2,6 +2,8 @@
 
 #include "UserCode/diall/interface/lwJet.h"
 
+#include <iostream>
+
 ClassImp(anaSubJet)
    
 anaSubJet::anaSubJet(const char *name, const char *title) 
@@ -40,6 +42,7 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtZgTrue(),
   fh2PtZgNoRef(),
   fh3PtRecPtTrueZg(),
+  fh3PtTrueDeltaPtDeltaZg(),
   fh2PtThetag(),
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
@@ -65,6 +68,7 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh3SLPtZgDeltaPhi(),
   fStoreTree(false),
   fTreeOut(0x0),
+  fMinPtJetTree(0.),
   fSubjetTreeVars()
 {
   
@@ -83,6 +87,7 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fh2PtZgTrue          = new TH2F*[fNcentBins];
   fh2PtZgNoRef         = new TH2F*[fNcentBins];
   fh3PtRecPtTrueZg     = new TH3F*[fNcentBins];
+  fh3PtTrueDeltaPtDeltaZg = new TH3F*[fNcentBins];
   fh2PtThetag          = new TH2F*[fNcentBins];
   fh2PtThetagTrue      = new TH2F*[fNcentBins];
   fh2PtThetagNoRef     = new TH2F*[fNcentBins];
@@ -106,19 +111,20 @@ anaSubJet::anaSubJet(const char *name, const char *title)
     fh2PtSubjetPtFrac2[i]   = 0;
     fh2PtSubjetPtFrac3[i]   = 0;
     fh2PtSubjetPtFrac4[i]   = 0;
-    fh2PtSubjetPtInvMass21[i] = 0;
-    fh2PtSubjetPtInvMass32[i] = 0;
-    fh2PtSubjetPtInvMass43[i] = 0;
-    fh2PtSubjetPtInvMass54[i] = 0;
-    fh2PtZg[i]              = 0;
-    fh2PtZgTrue[i]          = 0;
-    fh2PtZgNoRef[i]         = 0;
+    fh2PtSubjetPtInvMass21[i]   = 0;
+    fh2PtSubjetPtInvMass32[i]   = 0;
+    fh2PtSubjetPtInvMass43[i]   = 0;
+    fh2PtSubjetPtInvMass54[i]   = 0;
+    fh2PtZg[i]                  = 0;
+    fh2PtZgTrue[i]              = 0;
+    fh2PtZgNoRef[i]             = 0;
     fh3PtRecPtTrueZg[i]         = 0;
+    fh3PtTrueDeltaPtDeltaZg[i]  = 0;
     fh2PtThetag[i]              = 0;
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
     fh3PtRecPtTrueThetag[i]     = 0;
-    fhnZgResponse[i]        = 0;
+    fhnZgResponse[i]            = 0;
   }
 
 }
@@ -157,6 +163,12 @@ void anaSubJet::Exec(Option_t * /*option*/)
     else if(cent>=30. && cent<50.) fCentBin = 2;
     else if(cent>=50. && cent<80.) fCentBin = 3;
     else fCentBin = -1;
+  }
+
+  if(fStoreTree) {
+    ClearSubjetTreeVars();
+    fSubjetTreeVars.fCent = cent;
+    //    std::cout << "size fSubjetTreeVars.fPt: " << fSubjetTreeVars.fPt.size() << std::endl;
   }
 
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
@@ -223,6 +235,64 @@ void anaSubJet::Exec(Option_t * /*option*/)
        double thetag = v1.Angle(v2.Vect());
        //Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
        
+       if(fStoreTree && jetNotGroomed->Pt()>fMinPtJetTree) {
+         //ungroomed jet
+         fSubjetTreeVars.fPt.push_back(jetNotGroomed->Pt());
+         fSubjetTreeVars.fEta.push_back(jetNotGroomed->Eta());
+         fSubjetTreeVars.fPhi.push_back(jetNotGroomed->Phi());
+         fSubjetTreeVars.fM.push_back(jetNotGroomed->M());
+         //groomed jet
+         fSubjetTreeVars.fPtG.push_back(jet->Pt());
+         fSubjetTreeVars.fEtaG.push_back(jet->Eta());
+         fSubjetTreeVars.fPhiG.push_back(jet->Phi());
+         fSubjetTreeVars.fMG.push_back(jet->M());
+         if(sjpt.at(0)>sjpt.at(1)) {
+           fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
+           fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
+         } else {
+           fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
+           fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
+         }
+         fSubjetTreeVars.fZg.push_back(zg);
+         fSubjetTreeVars.fThetag.push_back(thetag);
+
+         //ref jet
+         fSubjetTreeVars.fPtRef.push_back(jetNotGroomed->GetRefPt());
+         std::vector<float> refsjpt   = jet->GetRefSubJetPt();
+         std::vector<float> refsjeta  = jet->GetRefSubJetEta();
+         std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
+         std::vector<float> refsjm    = jet->GetRefSubJetM();
+         if(refsjpt.size()>0 && refsjpt.size()<2) {
+           fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+           fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+         }
+         else if(refsjpt.size()>1) {
+           if(refsjpt.at(0)>(refsjpt.at(1))) {
+             fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+             fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
+           } else {
+             fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
+             fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(0));
+           }
+         } else {
+           fSubjetTreeVars.fPtSJ1Ref.push_back(-999);
+           fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+         }
+
+         float refzg = -1.;
+         float refthetag = -1.;
+         if(refsjpt.size()>1) {
+           refzg = std::min(refsjpt.at(0),refsjpt.at(1))/(refsjpt.at(0)+refsjpt.at(1));
+           TLorentzVector refv1;
+           TLorentzVector refv2;
+           refv1.SetPtEtaPhiM(refsjpt.at(0),refsjeta.at(0),refsjphi.at(0),refsjm.at(0));
+           refv2.SetPtEtaPhiM(refsjpt.at(1),refsjeta.at(1),refsjphi.at(1),refsjm.at(1));
+           refthetag = refv1.Angle(refv2.Vect());
+         }
+         fSubjetTreeVars.fZgRef.push_back(refzg);
+         fSubjetTreeVars.fThetagRef.push_back(refthetag);
+       }
+       
        if(fCentBin>-1 && fCentBin<fNcentBins) {
          fh2PtZg[fCentBin]->Fill(pt,zg);
          fh2PtThetag[fCentBin]->Fill(pt,thetag);
@@ -235,12 +305,28 @@ void anaSubJet::Exec(Option_t * /*option*/)
            fh2PtThetagTrue[fCentBin]->Fill(pt,thetag);
            fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg);
            fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag);
-           std::vector<float> refsjpt  = jet->GetRefSubJetPt();
+           std::vector<float> refsjpt   = jet->GetRefSubJetPt();
+           // std::vector<float> refsjeta  = jet->GetRefSubJetEta();
+           // std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
+           // std::vector<float> refsjm    = jet->GetRefSubJetM();
            float refzg = -1.;
-           if(refsjpt.size()>1)
+           //float refthetag = -1.;
+           double dzgrel = -999.;
+           if(refsjpt.size()>1) {
              refzg = std::min(refsjpt.at(0),refsjpt.at(1))/(refsjpt.at(0)+refsjpt.at(1));
-           double var[4] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt()};
+             dzgrel = (zg - refzg)/refzg;
+
+             // TLorentzVector refv1;
+             // TLorentzVector refv2;
+             // refv1.SetPtEtaPhiM(refsjpt.at(0),refsjeta.at(0),refsjphi.at(0),refsjm.at(0));
+             // refv2.SetPtEtaPhiM(refsjpt.at(1),refsjeta.at(1),refsjphi.at(1),refsjm.at(1));
+             //refthetag = refv1.Angle(refv2.Vect());
+           }
+           double dptrel = (pt - jetNotGroomed->GetRefPt())/jetNotGroomed->GetRefPt();
+           double var[6] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt(),dptrel,dzgrel};
            fhnZgResponse[fCentBin]->Fill(var);
+           fh3PtTrueDeltaPtDeltaZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),pt-jetNotGroomed->GetRefPt(),zg-refzg);
+
          }
        }
      }
@@ -358,6 +444,7 @@ void anaSubJet::Exec(Option_t * /*option*/)
        }
      }
    }
+   if(fStoreTree) fTreeOut->Fill();
 }
 
 //----------------------------------------------------------
@@ -370,6 +457,30 @@ void anaSubJet::CreateOutputObjects() {
     return;
   }
 
+  if(fStoreTree) {
+    fTreeOut = new TTree(Form("%sTree",GetName()),"subjet tree");
+    fTreeOut->Branch("fCent",&fSubjetTreeVars.fCent,"fCent/F");
+    fTreeOut->Branch("fPt",&fSubjetTreeVars.fPt);
+    fTreeOut->Branch("fEta",&fSubjetTreeVars.fEta);
+    fTreeOut->Branch("fPhi",&fSubjetTreeVars.fPhi);
+    fTreeOut->Branch("fM",&fSubjetTreeVars.fM);
+    fTreeOut->Branch("fPtG",&fSubjetTreeVars.fPtG);
+    fTreeOut->Branch("fEtaG",&fSubjetTreeVars.fEtaG);
+    fTreeOut->Branch("fPhiG",&fSubjetTreeVars.fPhiG);
+    fTreeOut->Branch("fMG",&fSubjetTreeVars.fMG);
+    fTreeOut->Branch("fPtSJ1",&fSubjetTreeVars.fPtSJ1);
+    fTreeOut->Branch("fPtSJ2",&fSubjetTreeVars.fPtSJ2);
+    fTreeOut->Branch("fZg",&fSubjetTreeVars.fZg);
+    fTreeOut->Branch("fThetag",&fSubjetTreeVars.fThetag);
+    fTreeOut->Branch("fPtRef",&fSubjetTreeVars.fPtRef);
+    fTreeOut->Branch("fPtSJ1Ref",&fSubjetTreeVars.fPtSJ1Ref);
+    fTreeOut->Branch("fPtSJ2Ref",&fSubjetTreeVars.fPtSJ2Ref);
+    fTreeOut->Branch("fZgRef",&fSubjetTreeVars.fZgRef);
+    fTreeOut->Branch("fThetagRef",&fSubjetTreeVars.fThetagRef);
+
+    fOutput->Add(fTreeOut);
+  }
+    
   fhCentrality = new TH1F("fhCentrality","fhCentrality",100,0,100);
   fOutput->Add(fhCentrality);
 
@@ -377,18 +488,26 @@ void anaSubJet::CreateOutputObjects() {
   TString histName  = "";
 
   //Binning for THnSparse
-  const int nBinsPt  = 100;
+  const int nBinsPt  = 50;
   const double minPt = 0.;
   const double maxPt = 500.;
 
   const int nBinsZg = 50;
   const double minZg = 0.;
   const double maxZg = 0.5;
+
+  const int nBinsDPtRel  =  120;
+  const double minDPtRel = -3.;
+  const double maxDPtRel =  3.;
+
+  const int nBinsDZgRel  =  100;
+  const double minDZgRel = -1.;
+  const double maxDZgRel =  4.;
   
-  const Int_t nBinsSparse0 = 4;
-  const Int_t nBins0[nBinsSparse0] = {nBinsZg,nBinsZg,nBinsPt,nBinsPt};
-  const Double_t xmin0[nBinsSparse0]  = { minZg, minZg, minPt, minPt};
-  const Double_t xmax0[nBinsSparse0]  = { maxZg, maxZg, maxPt, maxPt};
+  const Int_t nBinsSparse0 = 6;
+  const Int_t nBins0[nBinsSparse0] = {nBinsZg,nBinsZg,nBinsPt,nBinsPt,nBinsDPtRel,nBinsDZgRel};
+  const Double_t xmin0[nBinsSparse0]  = { minZg, minZg, minPt, minPt, minDPtRel, minDZgRel};
+  const Double_t xmax0[nBinsSparse0]  = { maxZg, maxZg, maxPt, maxPt, maxDPtRel, maxDZgRel};
   
   for (Int_t i = 0; i < fNcentBins; i++) {
     histName = Form("fh2PtEtaPhi_%d",i);
@@ -510,6 +629,12 @@ void anaSubJet::CreateOutputObjects() {
     histTitle = Form("%s;#it{z}_{g,det};#it{z}_{g,part};#it{p}_{T,det};#it{p}_{T,part}",histName.Data());
     fhnZgResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnZgResponse[i]);
+
+    //fh3PtTrueDeltaPtDeltaZg
+    histName = Form("fh3PtTrueDeltaPtDeltaZg_%d",i);
+    histTitle = Form("%s;p_{T,true};#Delta p_{T};#Delta z_{g};",histName.Data());
+    fh3PtTrueDeltaPtDeltaZg[i] = new TH3F(histName.Data(),histTitle.Data(),500,0,500,500,-500,500,100,-0.5,0.5);
+    fOutput->Add(fh3PtTrueDeltaPtDeltaZg[i]);
   }
 
   int nBinsLJ = (int)fPtLeadingMin.size();
@@ -668,4 +793,26 @@ void anaSubJet::CreateOutputObjects() {
     fh2SLPtDeltaPhiNoRef.push_back(h2LJDeltaPhiNoRef);
     fh3SLPtZgDeltaPhi.push_back(h3LJZgDeltaPhi);
   }
+}
+
+//----------------------------------------------------------
+void anaSubJet::ClearSubjetTreeVars() {
+
+  fSubjetTreeVars.fPt.clear();
+  fSubjetTreeVars.fEta.clear();
+  fSubjetTreeVars.fPhi.clear();
+  fSubjetTreeVars.fM.clear();
+  fSubjetTreeVars.fPtG.clear();
+  fSubjetTreeVars.fEtaG.clear();
+  fSubjetTreeVars.fPhiG.clear();
+  fSubjetTreeVars.fMG.clear();
+  fSubjetTreeVars.fPtSJ1.clear();
+  fSubjetTreeVars.fPtSJ2.clear();
+  fSubjetTreeVars.fZg.clear();
+  fSubjetTreeVars.fThetag.clear();
+  fSubjetTreeVars.fPtRef.clear();
+  fSubjetTreeVars.fPtSJ1Ref.clear();
+  fSubjetTreeVars.fPtSJ2Ref.clear();
+  fSubjetTreeVars.fZgRef.clear();
+  fSubjetTreeVars.fThetagRef.clear();
 }
