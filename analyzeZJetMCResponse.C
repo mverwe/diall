@@ -29,8 +29,10 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
 
   TString jetName = "aktPuppiR040";
   TString jetTreeName = "akPuppi4PFJetAnalyzer";
-  jetName = "aktCsR040";
-  jetTreeName = "akCs4PFJetAnalyzer"; //akCs4PFJetAnalyzer
+  jetName = "aktPuR030"; //"aktCsR040";
+  jetTreeName = "akPu3PFJetAnalyzer"; //"akCs4PFJetAnalyzer"; //akCs4PFJetAnalyzer
+
+  std::cout << "analyzing Z-jet response for: " << jetName << " tree: " << jetTreeName << std::endl;
   
   std::cout << "nfiles: " << urls.size() << std::endl;
   for (auto i = urls.begin(); i != urls.end(); ++i)
@@ -56,20 +58,20 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
 
-  TChain *hltTree = new TChain("hltanalysis/HltTree");
-  for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
-  chain->AddFriend(hltTree);
-  Printf("hltTree done");
+  // TChain *hltTree = new TChain("hltanalysis/HltTree");
+  // for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
+  // chain->AddFriend(hltTree);
+  // Printf("hltTree done");
 
-  TChain *skimTree = new TChain("skimanalysis/HltTree");
-  for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
-  chain->AddFriend(skimTree);
-  Printf("skimTree done");
+  // TChain *skimTree = new TChain("skimanalysis/HltTree");
+  // for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
+  // chain->AddFriend(skimTree);
+  // Printf("skimTree done");
 
-  TChain *muTree = new TChain("ggHiNtuplizer/EventTree");
-  for(size_t i=firstFile; i<lastFile; i++) muTree->Add(urls[i].c_str());
-  chain->AddFriend(muTree);
-  Printf("muTree done");
+  // TChain *muTree = new TChain("ggHiNtuplizer/EventTree");
+  // for(size_t i=firstFile; i<lastFile; i++) muTree->Add(urls[i].c_str());
+  // chain->AddFriend(muTree);
+  // Printf("muTree done");
 
   TChain *genTree = new TChain("HiGenParticleAna/hi");
   for(size_t i=firstFile; i<lastFile; i++) genTree->Add(urls[i].c_str());
@@ -130,6 +132,7 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   ZResp->SetHiEvtName("hiEventContainer");
   ZResp->SetZsName("zMuMuBosons");
   ZResp->SetJetsName(jetName);
+  ZResp->SetNCentBins(3);
   handler->Add(ZResp);
 
 

@@ -38,6 +38,12 @@ public:
    TString           fGenJetsName;            //name of gen jet container
    lwJetContainer   *fGenJetsCont;            //!gen jet container
    bool              fUseForestMatching; //use matched ref jet from forest
+
+   TH1F            *fh1ZPtInc;                  //!# Z-pt
+   TH3F            *fh3ZJetPtRecGenInc;         //!# Z-pt vs jet pt rec vs jet pt gen
+   TH3F            *fh3ZJetXJZRecGenInc;        //!# Z-pt vs jet ZJZ rec vs jet XJZ gen
+
+   TH3F            *fh3PtTrueEtaScalePtInc;     //!jet pt scale for jets recoiling from Z
    
    TH1F            **fh1ZPt;                  //!# Z-pt
    TH3F            **fh3ZJetPtRecGen;         //!# Z-pt vs jet pt rec vs jet pt gen
