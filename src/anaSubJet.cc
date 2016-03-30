@@ -246,37 +246,148 @@ void anaSubJet::Exec(Option_t * /*option*/)
          fSubjetTreeVars.fEtaG.push_back(jet->Eta());
          fSubjetTreeVars.fPhiG.push_back(jet->Phi());
          fSubjetTreeVars.fMG.push_back(jet->M());
-         if(sjpt.at(0)>sjpt.at(1)) {
-           fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
-           fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
-         } else {
-           fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
-           fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
-         }
+
+         // if(sjpt.at(0)>sjpt.at(1)) {
+         //   fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
+         //   fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
+         //   fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(0));
+         //   fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(1));
+         //   fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(0));
+         //   fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(1));
+         // } else {
+         //   fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
+         //   fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
+         //   fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(1));
+         //   fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(0));
+         //   fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(1));
+         //   fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(0));
+         // }
          fSubjetTreeVars.fZg.push_back(zg);
          fSubjetTreeVars.fThetag.push_back(thetag);
 
          //ref jet
          fSubjetTreeVars.fPtRef.push_back(jetNotGroomed->GetRefPt());
+         fSubjetTreeVars.fEtaRef.push_back(jetNotGroomed->GetRefEta());
+         fSubjetTreeVars.fPhiRef.push_back(jetNotGroomed->GetRefPhi());
          std::vector<float> refsjpt   = jet->GetRefSubJetPt();
          std::vector<float> refsjeta  = jet->GetRefSubJetEta();
          std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
          std::vector<float> refsjm    = jet->GetRefSubJetM();
+
+         //if there is a ref jet order according to matching, otherwise pt-ordered
+         std::vector<float> recsjpt;
+         std::vector<float> recsjeta;
+         std::vector<float> recsjphi;
+         std::vector<int>   closestIndices;
+         std::vector<float> closestDistances;
+         for(uint sj = 0; sj<refsjpt.size(); ++sj) {
+           int closest = -1;
+           double drmin = 999.;
+           for(uint recsj = 0; recsj<sjpt.size(); ++recsj) {
+             double dr = DeltaR(sjphi.at(recsj),refsjphi.at(sj),sjeta.at(recsj),refsjeta.at(sj));
+             if(dr<drmin) {
+               drmin = dr;
+               closest = (int)recsj;
+             }
+           }
+           //Printf("sj: %d closest: %d drmin: %f",sj,closest,drmin);
+           closestIndices.push_back(closest);
+           closestDistances.push_back(drmin);
+         }
+
+         //check uniqueness of matching. If double match, take closest one
+         //Printf("check uniqueness");
+         if(closestIndices.size()>1) {
+           for(uint l = 0; l<closestIndices.size(); ++l) {
+             int id = closestIndices.at(l);
+             if(id<0) continue;
+             for(uint m = l+1; m<closestIndices.size(); ++m) {
+               if(id==closestIndices.at(m)) {
+                 //Printf("found double match %d %d %d %d %f %f",(int)l,(int)m,id,closestIndices.at(m),closestDistances.at(l),closestDistances.at(m));
+                 if(closestDistances.at(l)<closestDistances.at(m)) {
+                   closestIndices.at(m) = -1;
+                   closestDistances.at(m) = 999;
+                 }
+                 else {
+                   closestIndices.at(l) = -1;
+                   closestDistances.at(l) = 999;
+                 }
+               }
+             }
+           }
+         }
+         //Printf("set subjet pt,eta,phi reco level");
+         for(uint recsj = 0; recsj<closestIndices.size(); ++recsj) {
+           int closest = closestIndices.at(recsj);
+           if(closest>-1 && closest<(int)sjpt.size()) {
+             recsjpt.push_back(sjpt.at(closest));
+             recsjeta.push_back(sjeta.at(closest));
+             recsjphi.push_back(sjphi.at(closest));
+           } else {
+             recsjpt.push_back(-999);
+             recsjeta.push_back(-999);
+             recsjphi.push_back(-999);
+           }
+         }
+         
          if(refsjpt.size()>0 && refsjpt.size()<2) {
            fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+           fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
            fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+           fSubjetTreeVars.fPtSJ2.push_back(-999);
+           fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
+           fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
+           fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
+           fSubjetTreeVars.fEtaSJ2.push_back(-999);
+           fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+           fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
+           fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
+           fSubjetTreeVars.fPhiSJ2.push_back(-999);
          }
          else if(refsjpt.size()>1) {
            if(refsjpt.at(0)>(refsjpt.at(1))) {
              fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
              fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
+             fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
+             fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
+             fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+             fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
+
+             fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
+             fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(1));
+             fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
+             fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(1));
+             fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
+             fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(1));
            } else {
              fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
              fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(0));
+             fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(1));
+             fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(0));
+             fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(1));
+             fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(0));
+
+             fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(1));
+             fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(0));
+             fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(1));
+             fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(0));
+             fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(1));
+             fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(0));
            }
          } else {
            fSubjetTreeVars.fPtSJ1Ref.push_back(-999);
            fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+           fSubjetTreeVars.fEtaSJ1Ref.push_back(-999);
+           fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
+           fSubjetTreeVars.fPhiSJ1Ref.push_back(-999);
+           fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
+
+           fSubjetTreeVars.fPtSJ1.push_back(-999);
+           fSubjetTreeVars.fPtSJ2.push_back(-999);
+           fSubjetTreeVars.fEtaSJ1.push_back(-999);
+           fSubjetTreeVars.fEtaSJ2.push_back(-999);
+           fSubjetTreeVars.fPhiSJ1.push_back(-999);
+           fSubjetTreeVars.fPhiSJ2.push_back(-999);
          }
 
          float refzg = -1.;
@@ -470,11 +581,21 @@ void anaSubJet::CreateOutputObjects() {
     fTreeOut->Branch("fMG",&fSubjetTreeVars.fMG);
     fTreeOut->Branch("fPtSJ1",&fSubjetTreeVars.fPtSJ1);
     fTreeOut->Branch("fPtSJ2",&fSubjetTreeVars.fPtSJ2);
+    fTreeOut->Branch("fEtaSJ1",&fSubjetTreeVars.fEtaSJ1);
+    fTreeOut->Branch("fEtaSJ2",&fSubjetTreeVars.fEtaSJ2);
+    fTreeOut->Branch("fPhiSJ1",&fSubjetTreeVars.fPhiSJ1);
+    fTreeOut->Branch("fPhiSJ2",&fSubjetTreeVars.fPhiSJ2);
     fTreeOut->Branch("fZg",&fSubjetTreeVars.fZg);
     fTreeOut->Branch("fThetag",&fSubjetTreeVars.fThetag);
     fTreeOut->Branch("fPtRef",&fSubjetTreeVars.fPtRef);
+    fTreeOut->Branch("fEtaRef",&fSubjetTreeVars.fEtaRef);
+    fTreeOut->Branch("fPhiRef",&fSubjetTreeVars.fPhiRef);
     fTreeOut->Branch("fPtSJ1Ref",&fSubjetTreeVars.fPtSJ1Ref);
     fTreeOut->Branch("fPtSJ2Ref",&fSubjetTreeVars.fPtSJ2Ref);
+    fTreeOut->Branch("fEtaSJ1Ref",&fSubjetTreeVars.fEtaSJ1Ref);
+    fTreeOut->Branch("fEtaSJ2Ref",&fSubjetTreeVars.fEtaSJ2Ref);
+    fTreeOut->Branch("fPhiSJ1Ref",&fSubjetTreeVars.fPhiSJ1Ref);
+    fTreeOut->Branch("fPhiSJ2Ref",&fSubjetTreeVars.fPhiSJ2Ref);
     fTreeOut->Branch("fZgRef",&fSubjetTreeVars.fZgRef);
     fTreeOut->Branch("fThetagRef",&fSubjetTreeVars.fThetagRef);
 
@@ -797,7 +918,7 @@ void anaSubJet::CreateOutputObjects() {
 
 //----------------------------------------------------------
 void anaSubJet::ClearSubjetTreeVars() {
-
+  //clear vectors in fSubjetTreeVars
   fSubjetTreeVars.fPt.clear();
   fSubjetTreeVars.fEta.clear();
   fSubjetTreeVars.fPhi.clear();
@@ -808,11 +929,32 @@ void anaSubJet::ClearSubjetTreeVars() {
   fSubjetTreeVars.fMG.clear();
   fSubjetTreeVars.fPtSJ1.clear();
   fSubjetTreeVars.fPtSJ2.clear();
+  fSubjetTreeVars.fEtaSJ1.clear();
+  fSubjetTreeVars.fEtaSJ2.clear();
+  fSubjetTreeVars.fPhiSJ1.clear();
+  fSubjetTreeVars.fPhiSJ2.clear();
   fSubjetTreeVars.fZg.clear();
   fSubjetTreeVars.fThetag.clear();
   fSubjetTreeVars.fPtRef.clear();
+  fSubjetTreeVars.fEtaRef.clear();
+  fSubjetTreeVars.fPhiRef.clear();
   fSubjetTreeVars.fPtSJ1Ref.clear();
   fSubjetTreeVars.fPtSJ2Ref.clear();
+  fSubjetTreeVars.fEtaSJ1Ref.clear();
+  fSubjetTreeVars.fEtaSJ2Ref.clear();
+  fSubjetTreeVars.fPhiSJ1Ref.clear();
+  fSubjetTreeVars.fPhiSJ2Ref.clear();
   fSubjetTreeVars.fZgRef.clear();
   fSubjetTreeVars.fThetagRef.clear();
+}
+
+//----------------------------------------------------------
+double anaSubJet::DeltaR(double phi1, double phi2, double eta1, double eta2) {
+  //calculate separation distance in eta,phi plane
+  Double_t dPhi = phi1 - phi2;
+  Double_t dEta = eta1 - eta2;
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  double dr2 = dPhi * dPhi + dEta * dEta;
+  if(dr2>0.) return sqrt(dr2);
+  else       return -1.;
 }

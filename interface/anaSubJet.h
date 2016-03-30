@@ -36,6 +36,8 @@ public:
    void ClearSubjetTreeVars();
    
  protected:
+   double DeltaR(double phi1, double phi2, double eta1, double eta2);
+   
    int              fNcentBins;
    TString          fJetsName;    //name of SD jet container
    lwJetContainer  *fJetsCont;    //!SD jet container
@@ -124,11 +126,21 @@ public:
      std::vector<float> fMG;
      std::vector<float> fPtSJ1;
      std::vector<float> fPtSJ2;
+     std::vector<float> fEtaSJ1;
+     std::vector<float> fEtaSJ2;
+     std::vector<float> fPhiSJ1;
+     std::vector<float> fPhiSJ2;
      std::vector<float> fZg;
      std::vector<float> fThetag;
      std::vector<float> fPtRef;
+     std::vector<float> fEtaRef;
+     std::vector<float> fPhiRef;
      std::vector<float> fPtSJ1Ref;
      std::vector<float> fPtSJ2Ref;
+     std::vector<float> fEtaSJ1Ref;
+     std::vector<float> fEtaSJ2Ref;
+     std::vector<float> fPhiSJ1Ref;
+     std::vector<float> fPhiSJ2Ref;
      std::vector<float> fZgRef;
      std::vector<float> fThetagRef;
    };
