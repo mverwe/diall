@@ -18,6 +18,9 @@ anaZJetMCResponse::anaZJetMCResponse(const char *name, const char *title)
   fGenJetsName(""),
   fGenJetsCont(0x0),
   fUseForestMatching(true),
+  fMaxJetEta(2.),
+  fMinJetPt(30.),
+  fMinZPt(40.),
   fh1ZPtInc(0),
   fh3ZJetPtRecGenInc(0),
   fh3ZJetXJZRecGenInc(0),
@@ -108,7 +111,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
       Printf("%s ERROR: couldn't get Z candidate",GetName());
       continue;
     }
-    if(z->Pt()<40.) continue;
+    if(z->Pt()<fMinZPt) continue;
     if(fCentBin>-1 && fCentBin<fNcentBins)
       fh1ZPt[fCentBin]->Fill(z->Pt(),weight);
     fh1ZPtInc->Fill(z->Pt(),weight);
@@ -117,7 +120,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
       lwJet *jet = fJetsCont->GetJet(ij);
       if(!jet) continue;
 
-      if(jet->Pt()<30.) continue;
+      if(jet->Pt()<fMinJetPt) continue;
 
       double refpt = -1.;
       if(fUseForestMatching)
@@ -133,7 +136,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
          || jet->GetRefPt()<10.)//e-3)
         continue;
       
-      if(refpt<10. || fabs(jet->Eta())>2.) continue; //only select true jets
+      if(refpt<10. || fabs(jet->Eta())>fMaxJetEta) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
       double mindphi = 2*3.14159/3.;

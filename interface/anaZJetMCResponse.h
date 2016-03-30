@@ -28,6 +28,9 @@ public:
    void SetJetsName(TString name)              { fJetsName = name ;  }
    void SetGenJetsName(TString name)           { fGenJetsName = name ;  }
    void SetUseForestMatching(bool b)           { fUseForestMatching = b; }
+   void SetMaxJetEta(float max)                { fMaxJetEta = max ; }
+   void SetMinJetPt(float min)                 { fMinJetPt = min  ; }
+   void SetMinZPt(float min)                   { fMinZPt = min    ; }
    
  protected:
    Int_t             fNcentBins;              //number of centrality bins
@@ -37,7 +40,10 @@ public:
    lwJetContainer   *fJetsCont;               //!jet container
    TString           fGenJetsName;            //name of gen jet container
    lwJetContainer   *fGenJetsCont;            //!gen jet container
-   bool              fUseForestMatching; //use matched ref jet from forest
+   bool              fUseForestMatching;      //use matched ref jet from forest
+   float             fMaxJetEta;              //max jet eta
+   float             fMinJetPt;               //max jet pt
+   float             fMinZPt;                 //min pt for Z
 
    TH1F            *fh1ZPtInc;                  //!# Z-pt
    TH3F            *fh3ZJetPtRecGenInc;         //!# Z-pt vs jet pt rec vs jet pt gen
