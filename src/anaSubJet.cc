@@ -10,9 +10,9 @@ anaSubJet::anaSubJet(const char *name, const char *title)
 :anaBaseTask(name,title),
   fNcentBins(4),
   fJetsName(""),
-  fJetsCont(),
+  fJetsCont(0x0),
   fJetsRefName(""),
-  fJetsRefCont(),
+  fJetsRefCont(0x0),
   fJetEtaMin(-5.),
   fJetEtaMax(5.),
   fMinRefPt(-10000.),
@@ -144,7 +144,7 @@ void anaSubJet::Exec(Option_t * /*option*/)
 
   if(!fJetsRefCont && !fJetsRefName.IsNull())
     fJetsRefCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsRefName.Data()));
-  if(!fJetsRefCont) return;
+  if(!fJetsRefName.IsNull() && !fJetsRefCont) return;
 
   //Get MC weight
   float weight = 1.;
@@ -173,10 +173,15 @@ void anaSubJet::Exec(Option_t * /*option*/)
 
    for (int i = 0; i < fJetsCont->GetNJets(); i++) {
      lwJet *jet = fJetsCont->GetJet(i);
-     int id = jet->GetMatchId1();
-     if( id<0 || id>fJetsRefCont->GetNJets() ) continue;
-     lwJet *jetNotGroomed = fJetsRefCont->GetJet(id);
-
+     lwJet *jetNotGroomed = 0x0;
+     if(fJetsRefCont) { //pick-up ungroomed jet from separate container which was previously matched
+       int id = jet->GetMatchId1();
+       if( id<0 || id>fJetsRefCont->GetNJets() ) continue;
+       jetNotGroomed = fJetsRefCont->GetJet(id);
+     } else { //assume main container is ungroomed (applies to gen-level)
+       jetNotGroomed = jet;
+     }
+     
      Double_t pt  = jetNotGroomed->Pt();
      //Double_t ptg = jet->Pt();
      Double_t phi = jetNotGroomed->Phi();

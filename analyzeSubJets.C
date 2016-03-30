@@ -154,6 +154,27 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->SetMinPtJetTree(80.);
   handler->Add(anasubjets);
 
+  anaSubJet *anasubjetsGen = new anaSubJet("anasubjetsGen","anasubjetsGen");
+  anasubjetsGen->ConnectEventObject(fEventObjects);
+  anasubjetsGen->SetHiEvtName("hiEventContainer");
+  anasubjetsGen->SetJetsName("akt4Gen"); //ungroomed jets with groomed subjet variables at gen level
+  anasubjetsGen->SetJetsRefName(""); //
+  anasubjetsGen->SetNCentBins(4);
+  anasubjetsGen->SetJetEtaRange(-1.3,1.3);
+  //anasubjetsGen->SetJetEtaRange(-2.,2.);
+  anasubjetsGen->SetDoDijets(doDijet);
+  anasubjetsGen->AddLeadingJetPtBin(120.,150.);
+  anasubjetsGen->AddLeadingJetPtBin(150.,180.);
+  anasubjetsGen->AddLeadingJetPtBin(180.,220.);
+  anasubjetsGen->AddLeadingJetPtBin(220.,260.);
+  anasubjetsGen->AddLeadingJetPtBin(260.,300.);
+  anasubjetsGen->AddLeadingJetPtBin(300.,500.);
+  anasubjetsGen->SetPtMinSubleading(30.);
+  anasubjetsGen->SetStoreTree(true);
+  anasubjetsGen->SetMinPtJetTree(80.);
+  handler->Add(anasubjetsGen);
+
+
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
   anasubjetsMassCut->ConnectEventObject(fEventObjects);
   anasubjetsMassCut->SetHiEvtName("hiEventContainer");

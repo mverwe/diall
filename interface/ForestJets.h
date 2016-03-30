@@ -123,6 +123,15 @@ public :
    Float_t         gendrjt[maxGenJets];   //[ngen]
    Int_t           gensubid[maxGenJets];   //[ngen]
 
+   Float_t         genptG[maxJets];   //[ngen]
+   Float_t         genetaG[maxJets];   //[ngen]
+   Float_t         genphiG[maxJets];   //[ngen]
+   Float_t         genmG[maxJets];   //[ngen]
+   std::vector<std::vector<float> > *genSubJetPt = 0;
+   std::vector<std::vector<float> > *genSubJetEta = 0;
+   std::vector<std::vector<float> > *genSubJetPhi= 0;
+   std::vector<std::vector<float> > *genSubJetM = 0;   
+
    Float_t         smpt[maxJets];   //[nref]
    Float_t         fr01Chg[maxJets];   //[nref]
    Float_t         fr01EM[maxJets];   //[nref]
@@ -236,6 +245,15 @@ public :
    TBranch        *b_gendphijt;   //!
    TBranch        *b_gendrjt;   //!
    TBranch        *b_gensubid;   //!
+   TBranch        *b_genptG;   //!
+   TBranch        *b_genetaG;   //!
+   TBranch        *b_genphiG;   //!
+   TBranch        *b_genmG;   //!
+   TBranch        *b_genSubJetPt;   //!
+   TBranch        *b_genSubJetEta;   //!
+   TBranch        *b_genSubJetPhi;   //!
+   TBranch        *b_genSubJetM;   //!
+   
    TBranch        *b_smpt;   //!
    TBranch        *b_fr01Chg;   //!
    TBranch        *b_fr01EM;   //!
