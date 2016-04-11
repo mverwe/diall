@@ -101,7 +101,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   lwJetFromForestProducer *p_SDJet = new lwJetFromForestProducer("lwJetForestProdSD");
   p_SDJet->SetInput(chain);
   p_SDJet->SetJetContName(jetSDName);
-  p_SDJet->SetGenJetContName("");
+  p_SDJet->SetGenJetContName("akt4Gen");
   p_SDJet->SetEventObjects(fEventObjects);
   p_SDJet->SetMinJetPt(minptjet);
   p_SDJet->SetRadius(0.4);
@@ -109,7 +109,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   lwJetFromForestProducer *p_Jet = new lwJetFromForestProducer("lwJetForestProd");
   p_Jet->SetInput(jetTree);
   p_Jet->SetJetContName(jetName);
-  p_Jet->SetGenJetContName("akt4Gen");
+  p_Jet->SetGenJetContName("");//akt4Gen");
   p_Jet->SetEventObjects(fEventObjects);
   p_Jet->SetMinJetPt(minptjet);
   p_Jet->SetRadius(0.4);
@@ -171,6 +171,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsGen->AddLeadingJetPtBin(300.,500.);
   anasubjetsGen->SetPtMinSubleading(30.);
   anasubjetsGen->SetStoreTree(true);
+  anasubjetsGen->SetStoreTreeRef(false);
   anasubjetsGen->SetMinPtJetTree(80.);
   handler->Add(anasubjetsGen);
 

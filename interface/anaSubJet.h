@@ -32,6 +32,7 @@ public:
    void SetMinMassLeading(float m)        { fMinMassLeading = m; }
 
    void SetStoreTree(bool b)              { fStoreTree = b;     }
+   void SetStoreTreeRef(bool b)           { fStoreTreeRef = b;  }
    void SetMinPtJetTree(float min)        { fMinPtJetTree = min ; }
    void ClearSubjetTreeVars();
    
@@ -58,6 +59,7 @@ public:
    
    TH3F           **fh3PtEtaPhi;   //!jet pt vs eta vs phi
    TH2F           **fh2PtNSubjets; //!jet pt vs number of subjets
+   TH2F           **fh2PtGenNSubjets; //!jet gen pt vs number of subjets
    TH2F           **fh2PtMass;     //!jet pt vs mass
    
    TH2F           **fh2PtSubjetPtRatio21; //!jet pt vs subjetratio 2/1
@@ -80,6 +82,14 @@ public:
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueZg; //!jet pt reco vs pt true vs zg
    TH3F           **fh3PtTrueDeltaPtDeltaZg; //!jet pt true vs deltaPt vs deltaZg
+   
+   TH3F           **fh3PtTruePtSJScalePtSJ;  //!jet pt true vs pt subjet vs scale pt subjet
+   TH3F           **fh3PtTruePtLSJScalePtLSJ;  //!jet pt true vs pt leading subjet vs scale pt leading subjet
+   TH3F           **fh3PtTruePtSLSJScalePtSLSJ;  //!jet pt true vs pt subleading subjet vs scale pt subleading subjet
+
+   TH3F           **fh3PtTruePtRecoSJScalePtSJ;  //!jet pt true vs pt subjet vs scale pt subjet
+   TH3F           **fh3PtTruePtRecoLSJScalePtLSJ;  //!jet pt true vs pt leading subjet vs scale pt leading subjet
+   TH3F           **fh3PtTruePtRecoSLSJScalePtSLSJ;  //!jet pt true vs pt subleading subjet vs scale pt subleading subjet
    
    TH2F           **fh2PtThetag; //!jet pt vs zg
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
@@ -111,9 +121,10 @@ public:
    std::vector<std::vector<TH3F*>> fh3SLPtZgDeltaPhi;
    
    bool               fStoreTree;
+   bool               fStoreTreeRef;
    TTree             *fTreeOut;
    float              fMinPtJetTree;
-
+   
    struct subjetTreeVars {
      float              fCent;
      std::vector<float> fPt;
@@ -143,6 +154,9 @@ public:
      std::vector<float> fPhiSJ2Ref;
      std::vector<float> fZgRef;
      std::vector<float> fThetagRef;
+     //std::vector<bool>  fSwap;
+     std::vector<float> fDeltaRSJ1;
+     std::vector<float> fDeltaRSJ2;
    };
 
    subjetTreeVars fSubjetTreeVars;

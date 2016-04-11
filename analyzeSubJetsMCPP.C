@@ -100,7 +100,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   lwJetFromForestProducer *p_SDJet = new lwJetFromForestProducer("lwJetForestProdSD");
   p_SDJet->SetInput(chain);
   p_SDJet->SetJetContName(jetSDName);
-  p_SDJet->SetGenJetContName("");
+  p_SDJet->SetGenJetContName("akt4Gen");
   p_SDJet->SetEventObjects(fEventObjects);
   p_SDJet->SetMinJetPt(minptjet);
   p_SDJet->SetRadius(0.4);
@@ -108,7 +108,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   lwJetFromForestProducer *p_Jet = new lwJetFromForestProducer("lwJetForestProd");
   p_Jet->SetInput(jetTree);
   p_Jet->SetJetContName(jetName);
-  p_Jet->SetGenJetContName("akt4Gen");
+  p_Jet->SetGenJetContName("");//akt4Gen");
   p_Jet->SetEventObjects(fEventObjects);
   p_Jet->SetMinJetPt(minptjet);
   p_Jet->SetRadius(0.4);
@@ -140,7 +140,8 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->SetJetsName(jetSDName);
   anasubjets->SetJetsRefName(jetName);
   anasubjets->SetNCentBins(1);
-  anasubjets->SetJetEtaRange(-2.,2.);
+  //anasubjets->SetJetEtaRange(-2.,2.);
+  anasubjets->SetJetEtaRange(-1.3,1.3);
   anasubjets->SetDoDijets(doDijet);
   anasubjets->AddLeadingJetPtBin(120.,150.);
   anasubjets->AddLeadingJetPtBin(150.,180.);
@@ -149,7 +150,31 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->AddLeadingJetPtBin(260.,300.);
   anasubjets->AddLeadingJetPtBin(300.,500.);
   anasubjets->SetPtMinSubleading(30.);
+  anasubjets->SetStoreTree(true);
+  anasubjets->SetStoreTreeRef(false);
+  anasubjets->SetMinPtJetTree(80.);
   handler->Add(anasubjets);
+
+  anaSubJet *anasubjetsGen = new anaSubJet("anasubjetsGen","anasubjetsGen");
+  anasubjetsGen->ConnectEventObject(fEventObjects);
+  anasubjetsGen->SetHiEvtName("hiEventContainer");
+  anasubjetsGen->SetJetsName("akt4Gen"); //ungroomed jets with groomed subjet variables at gen level
+  anasubjetsGen->SetJetsRefName(""); //
+  anasubjetsGen->SetNCentBins(1);
+  anasubjetsGen->SetJetEtaRange(-1.3,1.3);
+  //anasubjetsGen->SetJetEtaRange(-2.,2.);
+  anasubjetsGen->SetDoDijets(doDijet);
+  anasubjetsGen->AddLeadingJetPtBin(120.,150.);
+  anasubjetsGen->AddLeadingJetPtBin(150.,180.);
+  anasubjetsGen->AddLeadingJetPtBin(180.,220.);
+  anasubjetsGen->AddLeadingJetPtBin(220.,260.);
+  anasubjetsGen->AddLeadingJetPtBin(260.,300.);
+  anasubjetsGen->AddLeadingJetPtBin(300.,500.);
+  anasubjetsGen->SetPtMinSubleading(30.);
+  anasubjetsGen->SetStoreTree(true);
+  anasubjetsGen->SetStoreTreeRef(false);
+  anasubjetsGen->SetMinPtJetTree(80.);
+  handler->Add(anasubjetsGen);
 
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
   anasubjetsMassCut->ConnectEventObject(fEventObjects);
@@ -177,7 +202,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsNoFakes->SetNCentBins(4);
   anasubjetsNoFakes->SetJetEtaRange(-2.,2.);
   anasubjetsNoFakes->SetMinRefPt(10.);
-  handler->Add(anasubjetsNoFakes);
+  //handler->Add(anasubjetsNoFakes);
  
   //---------------------------------------------------------------
   //Event loop
