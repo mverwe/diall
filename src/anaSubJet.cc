@@ -466,19 +466,25 @@ void anaSubJet::Exec(Option_t * /*option*/)
             fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
             fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
             fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+            double dr = DeltaR(refsjphi.at(0),sjphi.at(0),refsjeta.at(0),sjeta.at(0));
+            fSubjetTreeVars.fDeltaRSJ1.push_back(dr);
           } else {
             fSubjetTreeVars.fPtSJ1Ref.push_back(-999.);
             fSubjetTreeVars.fEtaSJ1Ref.push_back(-999.);
             fSubjetTreeVars.fPhiSJ1Ref.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ1.push_back(-999.);
           }
           if(refsjpt.size()>1) {
             fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
             fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
             fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
+            double dr = DeltaR(refsjphi.at(1),sjphi.at(1),refsjeta.at(1),sjeta.at(1));
+            fSubjetTreeVars.fDeltaRSJ2.push_back(dr);
           } else {
             fSubjetTreeVars.fPtSJ2Ref.push_back(-999.);
             fSubjetTreeVars.fEtaSJ2Ref.push_back(-999.);
             fSubjetTreeVars.fPhiSJ2Ref.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ2.push_back(-999.);
           }
           // } else {
           //   fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
