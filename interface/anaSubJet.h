@@ -154,7 +154,7 @@ public:
      std::vector<float> fPhiSJ2Ref;
      std::vector<float> fZgRef;
      std::vector<float> fThetagRef;
-     //std::vector<bool>  fSwap;
+     std::vector<bool>  fSwap;
      std::vector<float> fDeltaRSJ1;
      std::vector<float> fDeltaRSJ2;
    };

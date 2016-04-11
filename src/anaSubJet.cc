@@ -287,7 +287,24 @@ void anaSubJet::Exec(Option_t * /*option*/)
       std::vector<float> refsjeta  = jet->GetRefSubJetEta();
       std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
       std::vector<float> refsjm    = jet->GetRefSubJetM();
+
+      //just check if leading jet reco level is closest to leading jet gen level.
+      bool swap = false;
+      if(refsjpt.size()>1) {
+        double dr11 = DeltaR(sjphi.at(0),refsjphi.at(0),sjeta.at(0),refsjeta.at(0));
+        double dr12 = DeltaR(sjphi.at(0),refsjphi.at(1),sjeta.at(0),refsjeta.at(1));
+
+        double dr21 = DeltaR(sjphi.at(1),refsjphi.at(0),sjeta.at(1),refsjeta.at(0));
+        double dr22 = DeltaR(sjphi.at(1),refsjphi.at(1),sjeta.at(1),refsjeta.at(1));
+
+        if(dr12<dr11 && dr21<dr22)
+          swap = true;
+      }
+      //if(fStoreTreeRef)
+      //fSubjetTreeVars.fSwap.push_back(swap);
       
+      /*
+      // ============== Begin complicated matching of subjets
       //if there is a ref jet order according to matching, otherwise pt-ordered
       std::vector<float> recsjpt;
       std::vector<float> recsjeta;
@@ -422,21 +439,55 @@ void anaSubJet::Exec(Option_t * /*option*/)
           fSubjetTreeVars.fDeltaRSJ2.push_back(999);
         }
       }//fStoreRefTree
-      if(!fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
-        if(sjpt.at(0)>sjpt.at(1)) {
+      // ============== End complicated matching of subjets
+      */
+      
+      //      if(!fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
+      if(jetNotGroomed->Pt()>fMinPtJetTree) {
+        //if(sjpt.at(0)>sjpt.at(1)) {
           fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
           fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
           fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(0));
           fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(1));
           fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(0));
           fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(1));
-        } else {
-          fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
-          fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
-          fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(1));
-          fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(0));
-          fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(1));
-          fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(0));
+        // } else {
+        //   fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
+        //   fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
+        //   fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(1));
+        //   fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(0));
+        //   fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(1));
+        //   fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(0));
+        // }
+        fSubjetTreeVars.fSwap.push_back(swap);
+        if(fStoreTreeRef) {
+          // if(refsjpt.at(0)>refsjpt.at(1)) {
+          if(refsjpt.size()>0) {
+            fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+            fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
+            fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+          } else {
+            fSubjetTreeVars.fPtSJ1Ref.push_back(-999.);
+            fSubjetTreeVars.fEtaSJ1Ref.push_back(-999.);
+            fSubjetTreeVars.fPhiSJ1Ref.push_back(-999.);
+          }
+          if(refsjpt.size()>1) {
+            fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
+            fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
+            fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
+          } else {
+            fSubjetTreeVars.fPtSJ2Ref.push_back(-999.);
+            fSubjetTreeVars.fEtaSJ2Ref.push_back(-999.);
+            fSubjetTreeVars.fPhiSJ2Ref.push_back(-999.);
+          }
+          // } else {
+          //   fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
+          //   fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(0));
+          //   fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(1));
+          //   fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(0));
+          //   fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(1));
+          //   fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(0));
+          // }
         }
       }
       
@@ -490,17 +541,20 @@ void anaSubJet::Exec(Option_t * /*option*/)
           
           for(uint sj = 0; sj<refsjpt.size(); ++sj) {
             if(sj>1) continue;
-            if(sj>=recsjpt.size()) continue;
-            double dptrel = (recsjpt.at(sj)-refsjpt.at(sj))/refsjpt.at(sj);
+            if(sj>=sjpt.size()) continue;
+            uint sjmatch = sj;
+            if(swap && sj==0) sjmatch = 1;
+            if(swap && sj==1) sjmatch = 0;
+            double dptrel = (sjpt.at(sjmatch)-refsjpt.at(sj))/refsjpt.at(sj);
             fh3PtTruePtSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel);
-            fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),recsjpt.at(sj),dptrel+1.);
+            fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sjmatch),dptrel+1.);
             if(sj==0) {
               fh3PtTruePtLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel);
-              fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),recsjpt.at(sj),dptrel+1.);
+              fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sjmatch),dptrel+1.);
             }
             else if(sj==1) {
               fh3PtTruePtSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel);
-              fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),recsjpt.at(sj),dptrel+1.);
+              fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sjmatch),dptrel+1.);
             }
           }
         }//true jet matched
@@ -666,6 +720,7 @@ void anaSubJet::CreateOutputObjects() {
     fTreeOut->Branch("fPhiSJ2Ref",&fSubjetTreeVars.fPhiSJ2Ref);
     fTreeOut->Branch("fZgRef",&fSubjetTreeVars.fZgRef);
     fTreeOut->Branch("fThetagRef",&fSubjetTreeVars.fThetagRef);
+    fTreeOut->Branch("fSwap",&fSubjetTreeVars.fSwap);
     fTreeOut->Branch("fDeltaRSJ1",&fSubjetTreeVars.fDeltaRSJ1);
     fTreeOut->Branch("fDeltaRSJ2",&fSubjetTreeVars.fDeltaRSJ2);
 
@@ -1051,6 +1106,7 @@ void anaSubJet::ClearSubjetTreeVars() {
   fSubjetTreeVars.fPhiSJ2Ref.clear();
   fSubjetTreeVars.fZgRef.clear();
   fSubjetTreeVars.fThetagRef.clear();
+  fSubjetTreeVars.fSwap.clear();
   fSubjetTreeVars.fDeltaRSJ1.clear();
   fSubjetTreeVars.fDeltaRSJ2.clear();
 }

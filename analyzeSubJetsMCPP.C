@@ -151,7 +151,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->AddLeadingJetPtBin(300.,500.);
   anasubjets->SetPtMinSubleading(30.);
   anasubjets->SetStoreTree(true);
-  anasubjets->SetStoreTreeRef(false);
+  anasubjets->SetStoreTreeRef(true);//false);
   anasubjets->SetMinPtJetTree(80.);
   handler->Add(anasubjets);
 
