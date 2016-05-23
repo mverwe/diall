@@ -15,8 +15,8 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
   fNcentBins(4),
   fNExcl(2),
   fMinPtExcl(20.),
-  fMinEtaExcl(-2.1),
-  fMaxEtaExcl(2.1),
+  fMinEtaExcl(-2.),
+  fMaxEtaExcl(2.),
   fMinEta(-5.),
   fMaxEta(5.),
   fMapEtaRanges(),
@@ -49,10 +49,13 @@ anaRhoProducer::anaRhoProducer(const char *name, const char *title)
 void anaRhoProducer::Exec(Option_t * /*option*/)
 {
   //printf("anaRhoProducer executing\n");
-   if(!fInitOutput) CreateOutputObjects();
 
    anaBaseTask::Exec();
+   if(!SelectEvent()) return;
+   //anaBaseTask::Exec();
    //if(!SelectEvent()) return;
+
+   if(!fInitOutput) CreateOutputObjects();
 
    //create maps
    if(!fRhoMap && !fRhoName.IsNull()) {
@@ -76,6 +79,7 @@ void anaRhoProducer::Exec(Option_t * /*option*/)
    //Determine centrality bin
    Double_t cent = 0.;
    if(fHiEvent) cent = fHiEvent->GetCentrality();
+   //Printf("cent: %f",cent);
    Int_t fCentBin = 0;
    if(fNcentBins==4) {
      if(cent>=0. && cent<10.)       fCentBin = 0;

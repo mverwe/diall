@@ -18,6 +18,7 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fTriggerList(0),
   fCollSel(0),
   fHBHENoise(0),
+  fHFCoinc(0),
   fCentMin(-999),
   fCentMax(999),
   fPFJet80(0),
@@ -101,6 +102,7 @@ bool anaBaseTask::SelectEvent() const {
     //  printf("accept 1 %d %d %d\n", accept, fCollSel, !fHiEvent->GetColl()); }
     if(fHBHENoise && !fHiEvent->GetHBHENoise()) accept = false;
     //  printf("accept 2 %d %d %d\n", accept, fHBHENoise, !fHiEvent->GetHBHENoise()); }
+    if(fHFCoinc && !fHiEvent->GetHFCoinc()) accept = false;
     if(fCentMin>-1) {
       double cent = fHiEvent->GetCentrality();
       if(cent<fCentMin && cent>fCentMax) accept = false;

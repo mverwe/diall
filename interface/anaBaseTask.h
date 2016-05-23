@@ -31,6 +31,7 @@ public:
    bool   SelectEvent() const;
    void   DoCollionEventSel(bool b)    { fCollSel   = b; }
    void   DoHBHENoiseFilter(bool b)    { fHBHENoise = b; }
+   void   DoHFCoincFilter(bool b)      { fHFCoinc   = b; }
    void   SetCentralityRange(double min, double max) { fCentMin = min; fCentMax = max; }
    
    //temporary: need smarter way to store HLT triggers
@@ -53,6 +54,7 @@ public:
    std::vector<std::string> fTriggerList;       // triggers to add to event
    bool        fCollSel;                        //flag to do collision event sel
    bool        fHBHENoise;                      //HBHE noise filter
+   bool        fHFCoinc;                        //HF coincident (3) filter
    double      fCentMin;                        //cent min
    double      fCentMax;                        //cent max
    bool        fPFJet80;                        //PFJet80

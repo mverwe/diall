@@ -39,7 +39,7 @@ class hiEventProducer : public inputBase {
   Float_t                      fVx;      //!
   Float_t                      fVy;      //!
   Float_t                      fVz;      //!
-  Int_t                        fHiBin;   //!
+  Int_t                        fHiBin;   //
   Float_t                      fHiHF;    //!
   Int_t                        fNPV;     //!
   Int_t                        fHLT_AK4PFJet80_Eta5p1_v1; //!
@@ -49,6 +49,7 @@ class hiEventProducer : public inputBase {
 
   Int_t                        fcollisionEvtSel; //!
   Int_t                        fHBHENoise; //!
+  Int_t                        fphfCoincFilter;//!
 
   TBranch        *b_run;    //!
   TBranch        *b_evt;    //!
@@ -65,9 +66,10 @@ class hiEventProducer : public inputBase {
   TBranch        *b_HLT_FullTrack24ForPPRef_v1; //!
   TBranch        *b_HLT_FullTrack45ForPPRef_v1; //!
 
-  TBranch        *b_collisionEvtSel;
-  TBranch        *b_HBHENoise;
-  
+  TBranch        *b_collisionEvtSel;//!
+  TBranch        *b_HBHENoise;      //!
+  TBranch        *b_phfCoincFilter; //!
+ 
  private:
   hiEventProducer(const hiEventProducer& obj); // copy constructor
   hiEventProducer& operator=(const hiEventProducer& other); // assignment

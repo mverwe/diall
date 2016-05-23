@@ -29,7 +29,8 @@ inputBase("hiEventProducer"),
   fHLT_FullTrack24ForPPRef_v1(0),
   fHLT_FullTrack45ForPPRef_v1(0),
   fcollisionEvtSel(1),
-  fHBHENoise(1)
+  fHBHENoise(1),
+  fphfCoincFilter(1)
 {
   //default constructor
 }
@@ -54,7 +55,8 @@ hiEventProducer::hiEventProducer(const char *name) :
   fHLT_FullTrack24ForPPRef_v1(0),
   fHLT_FullTrack45ForPPRef_v1(0),
   fcollisionEvtSel(1),
-  fHBHENoise(1)
+  fHBHENoise(1),
+  fphfCoincFilter(1)
 {
   //standard constructor
 }
@@ -89,6 +91,7 @@ Bool_t hiEventProducer::Init() {
       fChain->SetBranchAddress("vz",    &fVz,    &b_vz);
     if(fChain->GetBranch("hiBin"))
       fChain->SetBranchAddress("hiBin", &fHiBin, &b_hiBin);
+    else Printf("cannot find hiBin branch");
     if(fChain->GetBranch("hiHF"))
       fChain->SetBranchAddress("hiHF",  &fHiHF,  &b_hiHF);
     if(fChain->GetBranch("nPU"))
@@ -103,8 +106,10 @@ Bool_t hiEventProducer::Init() {
       fChain->SetBranchAddress("HLT_FullTrack45ForPPRef_v1",&fHLT_FullTrack45ForPPRef_v1,&b_HLT_FullTrack45ForPPRef_v1);
     if(fChain->GetBranch("PAcollisionEventSelection"))
       fChain->SetBranchAddress("PAcollisionEventSelection",&fcollisionEvtSel,&b_collisionEvtSel);
-    if(fChain->GetBranch("pHBHENoiseFilterResultProducer"))
-      fChain->SetBranchAddress("pHBHENoiseFilterResultProducer",&fHBHENoise,&b_HBHENoise);
+    if(fChain->GetBranch("pHBHENoiseFilterResult"))
+      fChain->SetBranchAddress("pHBHENoiseFilterResult",&fHBHENoise,&b_HBHENoise);
+    if(fChain->GetBranch("phfCoinFilter3"))
+      fChain->SetBranchAddress("phfCoincFilter3",&fphfCoincFilter,&b_phfCoincFilter);
 
     fInit = kTRUE;
   }
@@ -143,6 +148,7 @@ Bool_t hiEventProducer::Run(Long64_t entry) {
   fhiEventContainer->SetVx(fVx);
   fhiEventContainer->SetVy(fVy);
   fhiEventContainer->SetVz(fVz);
+  //Printf("fHiBin: %d",fHiBin);
   fhiEventContainer->SetHiBin(fHiBin);
   fhiEventContainer->SetHiHF(fHiHF);
   fhiEventContainer->SetNPV(fNPV);
@@ -152,6 +158,7 @@ Bool_t hiEventProducer::Run(Long64_t entry) {
   fhiEventContainer->SetTrk45(fHLT_FullTrack45ForPPRef_v1);
   fhiEventContainer->SetColl(fcollisionEvtSel);
   fhiEventContainer->SetHBHENoise(fHBHENoise);
+  fhiEventContainer->SetHFCoinc(fphfCoincFilter);
 
   return kTRUE; 
 }
@@ -160,6 +167,8 @@ Bool_t hiEventProducer::Run(Long64_t entry) {
 Long64_t hiEventProducer::LoadTree(Long64_t entry) {
 
   //overloaded LoadTree function
+  //
+  //Printf("hiEventProducer::LoadTree %d",(int)entry);
   if(!fChain) {
     Printf("fChain doesn't exist");
     return -5;
@@ -178,7 +187,8 @@ Long64_t hiEventProducer::LoadTree(Long64_t entry) {
     Printf("hiEventProducer: centry smaller than 0");
     return centry;  
   }
-  
+ 
+  //Printf("get entry %d",(int)entry); 
   fChain->GetEntry(entry);
   
   return centry;  

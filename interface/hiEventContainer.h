@@ -31,7 +31,8 @@ class hiEventContainer : public TNamed {
 
   void     SetColl(Int_t c)                    { fColl = c     ; }
   void     SetHBHENoise(Int_t n)               { fHBHENoise = n; }
-  
+  void     SetHFCoinc(Int_t p)                   { fphfCoinc = p ; } 
+ 
   Int_t    GetRun()        const               { return fRun;  }
   Int_t    GetEvent()      const               { return fEvt;  }
   Int_t    GetLumi()       const               { return fLumi; }
@@ -50,7 +51,8 @@ class hiEventContainer : public TNamed {
 
   Int_t    GetColl()       const               { return fColl; }
   Int_t    GetHBHENoise()  const               { return fHBHENoise; }
-  
+  Int_t    GetHFCoinc()    const               { return fphfCoinc ; }
+
  protected:
   Int_t                        fRun;     //
   Int_t                        fEvt;     //
@@ -69,7 +71,8 @@ class hiEventContainer : public TNamed {
   Int_t                        fTrk45;   //
   Int_t                        fColl;    //
   Int_t                        fHBHENoise;//
-  
+  Int_t                        fphfCoinc;//
+ 
  private:
   hiEventContainer(const hiEventContainer& obj); // copy constructor
   hiEventContainer& operator=(const hiEventContainer& other); // assignment

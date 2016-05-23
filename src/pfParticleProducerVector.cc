@@ -122,7 +122,7 @@ Long64_t pfParticleProducerVector::LoadTree(Long64_t entry) {
   if (fChain->GetTreeNumber() != fCurrent) {
     fCurrent = fChain->GetTreeNumber();
     Init();
-    Printf("%s: %lld fCurrent: %d",GetName(),entry,fCurrent);
+    //Printf("%s: %lld fCurrent: %d",GetName(),entry,fCurrent);
   }
 
   // fChain->SetMakeClass(1);
