@@ -23,6 +23,7 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   fRecombScheme(fastjet::E_scheme),
   fGhostArea(0.005),
   fPtMinConst(0.),
+  fIdConst(-1),
   fjInputs(),
   fjJets(),
   fIsInit(0),
@@ -58,6 +59,7 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   fRecombScheme(fastjet::E_scheme),
   fGhostArea(0.005),
   fPtMinConst(0.),
+  fIdConst(-1),
   fjInputs(),
   fjJets(),
   fIsInit(0),
@@ -192,6 +194,7 @@ Int_t LWJetProducer::FindJets() {
   for (int i = 0; i < npart; i++) {
     particleBase *fRecoParticle = static_cast<particleBase*>(fConst->At(i));
     if(fRecoParticle->GetLorentzVector().Pt()<fPtMinConst) continue;
+    if(fIdConst>-1 && TMath::Abs(fRecoParticle->GetId())!=fIdConst) continue;
 
     fFastJetWrapper.AddInputVector(fRecoParticle->GetLorentzVector().Px(),
                                    fRecoParticle->GetLorentzVector().Py(),

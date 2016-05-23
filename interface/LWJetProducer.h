@@ -53,6 +53,7 @@ class LWJetProducer : public anaBaseTask {
   void                   SetRecombScheme(Int_t s)    { fRecombScheme  = s ; }
   void                   SetGhostArea(Double_t gh)   { fGhostArea     = gh; }
   void                   SetPtMinConst(Double_t pt)  { fPtMinConst    = pt; } 
+  void                   SetIdConst(int i)           { fIdConst       = i ; }
 
   void                   SetDoJEC(bool b)            { fDoJEC         = b; }
   void                   SetDoJECCS(bool b)          { fDoJECCS       = b; }
@@ -80,6 +81,7 @@ class LWJetProducer : public anaBaseTask {
   Int_t            fRecombScheme;           // recombination scheme used by fastjet
   Double_t         fGhostArea;              // ghost area
   Double_t         fPtMinConst;             // minimum pT of input constituents
+  int              fIdConst;                // id of constituents
 
   std::vector<fastjet::PseudoJet> fjInputs; // fastjet inputs
   std::vector<fastjet::PseudoJet> fjJets;   // fastjet reconstructed jets
