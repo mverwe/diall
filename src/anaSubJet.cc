@@ -13,6 +13,8 @@ anaSubJet::anaSubJet(const char *name, const char *title)
   fJetsCont(0x0),
   fJetsRefName(""),
   fJetsRefCont(0x0),
+  fJets000Name(""),
+  fJets000Cont(0x0),
   fJetEtaMin(-5.),
   fJetEtaMax(5.),
   fMinRefPt(-10000.),
@@ -159,13 +161,24 @@ void anaSubJet::Exec(Option_t * /*option*/)
   
   if(!fInitOutput) CreateOutputObjects();
 
+  //Groomed jet. default zcut
   if(!fJetsCont && !fJetsName.IsNull())
     fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
   if(!fJetsCont) return;
 
+  //Ungroomed jet
   if(!fJetsRefCont && !fJetsRefName.IsNull())
     fJetsRefCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsRefName.Data()));
-  if(!fJetsRefName.IsNull() && !fJetsRefCont) return;
+  if(!fJetsRefName.IsNull() && !fJetsRefCont) {
+    Printf("Cannot find fJetsRefCont %s. Returning",fJetsRefName.Data());
+    return;
+  }
+  //Printf("%s: fJetsRefName: %s",GetName(),fJetsRefName.Data());
+  
+  //zcut=0
+  if(!fJets000Cont && !fJets000Name.IsNull())
+    fJets000Cont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJets000Name.Data()));
+  //if(!fJets000Name.IsNull() && !fJets000Cont) return;
 
   //Get MC weight
   float weight = 1.;
@@ -187,11 +200,15 @@ void anaSubJet::Exec(Option_t * /*option*/)
   }
 
   ClearSubjetTreeVars();
+  fSubjetTreeVars.fRun = -999;
+  if(fHiEvent)
+    fSubjetTreeVars.fRun = fHiEvent->GetRun();
   fSubjetTreeVars.fCent = cent;
   
   for (int i = 0; i < fJetsCont->GetNJets(); i++) {
-    lwJet *jet = fJetsCont->GetJet(i);
-    lwJet *jetNotGroomed = 0x0;
+    lwJet *jet = fJetsCont->GetJet(i);//jetSD000Name -> id1 jetName
+    //Printf("jet %d pt %f",i,jet->Pt());
+    lwJet *jetNotGroomed = 0x0;  //jetName -> id1 jetName -> id2 jetSDName
     if(fJetsRefCont) { //pick-up ungroomed jet from separate container which was previously matched
       int id = jet->GetMatchId1();
       if( id<0 || id>fJetsRefCont->GetNJets() ) continue;
@@ -199,6 +216,14 @@ void anaSubJet::Exec(Option_t * /*option*/)
     } else { //assume main container is ungroomed (applies to gen-level)
       //Printf("%s: assume main container is ungroomed",GetName());
       jetNotGroomed = jet;
+    }
+
+    lwJet *jetZCut000 = 0x0; //jetSDName -> id2 jetName
+    if(fJets000Cont && jetNotGroomed) { //pick-up zcut=0 jet from separate container which was previously matched
+      int id = jetNotGroomed->GetMatchId2();
+      if( id<0 || id>fJets000Cont->GetNJets() ) continue;
+      jetZCut000 = fJets000Cont->GetJet(id);
+      //Printf("%s: jet pt: %f  ptG: %f ptZp: %f",GetName(),jetNotGroomed->Pt(),jet->Pt(),jetZCut000->Pt());
     }
      
     Double_t pt  = jetNotGroomed->Pt();
@@ -226,6 +251,10 @@ void anaSubJet::Exec(Option_t * /*option*/)
       fh2PtNSubjets[fCentBin]->Fill(pt,nsubjets,weight);
       fh2PtGenNSubjets[fCentBin]->Fill(jetNotGroomed->GetRefPt(),nsubjets,weight);
     }
+
+    float zg = 0.;
+    double thetag = -1.;
+    
     if(nsubjets>1) {
       float ptrat = -1.;
       for(int is = 1; is<nsubjets; ++is) {
@@ -253,238 +282,377 @@ void anaSubJet::Exec(Option_t * /*option*/)
         }
       }
 
-      float zg = std::min(sjpt.at(0),sjpt.at(1))/(sjpt.at(0)+sjpt.at(1));
+      zg = std::min(sjpt.at(0),sjpt.at(1))/(sjpt.at(0)+sjpt.at(1));
       TLorentzVector v1;
       TLorentzVector v2;
       v1.SetPtEtaPhiM(sjpt.at(0),sjeta.at(0),sjphi.at(0),sjm.at(0));
       v2.SetPtEtaPhiM(sjpt.at(1),sjeta.at(1),sjphi.at(1),sjm.at(1));
-      double thetag = v1.Angle(v2.Vect());
+      thetag = v1.Angle(v2.Vect());
       //Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
+    }
+      
+    if(fStoreTree && jetNotGroomed->Pt()>fMinPtJetTree) {
+      //ungroomed jet
+      fSubjetTreeVars.fPt.push_back(jetNotGroomed->Pt());
+      fSubjetTreeVars.fPtRaw.push_back(jetNotGroomed->GetRawPt());
+      fSubjetTreeVars.fEta.push_back(jetNotGroomed->Eta());
+      fSubjetTreeVars.fPhi.push_back(jetNotGroomed->Phi());
+      fSubjetTreeVars.fM.push_back(jetNotGroomed->M());
+      
+      fSubjetTreeVars.fCHF.push_back(jetNotGroomed->GetCHF());
+      fSubjetTreeVars.fNHF.push_back(jetNotGroomed->GetNHF());
+      fSubjetTreeVars.fCEF.push_back(jetNotGroomed->GetCEF());
+      fSubjetTreeVars.fNEF.push_back(jetNotGroomed->GetNEF());
+      fSubjetTreeVars.fMUF.push_back(jetNotGroomed->GetMUF());
+      
+      fSubjetTreeVars.fCHM.push_back(jetNotGroomed->GetCHM());
+      fSubjetTreeVars.fNHM.push_back(jetNotGroomed->GetNHM());
+      fSubjetTreeVars.fCEM.push_back(jetNotGroomed->GetCEM());
+      fSubjetTreeVars.fNEM.push_back(jetNotGroomed->GetNEM());
+      fSubjetTreeVars.fMUM.push_back(jetNotGroomed->GetMUM());
+      
+      //groomed jet
+      //Printf("jet pt: %f groomed jet pt: %f",jetNotGroomed->Pt(),jet->Pt());
+      fSubjetTreeVars.fPtG.push_back(jet->Pt());
+      fSubjetTreeVars.fPtRawG.push_back(jet->GetRawPt());
+      fSubjetTreeVars.fEtaG.push_back(jet->Eta());
+      fSubjetTreeVars.fPhiG.push_back(jet->Phi());
+      fSubjetTreeVars.fMG.push_back(jet->M());
+      
+      fSubjetTreeVars.fZg.push_back(zg);
+      fSubjetTreeVars.fThetag.push_back(thetag);
 
-      if(fStoreTree && jetNotGroomed->Pt()>fMinPtJetTree) {
-        //ungroomed jet
-        fSubjetTreeVars.fPt.push_back(jetNotGroomed->Pt());
-        fSubjetTreeVars.fEta.push_back(jetNotGroomed->Eta());
-        fSubjetTreeVars.fPhi.push_back(jetNotGroomed->Phi());
-        fSubjetTreeVars.fM.push_back(jetNotGroomed->M());
-        //groomed jet
-        fSubjetTreeVars.fPtG.push_back(jet->Pt());
-        fSubjetTreeVars.fEtaG.push_back(jet->Eta());
-        fSubjetTreeVars.fPhiG.push_back(jet->Phi());
-        fSubjetTreeVars.fMG.push_back(jet->M());
+      fSubjetTreeVars.fDropped.push_back(jet->GetNDroppedBranches());
+
+      if(fStoreTreeRef) {
+        //ref jet
+        fSubjetTreeVars.fPtRef.push_back(jetNotGroomed->GetRefPt());
+        fSubjetTreeVars.fEtaRef.push_back(jetNotGroomed->GetRefEta());
+        fSubjetTreeVars.fPhiRef.push_back(jetNotGroomed->GetRefPhi());
         
-        fSubjetTreeVars.fZg.push_back(zg);
-        fSubjetTreeVars.fThetag.push_back(thetag);
+        fSubjetTreeVars.fPtGRef.push_back(jet->GetRefPtG());
+        fSubjetTreeVars.fEtaGRef.push_back(jet->GetRefEtaG());
+        fSubjetTreeVars.fPhiGRef.push_back(jet->GetRefPhiG());
+      }
 
+      //zcut=0 jet
+      if(jetZCut000) {
+        fSubjetTreeVars.fZCut0PtG.push_back(jetZCut000->Pt());
+        fSubjetTreeVars.fZCut0EtaG.push_back(jetZCut000->Eta());
+        fSubjetTreeVars.fZCut0PhiG.push_back(jetZCut000->Phi());
+        fSubjetTreeVars.fZCut0MG.push_back(jetZCut000->M());
+
+        std::vector<float> sj000pt  = jetZCut000->GetSubJetPt();
+        std::vector<float> sj000eta = jetZCut000->GetSubJetEta();
+        std::vector<float> sj000phi = jetZCut000->GetSubJetPhi();
+        std::vector<float> sj000m   = jetZCut000->GetSubJetM();
+     
+        if(sj000pt.size()>0) fSubjetTreeVars.fZCut0PtSJ1.push_back(sj000pt.at(0));
+        else fSubjetTreeVars.fZCut0PtSJ1.push_back(-999.);
+        if(sj000eta.size()>0) fSubjetTreeVars.fZCut0EtaSJ1.push_back(sj000eta.at(0));
+        else fSubjetTreeVars.fZCut0EtaSJ1.push_back(-999.);
+        if(sj000phi.size()>0) fSubjetTreeVars.fZCut0PhiSJ1.push_back(sj000phi.at(0));
+        else fSubjetTreeVars.fZCut0PhiSJ1.push_back(-999.);
+        if(sj000m.size()>0) fSubjetTreeVars.fZCut0MSJ1.push_back(sj000m.at(0));
+        else fSubjetTreeVars.fZCut0MSJ1.push_back(-999.);
+
+        if(sj000pt.size()>1) fSubjetTreeVars.fZCut0PtSJ2.push_back(sj000pt.at(1));
+        else fSubjetTreeVars.fZCut0PtSJ2.push_back(-999.);
+        if(sj000eta.size()>1) fSubjetTreeVars.fZCut0EtaSJ2.push_back(sj000eta.at(1));
+        else fSubjetTreeVars.fZCut0EtaSJ2.push_back(-999.);
+        if(sj000phi.size()>1) fSubjetTreeVars.fZCut0PhiSJ2.push_back(sj000phi.at(1));
+        else fSubjetTreeVars.fZCut0PhiSJ2.push_back(-999.);
+        if(sj000m.size()>1) fSubjetTreeVars.fZCut0MSJ2.push_back(sj000m.at(1));
+        else fSubjetTreeVars.fZCut0MSJ2.push_back(-999.);
+
+        if(sj000pt.size()>1) {
+          fSubjetTreeVars.fZCut0Zg.push_back(std::min(sj000pt.at(0),sj000pt.at(1))/(sj000pt.at(0)+sj000pt.at(1)));
+          TLorentzVector v1000;
+          TLorentzVector v2000;
+          v1000.SetPtEtaPhiM(sj000pt.at(0),sj000eta.at(0),sj000phi.at(0),sj000m.at(0));
+          v2000.SetPtEtaPhiM(sj000pt.at(1),sj000eta.at(1),sj000phi.at(1),sj000m.at(1));
+          double thetag000 = v1000.Angle(v2000.Vect());
+          fSubjetTreeVars.fZCut0Thetag.push_back(thetag000);
+        }
         if(fStoreTreeRef) {
-          //ref jet
-          fSubjetTreeVars.fPtRef.push_back(jetNotGroomed->GetRefPt());
-          fSubjetTreeVars.fEtaRef.push_back(jetNotGroomed->GetRefEta());
-          fSubjetTreeVars.fPhiRef.push_back(jetNotGroomed->GetRefPhi());
-        }
-      }
-      std::vector<float> refsjpt   = jet->GetRefSubJetPt();
-      std::vector<float> refsjeta  = jet->GetRefSubJetEta();
-      std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
-      std::vector<float> refsjm    = jet->GetRefSubJetM();
+          fSubjetTreeVars.fZCut0PtGRef.push_back(jetZCut000->GetRefPt());
+          fSubjetTreeVars.fZCut0EtaGRef.push_back(jetZCut000->GetRefEta());
+          fSubjetTreeVars.fZCut0PhiGRef.push_back(jetZCut000->GetRefPhi());
+          fSubjetTreeVars.fZCut0MGRef.push_back(jetZCut000->GetRefM());
 
-      //just check if leading jet reco level is closest to leading jet gen level.
-      bool swap = false;
-      if(refsjpt.size()>1) {
-        double dr11 = DeltaR(sjphi.at(0),refsjphi.at(0),sjeta.at(0),refsjeta.at(0));
-        double dr12 = DeltaR(sjphi.at(0),refsjphi.at(1),sjeta.at(0),refsjeta.at(1));
+          std::vector<float> sjref000pt  = jetZCut000->GetRefSubJetPt();
+          std::vector<float> sjref000eta = jetZCut000->GetRefSubJetEta();
+          std::vector<float> sjref000phi = jetZCut000->GetRefSubJetPhi();
+          std::vector<float> sjref000m   = jetZCut000->GetRefSubJetM();
+             
+          if(sjref000pt.size()>0) fSubjetTreeVars.fZCut0PtSJ1Ref.push_back(sjref000pt.at(0));
+          else fSubjetTreeVars.fZCut0PtSJ1Ref.push_back(-999.);
+          if(sjref000eta.size()>0) fSubjetTreeVars.fZCut0EtaSJ1Ref.push_back(sjref000eta.at(0));
+          else fSubjetTreeVars.fZCut0EtaSJ1Ref.push_back(-999.);
+          if(sjref000phi.size()>0) fSubjetTreeVars.fZCut0PhiSJ1Ref.push_back(sjref000phi.at(0));
+          else fSubjetTreeVars.fZCut0PhiSJ1Ref.push_back(-999.);
+          if(sjref000m.size()>0) fSubjetTreeVars.fZCut0MSJ1Ref.push_back(sjref000m.at(0));
+          else fSubjetTreeVars.fZCut0MSJ1Ref.push_back(-999.);
 
-        double dr21 = DeltaR(sjphi.at(1),refsjphi.at(0),sjeta.at(1),refsjeta.at(0));
-        double dr22 = DeltaR(sjphi.at(1),refsjphi.at(1),sjeta.at(1),refsjeta.at(1));
+          if(sjref000pt.size()>1) fSubjetTreeVars.fZCut0PtSJ2Ref.push_back(sjref000pt.at(1));
+          else fSubjetTreeVars.fZCut0PtSJ2Ref.push_back(-999.);
+          if(sjref000eta.size()>1) fSubjetTreeVars.fZCut0EtaSJ2Ref.push_back(sjref000eta.at(1));
+          else fSubjetTreeVars.fZCut0EtaSJ2Ref.push_back(-999.);
+          if(sjref000phi.size()>1) fSubjetTreeVars.fZCut0PhiSJ2Ref.push_back(sjref000phi.at(1));
+          else fSubjetTreeVars.fZCut0PhiSJ2Ref.push_back(-999.);
+          if(sjref000m.size()>1) fSubjetTreeVars.fZCut0MSJ2Ref.push_back(sjref000m.at(1));
+          else fSubjetTreeVars.fZCut0MSJ2Ref.push_back(-999.);
 
-        if(dr12<dr11 && dr21<dr22)
-          swap = true;
-      }
-      //if(fStoreTreeRef)
-      //fSubjetTreeVars.fSwap.push_back(swap);
+          if(sjref000pt.size()>1) {
+            fSubjetTreeVars.fZCut0ZgRef.push_back(std::min(sjref000pt.at(0),sjref000pt.at(1))/(sjref000pt.at(0)+sjref000pt.at(1)));
+            TLorentzVector v1000ref;
+            TLorentzVector v2000ref;
+            v1000ref.SetPtEtaPhiM(sjref000pt.at(0),sjref000eta.at(0),sjref000phi.at(0),sjref000m.at(0));
+            v2000ref.SetPtEtaPhiM(sjref000pt.at(1),sjref000eta.at(1),sjref000phi.at(1),sjref000m.at(1));
+            double thetag000ref = v1000ref.Angle(v2000ref.Vect());
+            fSubjetTreeVars.fZCut0ThetagRef.push_back(thetag000ref);
+          }
+          
+        }//fStoreTreeRef
+      }//jetZCut000
+    }//fStoreTree
+
+    //gen-level subjets
+    std::vector<float> refsjpt   = jet->GetRefSubJetPt();
+    std::vector<float> refsjeta  = jet->GetRefSubJetEta();
+    std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
+    std::vector<float> refsjm    = jet->GetRefSubJetM();
+    
+    //just check if leading jet reco level is closest to leading jet gen level.
+    bool swap = false;
+    if(refsjpt.size()>1) {
+      double dr11 = DeltaR(sjphi.at(0),refsjphi.at(0),sjeta.at(0),refsjeta.at(0));
+      double dr12 = DeltaR(sjphi.at(0),refsjphi.at(1),sjeta.at(0),refsjeta.at(1));
       
-      /*
-      // ============== Begin complicated matching of subjets
-      //if there is a ref jet order according to matching, otherwise pt-ordered
-      std::vector<float> recsjpt;
-      std::vector<float> recsjeta;
-      std::vector<float> recsjphi;
-      std::vector<int>   closestIndices;
-      std::vector<float> closestDistances;
-      for(uint refsj = 0; refsj<refsjpt.size(); ++refsj) {
-        int closest = -1;
-        double drmin = 999.;
-        for(uint sj = 0; sj<sjpt.size(); ++sj) {
-          double dr = DeltaR(sjphi.at(sj),refsjphi.at(refsj),sjeta.at(sj),refsjeta.at(refsj));
-          if(dr<drmin) {
-            drmin = dr;
-            closest = (int)sj;
-          }
-        }
-        //Printf("sj: %d closest: %d drmin: %f",sj,closest,drmin);
-        closestIndices.push_back(closest);
-        closestDistances.push_back(drmin);
+      double dr21 = -1.;
+      double dr22 = -1.;
+      if(sjphi.size()>1) {
+        dr21 = DeltaR(sjphi.at(1),refsjphi.at(0),sjeta.at(1),refsjeta.at(0));
+        dr22 = DeltaR(sjphi.at(1),refsjphi.at(1),sjeta.at(1),refsjeta.at(1));
       }
-
-      //check uniqueness of matching. If double match, take closest one
-      //Printf("check uniqueness");
-      if(closestIndices.size()>1) {
-        for(uint l = 0; l<closestIndices.size(); ++l) {
-          int id = closestIndices.at(l);
-          if(id<0) continue;
-          for(uint m = l+1; m<closestIndices.size(); ++m) {
-            if(id==closestIndices.at(m)) {
-              //Printf("found double match %d %d %d %d %f %f",(int)l,(int)m,id,closestIndices.at(m),closestDistances.at(l),closestDistances.at(m));
-              if(closestDistances.at(l)<closestDistances.at(m)) {
-                closestIndices.at(m) = -1;
-                closestDistances.at(m) = 999;
-              }
-              else {
-                closestIndices.at(l) = -1;
-                closestDistances.at(l) = 999;
-              }
-            }
-          }
-        }
-      }
-      //Printf("set subjet pt,eta,phi reco level");
-      for(uint recsj = 0; recsj<closestIndices.size(); ++recsj) {
-        int closest = closestIndices.at(recsj);
-        if(closest>-1 && closest<(int)sjpt.size()) {
-          recsjpt.push_back(sjpt.at(closest));
-          recsjeta.push_back(sjeta.at(closest));
-          recsjphi.push_back(sjphi.at(closest));
-        } else {
-          recsjpt.push_back(-999);
-          recsjeta.push_back(-999);
-          recsjphi.push_back(-999);
-        }
-      }
-
-      if(fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
-        if(refsjpt.size()>0 && refsjpt.size()<2) { //only 1 subjet
-          fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
-          fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
-          fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
-          fSubjetTreeVars.fPtSJ2.push_back(-999);
-          fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
-          fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
-          fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
-          fSubjetTreeVars.fEtaSJ2.push_back(-999);
-          fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
-          fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
-          fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
-          fSubjetTreeVars.fPhiSJ2.push_back(-999);
-
-          double dr = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
-          fSubjetTreeVars.fDeltaRSJ1.push_back(dr);
-          fSubjetTreeVars.fDeltaRSJ1.push_back(999.);
-        }
-        else if(refsjpt.size()>1) { //2 subjets
-          if(refsjpt.at(0)>(refsjpt.at(1))) {
-            fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
-            fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
-            fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
-            fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
-            fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
-            fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
-              
-            fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
-            fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(1));
-            fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
-            fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(1));
-            fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
-            fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(1));
-
-            double drsj1 = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
-            double drsj2 = DeltaR(refsjphi.at(1),recsjphi.at(1),refsjeta.at(1),recsjeta.at(1));
-            fSubjetTreeVars.fDeltaRSJ1.push_back(drsj1);
-            fSubjetTreeVars.fDeltaRSJ2.push_back(drsj2);
-          } else {
-            fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
-            fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(0));
-            fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(1));
-            fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(0));
-            fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(1));
-            fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(0));
-              
-            fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(1));
-            fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(0));
-            fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(1));
-            fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(0));
-            fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(1));
-            fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(0));
-
-            double drsj1 = DeltaR(refsjphi.at(1),recsjphi.at(1),refsjeta.at(1),recsjeta.at(1));
-            double drsj2 = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
-            fSubjetTreeVars.fDeltaRSJ1.push_back(drsj1);
-            fSubjetTreeVars.fDeltaRSJ2.push_back(drsj2);
-          }
-        } else {
-          fSubjetTreeVars.fPtSJ1Ref.push_back(-999);
-          fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
-          fSubjetTreeVars.fEtaSJ1Ref.push_back(-999);
-          fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
-          fSubjetTreeVars.fPhiSJ1Ref.push_back(-999);
-          fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
-
-          fSubjetTreeVars.fPtSJ1.push_back(-999);
-          fSubjetTreeVars.fPtSJ2.push_back(-999);
-          fSubjetTreeVars.fEtaSJ1.push_back(-999);
-          fSubjetTreeVars.fEtaSJ2.push_back(-999);
-          fSubjetTreeVars.fPhiSJ1.push_back(-999);
-          fSubjetTreeVars.fPhiSJ2.push_back(-999);
-
-          fSubjetTreeVars.fDeltaRSJ1.push_back(999);
-          fSubjetTreeVars.fDeltaRSJ2.push_back(999);
-        }
-      }//fStoreRefTree
-      // ============== End complicated matching of subjets
-      */
+      if(dr12<dr11 && dr21<dr22)
+        swap = true;
+    }
+    //if(fStoreTreeRef)
+    //fSubjetTreeVars.fSwap.push_back(swap);
       
-      //      if(!fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
-      if(jetNotGroomed->Pt()>fMinPtJetTree) {
-        //if(sjpt.at(0)>sjpt.at(1)) {
-          fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
-          fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
-          fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(0));
-          fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(1));
-          fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(0));
-          fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(1));
-        // } else {
-        //   fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
-        //   fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
-        //   fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(1));
-        //   fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(0));
-        //   fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(1));
-        //   fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(0));
-        // }
-        fSubjetTreeVars.fSwap.push_back(swap);
-        if(fStoreTreeRef) {
-          // if(refsjpt.at(0)>refsjpt.at(1)) {
-          if(refsjpt.size()>0) {
+    /*
+    // ============== Begin complicated matching of subjets
+    //if there is a ref jet order according to matching, otherwise pt-ordered
+    std::vector<float> recsjpt;
+    std::vector<float> recsjeta;
+    std::vector<float> recsjphi;
+    std::vector<int>   closestIndices;
+    std::vector<float> closestDistances;
+    for(uint refsj = 0; refsj<refsjpt.size(); ++refsj) {
+    int closest = -1;
+    double drmin = 999.;
+    for(uint sj = 0; sj<sjpt.size(); ++sj) {
+    double dr = DeltaR(sjphi.at(sj),refsjphi.at(refsj),sjeta.at(sj),refsjeta.at(refsj));
+    if(dr<drmin) {
+    drmin = dr;
+    closest = (int)sj;
+    }
+    }
+    //Printf("sj: %d closest: %d drmin: %f",sj,closest,drmin);
+    closestIndices.push_back(closest);
+    closestDistances.push_back(drmin);
+    }
+
+    //check uniqueness of matching. If double match, take closest one
+    //Printf("check uniqueness");
+    if(closestIndices.size()>1) {
+    for(uint l = 0; l<closestIndices.size(); ++l) {
+    int id = closestIndices.at(l);
+    if(id<0) continue;
+    for(uint m = l+1; m<closestIndices.size(); ++m) {
+    if(id==closestIndices.at(m)) {
+    //Printf("found double match %d %d %d %d %f %f",(int)l,(int)m,id,closestIndices.at(m),closestDistances.at(l),closestDistances.at(m));
+    if(closestDistances.at(l)<closestDistances.at(m)) {
+    closestIndices.at(m) = -1;
+    closestDistances.at(m) = 999;
+    }
+    else {
+    closestIndices.at(l) = -1;
+    closestDistances.at(l) = 999;
+    }
+    }
+    }
+    }
+    }
+    //Printf("set subjet pt,eta,phi reco level");
+    for(uint recsj = 0; recsj<closestIndices.size(); ++recsj) {
+    int closest = closestIndices.at(recsj);
+    if(closest>-1 && closest<(int)sjpt.size()) {
+    recsjpt.push_back(sjpt.at(closest));
+    recsjeta.push_back(sjeta.at(closest));
+    recsjphi.push_back(sjphi.at(closest));
+    } else {
+    recsjpt.push_back(-999);
+    recsjeta.push_back(-999);
+    recsjphi.push_back(-999);
+    }
+    }
+
+    if(fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
+    if(refsjpt.size()>0 && refsjpt.size()<2) { //only 1 subjet
+    fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+    fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
+    fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+    fSubjetTreeVars.fPtSJ2.push_back(-999);
+    fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
+    fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
+    fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
+    fSubjetTreeVars.fEtaSJ2.push_back(-999);
+    fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+    fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
+    fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
+    fSubjetTreeVars.fPhiSJ2.push_back(-999);
+
+    double dr = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
+    fSubjetTreeVars.fDeltaRSJ1.push_back(dr);
+    fSubjetTreeVars.fDeltaRSJ1.push_back(999.);
+    }
+    else if(refsjpt.size()>1) { //2 subjets
+    if(refsjpt.at(0)>(refsjpt.at(1))) {
+    fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
+    fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
+    fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
+    fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
+    fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
+    fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
+              
+    fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(0));
+    fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(1));
+    fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(0));
+    fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(1));
+    fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(0));
+    fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(1));
+
+    double drsj1 = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
+    double drsj2 = DeltaR(refsjphi.at(1),recsjphi.at(1),refsjeta.at(1),recsjeta.at(1));
+    fSubjetTreeVars.fDeltaRSJ1.push_back(drsj1);
+    fSubjetTreeVars.fDeltaRSJ2.push_back(drsj2);
+    } else {
+    fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
+    fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(0));
+    fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(1));
+    fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(0));
+    fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(1));
+    fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(0));
+              
+    fSubjetTreeVars.fPtSJ1.push_back(recsjpt.at(1));
+    fSubjetTreeVars.fPtSJ2.push_back(recsjpt.at(0));
+    fSubjetTreeVars.fEtaSJ1.push_back(recsjeta.at(1));
+    fSubjetTreeVars.fEtaSJ2.push_back(recsjeta.at(0));
+    fSubjetTreeVars.fPhiSJ1.push_back(recsjphi.at(1));
+    fSubjetTreeVars.fPhiSJ2.push_back(recsjphi.at(0));
+
+    double drsj1 = DeltaR(refsjphi.at(1),recsjphi.at(1),refsjeta.at(1),recsjeta.at(1));
+    double drsj2 = DeltaR(refsjphi.at(0),recsjphi.at(0),refsjeta.at(0),recsjeta.at(0));
+    fSubjetTreeVars.fDeltaRSJ1.push_back(drsj1);
+    fSubjetTreeVars.fDeltaRSJ2.push_back(drsj2);
+    }
+    } else {
+    fSubjetTreeVars.fPtSJ1Ref.push_back(-999);
+    fSubjetTreeVars.fPtSJ2Ref.push_back(-999);
+    fSubjetTreeVars.fEtaSJ1Ref.push_back(-999);
+    fSubjetTreeVars.fEtaSJ2Ref.push_back(-999);
+    fSubjetTreeVars.fPhiSJ1Ref.push_back(-999);
+    fSubjetTreeVars.fPhiSJ2Ref.push_back(-999);
+
+    fSubjetTreeVars.fPtSJ1.push_back(-999);
+    fSubjetTreeVars.fPtSJ2.push_back(-999);
+    fSubjetTreeVars.fEtaSJ1.push_back(-999);
+    fSubjetTreeVars.fEtaSJ2.push_back(-999);
+    fSubjetTreeVars.fPhiSJ1.push_back(-999);
+    fSubjetTreeVars.fPhiSJ2.push_back(-999);
+
+    fSubjetTreeVars.fDeltaRSJ1.push_back(999);
+    fSubjetTreeVars.fDeltaRSJ2.push_back(999);
+    }
+    }//fStoreRefTree
+    // ============== End complicated matching of subjets
+    */
+
+    //      if(!fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
+    if(jetNotGroomed->Pt()>fMinPtJetTree) {
+      //if(sjpt.at(0)>sjpt.at(1)) {
+      if(sjpt.size()>0) fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(0));
+      else fSubjetTreeVars.fPtSJ1.push_back(-999.);
+      
+      if(sjpt.size()>1) fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(1));
+      else fSubjetTreeVars.fPtSJ2.push_back(-999.);
+
+      if(sjeta.size()>0) fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(0));
+      else fSubjetTreeVars.fEtaSJ1.push_back(-999.);
+
+      if(sjeta.size()>1) fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(1));
+      else fSubjetTreeVars.fEtaSJ2.push_back(-999.);
+
+      if(sjphi.size()>0) fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(0));
+      else fSubjetTreeVars.fPhiSJ1.push_back(-999.);
+
+      if(sjphi.size()>1) fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(1));
+      else fSubjetTreeVars.fPhiSJ2.push_back(-999.);
+
+      if(sjm.size()>0) fSubjetTreeVars.fMSJ1.push_back(sjm.at(0));
+      else fSubjetTreeVars.fMSJ1.push_back(-999.);
+
+      if(sjm.size()>1) fSubjetTreeVars.fMSJ2.push_back(sjm.at(1));
+      else fSubjetTreeVars.fMSJ2.push_back(-999.);
+      // } else {
+      //   fSubjetTreeVars.fPtSJ1.push_back(sjpt.at(1));
+      //   fSubjetTreeVars.fPtSJ2.push_back(sjpt.at(0));
+      //   fSubjetTreeVars.fEtaSJ1.push_back(sjeta.at(1));
+      //   fSubjetTreeVars.fEtaSJ2.push_back(sjeta.at(0));
+      //   fSubjetTreeVars.fPhiSJ1.push_back(sjphi.at(1));
+      //   fSubjetTreeVars.fPhiSJ2.push_back(sjphi.at(0));
+      // }
+      fSubjetTreeVars.fSwap.push_back(swap);
+      if(fStoreTreeRef) {
+        // if(refsjpt.at(0)>refsjpt.at(1)) {
+        if(refsjpt.size()>0) {
             fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(0));
             fSubjetTreeVars.fEtaSJ1Ref.push_back(refsjeta.at(0));
             fSubjetTreeVars.fPhiSJ1Ref.push_back(refsjphi.at(0));
-            double dr = DeltaR(refsjphi.at(0),sjphi.at(0),refsjeta.at(0),sjeta.at(0));
-            fSubjetTreeVars.fDeltaRSJ1.push_back(dr);
+            fSubjetTreeVars.fMSJ1Ref.push_back(refsjm.at(0));
+            double dr11 = DeltaR(refsjphi.at(0),sjphi.at(0),refsjeta.at(0),sjeta.at(0));
+            double dr12 = -1.;
+            if(sjpt.size()>1) dr12 = DeltaR(refsjphi.at(0),sjphi.at(1),refsjeta.at(0),sjeta.at(1));
+            fSubjetTreeVars.fDeltaRSJ11.push_back(dr11);
+            fSubjetTreeVars.fDeltaRSJ12.push_back(dr12);
           } else {
             fSubjetTreeVars.fPtSJ1Ref.push_back(-999.);
             fSubjetTreeVars.fEtaSJ1Ref.push_back(-999.);
             fSubjetTreeVars.fPhiSJ1Ref.push_back(-999.);
-            fSubjetTreeVars.fDeltaRSJ1.push_back(-999.);
+            fSubjetTreeVars.fMSJ1Ref.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ11.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ12.push_back(-999.);
           }
-          if(refsjpt.size()>1) {
+        if(refsjpt.size()>1 && sjpt.size()>1)  {
+            
             fSubjetTreeVars.fPtSJ2Ref.push_back(refsjpt.at(1));
             fSubjetTreeVars.fEtaSJ2Ref.push_back(refsjeta.at(1));
             fSubjetTreeVars.fPhiSJ2Ref.push_back(refsjphi.at(1));
-            double dr = DeltaR(refsjphi.at(1),sjphi.at(1),refsjeta.at(1),sjeta.at(1));
-            fSubjetTreeVars.fDeltaRSJ2.push_back(dr);
+            fSubjetTreeVars.fMSJ2Ref.push_back(refsjm.at(1));
+            double dr22 = -1.;
+            if(sjpt.size()>1) dr22 = DeltaR(refsjphi.at(1),sjphi.at(1),refsjeta.at(1),sjeta.at(1));
+            double dr21 = DeltaR(refsjphi.at(1),sjphi.at(0),refsjeta.at(1),sjeta.at(0));
+            fSubjetTreeVars.fDeltaRSJ22.push_back(dr22);
+            fSubjetTreeVars.fDeltaRSJ21.push_back(dr21);
           } else {
             fSubjetTreeVars.fPtSJ2Ref.push_back(-999.);
             fSubjetTreeVars.fEtaSJ2Ref.push_back(-999.);
             fSubjetTreeVars.fPhiSJ2Ref.push_back(-999.);
-            fSubjetTreeVars.fDeltaRSJ2.push_back(-999.);
+            fSubjetTreeVars.fMSJ2Ref.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ22.push_back(-999.);
+            fSubjetTreeVars.fDeltaRSJ21.push_back(-999.);
           }
           // } else {
           //   fSubjetTreeVars.fPtSJ1Ref.push_back(refsjpt.at(1));
@@ -510,6 +678,7 @@ void anaSubJet::Exec(Option_t * /*option*/)
       if(fStoreTreeRef && jetNotGroomed->Pt()>fMinPtJetTree) {
         fSubjetTreeVars.fZgRef.push_back(refzg);
         fSubjetTreeVars.fThetagRef.push_back(refthetag);
+        fSubjetTreeVars.fDroppedRef.push_back(jet->GetRefNDroppedBranches());
       }
       if(fCentBin>-1 && fCentBin<fNcentBins) {
         fh2PtZg[fCentBin]->Fill(pt,zg);
@@ -574,7 +743,7 @@ void anaSubJet::Exec(Option_t * /*option*/)
           if(is==3) fh2PtSubjetPtFrac4[fCentBin]->Fill(pt,ptrat);
         }
       }
-    }//nsubjets>1
+      //}//nsubjets>1
     if(fDoDijets && fCentBin>-1 && fCentBin<fNcentBins) {
       if(m<fMinMassLeading) continue;
       int nBinsLJ = (int)fPtLeadingMin.size();
@@ -698,12 +867,15 @@ void anaSubJet::CreateOutputObjects() {
 
   if(fStoreTree) {
     fTreeOut = new TTree(Form("%sTree",GetName()),"subjet tree");
+    fTreeOut->Branch("fRun",&fSubjetTreeVars.fRun,"fRun/I");
     fTreeOut->Branch("fCent",&fSubjetTreeVars.fCent,"fCent/F");
     fTreeOut->Branch("fPt",&fSubjetTreeVars.fPt);
+    fTreeOut->Branch("fPtRaw",&fSubjetTreeVars.fPtRaw);
     fTreeOut->Branch("fEta",&fSubjetTreeVars.fEta);
     fTreeOut->Branch("fPhi",&fSubjetTreeVars.fPhi);
     fTreeOut->Branch("fM",&fSubjetTreeVars.fM);
     fTreeOut->Branch("fPtG",&fSubjetTreeVars.fPtG);
+    fTreeOut->Branch("fPtRawG",&fSubjetTreeVars.fPtRawG);
     fTreeOut->Branch("fEtaG",&fSubjetTreeVars.fEtaG);
     fTreeOut->Branch("fPhiG",&fSubjetTreeVars.fPhiG);
     fTreeOut->Branch("fMG",&fSubjetTreeVars.fMG);
@@ -713,22 +885,73 @@ void anaSubJet::CreateOutputObjects() {
     fTreeOut->Branch("fEtaSJ2",&fSubjetTreeVars.fEtaSJ2);
     fTreeOut->Branch("fPhiSJ1",&fSubjetTreeVars.fPhiSJ1);
     fTreeOut->Branch("fPhiSJ2",&fSubjetTreeVars.fPhiSJ2);
+    fTreeOut->Branch("fMSJ1",&fSubjetTreeVars.fMSJ1);
+    fTreeOut->Branch("fMSJ2",&fSubjetTreeVars.fMSJ2);
     fTreeOut->Branch("fZg",&fSubjetTreeVars.fZg);
     fTreeOut->Branch("fThetag",&fSubjetTreeVars.fThetag);
+    fTreeOut->Branch("fDropped",&fSubjetTreeVars.fDropped);
+    fTreeOut->Branch("fCHF",&fSubjetTreeVars.fCHF);
+    fTreeOut->Branch("fNHF",&fSubjetTreeVars.fNHF);
+    fTreeOut->Branch("fCEF",&fSubjetTreeVars.fCEF);
+    fTreeOut->Branch("fNEF",&fSubjetTreeVars.fNEF);
+    fTreeOut->Branch("fMUF",&fSubjetTreeVars.fMUF);
+    fTreeOut->Branch("fCHM",&fSubjetTreeVars.fCHM);
+    fTreeOut->Branch("fNHM",&fSubjetTreeVars.fNHM);
+    fTreeOut->Branch("fCEM",&fSubjetTreeVars.fCEM);
+    fTreeOut->Branch("fNEM",&fSubjetTreeVars.fNEM);
+    fTreeOut->Branch("fMUM",&fSubjetTreeVars.fMUM);
     fTreeOut->Branch("fPtRef",&fSubjetTreeVars.fPtRef);
     fTreeOut->Branch("fEtaRef",&fSubjetTreeVars.fEtaRef);
     fTreeOut->Branch("fPhiRef",&fSubjetTreeVars.fPhiRef);
+    fTreeOut->Branch("fPtGRef",&fSubjetTreeVars.fPtGRef);
+    fTreeOut->Branch("fEtaGRef",&fSubjetTreeVars.fEtaGRef);
+    fTreeOut->Branch("fPhiGRef",&fSubjetTreeVars.fPhiGRef);
     fTreeOut->Branch("fPtSJ1Ref",&fSubjetTreeVars.fPtSJ1Ref);
     fTreeOut->Branch("fPtSJ2Ref",&fSubjetTreeVars.fPtSJ2Ref);
     fTreeOut->Branch("fEtaSJ1Ref",&fSubjetTreeVars.fEtaSJ1Ref);
     fTreeOut->Branch("fEtaSJ2Ref",&fSubjetTreeVars.fEtaSJ2Ref);
     fTreeOut->Branch("fPhiSJ1Ref",&fSubjetTreeVars.fPhiSJ1Ref);
     fTreeOut->Branch("fPhiSJ2Ref",&fSubjetTreeVars.fPhiSJ2Ref);
+    fTreeOut->Branch("fMSJ1Ref",&fSubjetTreeVars.fMSJ1Ref);
+    fTreeOut->Branch("fMSJ2Ref",&fSubjetTreeVars.fMSJ2Ref);
     fTreeOut->Branch("fZgRef",&fSubjetTreeVars.fZgRef);
+    fTreeOut->Branch("fDroppedRef",&fSubjetTreeVars.fDroppedRef);
     fTreeOut->Branch("fThetagRef",&fSubjetTreeVars.fThetagRef);
     fTreeOut->Branch("fSwap",&fSubjetTreeVars.fSwap);
-    fTreeOut->Branch("fDeltaRSJ1",&fSubjetTreeVars.fDeltaRSJ1);
-    fTreeOut->Branch("fDeltaRSJ2",&fSubjetTreeVars.fDeltaRSJ2);
+    fTreeOut->Branch("fDeltaRSJ11",&fSubjetTreeVars.fDeltaRSJ11);
+    fTreeOut->Branch("fDeltaRSJ12",&fSubjetTreeVars.fDeltaRSJ12);
+    fTreeOut->Branch("fDeltaRSJ21",&fSubjetTreeVars.fDeltaRSJ21);
+    fTreeOut->Branch("fDeltaRSJ22",&fSubjetTreeVars.fDeltaRSJ22);
+
+    fTreeOut->Branch("fZCut0PtG",&fSubjetTreeVars.fZCut0PtG);
+    fTreeOut->Branch("fZCut0EtaG",&fSubjetTreeVars.fZCut0EtaG);
+    fTreeOut->Branch("fZCut0PhiG",&fSubjetTreeVars.fZCut0PhiG);
+    fTreeOut->Branch("fZCut0MG",&fSubjetTreeVars.fZCut0MG);
+    fTreeOut->Branch("fZCut0PtSJ1",&fSubjetTreeVars.fZCut0PtSJ1);
+    fTreeOut->Branch("fZCut0PtSJ2",&fSubjetTreeVars.fZCut0PtSJ2);
+    fTreeOut->Branch("fZCut0EtaSJ1",&fSubjetTreeVars.fZCut0EtaSJ1);
+    fTreeOut->Branch("fZCut0EtaSJ2",&fSubjetTreeVars.fZCut0EtaSJ2);
+    fTreeOut->Branch("fZCut0PhiSJ1",&fSubjetTreeVars.fZCut0PhiSJ1);
+    fTreeOut->Branch("fZCut0PhiSJ2",&fSubjetTreeVars.fZCut0PhiSJ2);
+    fTreeOut->Branch("fZCut0MSJ1",&fSubjetTreeVars.fZCut0MSJ1);
+    fTreeOut->Branch("fZCut0MSJ2",&fSubjetTreeVars.fZCut0MSJ2);
+    fTreeOut->Branch("fZCut0Zg",&fSubjetTreeVars.fZCut0Zg);
+    fTreeOut->Branch("fZCut0Thetag",&fSubjetTreeVars.fZCut0Thetag);
+
+    fTreeOut->Branch("fZCut0PtGRef",&fSubjetTreeVars.fZCut0PtGRef);
+    fTreeOut->Branch("fZCut0EtaGRef",&fSubjetTreeVars.fZCut0EtaGRef);
+    fTreeOut->Branch("fZCut0PhiGRef",&fSubjetTreeVars.fZCut0PhiGRef);
+    fTreeOut->Branch("fZCut0MGRef",&fSubjetTreeVars.fZCut0MGRef);
+    fTreeOut->Branch("fZCut0PtSJ1Ref",&fSubjetTreeVars.fZCut0PtSJ1Ref);
+    fTreeOut->Branch("fZCut0PtSJ2Ref",&fSubjetTreeVars.fZCut0PtSJ2Ref);
+    fTreeOut->Branch("fZCut0EtaSJ1Ref",&fSubjetTreeVars.fZCut0EtaSJ1Ref);
+    fTreeOut->Branch("fZCut0EtaSJ2Ref",&fSubjetTreeVars.fZCut0EtaSJ2Ref);
+    fTreeOut->Branch("fZCut0PhiSJ1Ref",&fSubjetTreeVars.fZCut0PhiSJ1Ref);
+    fTreeOut->Branch("fZCut0PhiSJ2Ref",&fSubjetTreeVars.fZCut0PhiSJ2Ref);
+    fTreeOut->Branch("fZCut0MSJ1Ref",&fSubjetTreeVars.fZCut0MSJ1Ref);
+    fTreeOut->Branch("fZCut0MSJ2Ref",&fSubjetTreeVars.fZCut0MSJ2Ref);
+    fTreeOut->Branch("fZCut0ZgRef",&fSubjetTreeVars.fZCut0ZgRef);
+    fTreeOut->Branch("fZCut0ThetagRef",&fSubjetTreeVars.fZCut0ThetagRef);
 
     fOutput->Add(fTreeOut);
   }
@@ -1086,10 +1309,12 @@ void anaSubJet::CreateOutputObjects() {
 void anaSubJet::ClearSubjetTreeVars() {
   //clear vectors in fSubjetTreeVars
   fSubjetTreeVars.fPt.clear();
+  fSubjetTreeVars.fPtRaw.clear();
   fSubjetTreeVars.fEta.clear();
   fSubjetTreeVars.fPhi.clear();
   fSubjetTreeVars.fM.clear();
   fSubjetTreeVars.fPtG.clear();
+  fSubjetTreeVars.fPtRawG.clear();
   fSubjetTreeVars.fEtaG.clear();
   fSubjetTreeVars.fPhiG.clear();
   fSubjetTreeVars.fMG.clear();
@@ -1099,22 +1324,73 @@ void anaSubJet::ClearSubjetTreeVars() {
   fSubjetTreeVars.fEtaSJ2.clear();
   fSubjetTreeVars.fPhiSJ1.clear();
   fSubjetTreeVars.fPhiSJ2.clear();
+  fSubjetTreeVars.fMSJ1.clear();
+  fSubjetTreeVars.fMSJ2.clear();
   fSubjetTreeVars.fZg.clear();
   fSubjetTreeVars.fThetag.clear();
+  fSubjetTreeVars.fDropped.clear();
+  fSubjetTreeVars.fCHF.clear();
+  fSubjetTreeVars.fNHF.clear();
+  fSubjetTreeVars.fCEF.clear();
+  fSubjetTreeVars.fNEF.clear();
+  fSubjetTreeVars.fMUF.clear();
+  fSubjetTreeVars.fCHM.clear();
+  fSubjetTreeVars.fNHM.clear();
+  fSubjetTreeVars.fCEM.clear();
+  fSubjetTreeVars.fNEM.clear();
+  fSubjetTreeVars.fMUM.clear();
   fSubjetTreeVars.fPtRef.clear();
   fSubjetTreeVars.fEtaRef.clear();
   fSubjetTreeVars.fPhiRef.clear();
+  fSubjetTreeVars.fPtGRef.clear();
+  fSubjetTreeVars.fEtaGRef.clear();
+  fSubjetTreeVars.fPhiGRef.clear();
   fSubjetTreeVars.fPtSJ1Ref.clear();
   fSubjetTreeVars.fPtSJ2Ref.clear();
   fSubjetTreeVars.fEtaSJ1Ref.clear();
   fSubjetTreeVars.fEtaSJ2Ref.clear();
   fSubjetTreeVars.fPhiSJ1Ref.clear();
   fSubjetTreeVars.fPhiSJ2Ref.clear();
+  fSubjetTreeVars.fMSJ1Ref.clear();
+  fSubjetTreeVars.fMSJ2Ref.clear();
   fSubjetTreeVars.fZgRef.clear();
   fSubjetTreeVars.fThetagRef.clear();
+  fSubjetTreeVars.fDroppedRef.clear();
   fSubjetTreeVars.fSwap.clear();
-  fSubjetTreeVars.fDeltaRSJ1.clear();
-  fSubjetTreeVars.fDeltaRSJ2.clear();
+  fSubjetTreeVars.fDeltaRSJ11.clear();
+  fSubjetTreeVars.fDeltaRSJ12.clear();
+  fSubjetTreeVars.fDeltaRSJ22.clear();
+  fSubjetTreeVars.fDeltaRSJ21.clear();
+
+  fSubjetTreeVars.fZCut0PtG.clear();
+  fSubjetTreeVars.fZCut0EtaG.clear();
+  fSubjetTreeVars.fZCut0PhiG.clear();
+  fSubjetTreeVars.fZCut0MG.clear();
+  fSubjetTreeVars.fZCut0PtSJ1.clear();
+  fSubjetTreeVars.fZCut0PtSJ2.clear();
+  fSubjetTreeVars.fZCut0EtaSJ1.clear();
+  fSubjetTreeVars.fZCut0EtaSJ2.clear();
+  fSubjetTreeVars.fZCut0PhiSJ1.clear();
+  fSubjetTreeVars.fZCut0PhiSJ2.clear();
+  fSubjetTreeVars.fZCut0MSJ1.clear();
+  fSubjetTreeVars.fZCut0MSJ2.clear();
+  fSubjetTreeVars.fZCut0Zg.clear();
+  fSubjetTreeVars.fZCut0Thetag.clear();
+
+  fSubjetTreeVars.fZCut0PtGRef.clear();
+  fSubjetTreeVars.fZCut0EtaGRef.clear();
+  fSubjetTreeVars.fZCut0PhiGRef.clear();
+  fSubjetTreeVars.fZCut0MGRef.clear();
+  fSubjetTreeVars.fZCut0PtSJ1Ref.clear();
+  fSubjetTreeVars.fZCut0PtSJ2Ref.clear();
+  fSubjetTreeVars.fZCut0EtaSJ1Ref.clear();
+  fSubjetTreeVars.fZCut0EtaSJ2Ref.clear();
+  fSubjetTreeVars.fZCut0PhiSJ1Ref.clear();
+  fSubjetTreeVars.fZCut0PhiSJ2Ref.clear();
+  fSubjetTreeVars.fZCut0MSJ1Ref.clear();
+  fSubjetTreeVars.fZCut0MSJ2Ref.clear();
+  fSubjetTreeVars.fZCut0ZgRef.clear();
+  fSubjetTreeVars.fZCut0ThetagRef.clear();
 }
 
 //----------------------------------------------------------

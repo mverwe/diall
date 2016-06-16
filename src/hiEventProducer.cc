@@ -30,7 +30,12 @@ inputBase("hiEventProducer"),
   fHLT_FullTrack45ForPPRef_v1(0),
   fcollisionEvtSel(1),
   fHBHENoise(1),
-  fphfCoincFilter(1)
+  fHBHENoiseLoose(1),
+  fPrimaryVertexFilter(1),
+  fClusterCompatibilityFilter(1),
+  fHFCoincFilter(1),
+  fForestFJRho(),
+  fRhoMap(0)
 {
   //default constructor
 }
@@ -56,7 +61,12 @@ hiEventProducer::hiEventProducer(const char *name) :
   fHLT_FullTrack45ForPPRef_v1(0),
   fcollisionEvtSel(1),
   fHBHENoise(1),
-  fphfCoincFilter(1)
+  fHBHENoiseLoose(1),
+  fPrimaryVertexFilter(1),
+  fClusterCompatibilityFilter(1),
+  fHFCoincFilter(1),
+  fForestFJRho(),
+  fRhoMap(0)
 {
   //standard constructor
 }
@@ -106,11 +116,33 @@ Bool_t hiEventProducer::Init() {
       fChain->SetBranchAddress("HLT_FullTrack45ForPPRef_v1",&fHLT_FullTrack45ForPPRef_v1,&b_HLT_FullTrack45ForPPRef_v1);
     if(fChain->GetBranch("PAcollisionEventSelection"))
       fChain->SetBranchAddress("PAcollisionEventSelection",&fcollisionEvtSel,&b_collisionEvtSel);
+    else if(fChain->GetBranch("pcollisionEventSelection"))
+      fChain->SetBranchAddress("pcollisionEventSelection",&fcollisionEvtSel,&b_collisionEvtSel);
     if(fChain->GetBranch("pHBHENoiseFilterResult"))
       fChain->SetBranchAddress("pHBHENoiseFilterResult",&fHBHENoise,&b_HBHENoise);
-    if(fChain->GetBranch("phfCoinFilter3"))
-      fChain->SetBranchAddress("phfCoincFilter3",&fphfCoincFilter,&b_phfCoincFilter);
+    if(fChain->GetBranch("pHBHENoiseFilterResultRun2Loose"))
+      fChain->SetBranchAddress("pHBHENoiseFilterResultRun2Loose",&fHBHENoiseLoose,&b_HBHENoiseLoose);
+    if(fChain->GetBranch("pprimaryVertexFilter"))
+      fChain->SetBranchAddress("pprimaryVerexFilter",&fPrimaryVertexFilter,&b_PrimaryVertexFilter);
+    if(fChain->GetBranch("pclusterCompatibilityFilter"))
+      fChain->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilter,&b_ClusterCompatibilityFilter);
+    if(fChain->GetBranch("phfCoincFilter3"))
+      fChain->SetBranchAddress("phfCoincFilter3",&fHFCoincFilter,&b_phfCoincFilter);
 
+    
+    if (fChain->GetBranch("etaMin"))
+      fChain->SetBranchStatus("eta*",1);
+    if (fChain->GetBranch("etaMin"))
+      fChain->SetBranchAddress("etaMin", &fForestFJRho.etaMin, &fForestFJRho.b_etaMin);
+    if (fChain->GetBranch("etaMax"))
+    fChain->SetBranchAddress("etaMax", &fForestFJRho.etaMax, &fForestFJRho.b_etaMax);
+    if (fChain->GetBranch("rho"))
+      fChain->SetBranchStatus("rho*",1);
+    if (fChain->GetBranch("rho"))
+      fChain->SetBranchAddress("rho", &fForestFJRho.rho, &fForestFJRho.b_rho);
+    if (fChain->GetBranch("rhom"))
+      fChain->SetBranchAddress("rhom", &fForestFJRho.rhom, &fForestFJRho.b_rhom);
+    
     fInit = kTRUE;
   }
   return kTRUE;
@@ -129,6 +161,14 @@ Bool_t hiEventProducer::InitEventObjects() {
       Printf("Created hiEventContainer");
     }
   }
+
+  if(!fRhoMap) {
+    TString rhoName = Form("rho_%s",fhiEventContName.Data());
+    fRhoMap = new rhoMap(rhoName.Data());
+    fEventObjects->Add(fRhoMap);
+    fhiEventContainer->SetRhoMap(fRhoMap);
+  }
+  
   return kTRUE;
 }
 
@@ -158,7 +198,19 @@ Bool_t hiEventProducer::Run(Long64_t entry) {
   fhiEventContainer->SetTrk45(fHLT_FullTrack45ForPPRef_v1);
   fhiEventContainer->SetColl(fcollisionEvtSel);
   fhiEventContainer->SetHBHENoise(fHBHENoise);
-  fhiEventContainer->SetHFCoinc(fphfCoincFilter);
+  fhiEventContainer->SetHBHENoiseLoose(fHBHENoiseLoose);
+  fhiEventContainer->SetPrimaryVertexFilter(fPrimaryVertexFilter);
+  fhiEventContainer->SetClusterCompatibilityFilter(fClusterCompatibilityFilter);
+  fhiEventContainer->SetHFCoincFilter(fHFCoincFilter);
+
+  if(fRhoMap && fForestFJRho.etaMin) {
+  fRhoMap->ClearMap();
+  //Printf("create rho map. netaBins: %d",(int)fForestFJRho.etaMin->size());
+  for(unsigned int ieta = 0; ieta<fForestFJRho.etaMin->size(); ++ieta) {
+    //Printf("ieta: %d %f-%f rho: %f",(int)ieta,fForestFJRho.etaMin->at(ieta),fForestFJRho.etaMax->at(ieta),fForestFJRho.rho->at(ieta));
+    fRhoMap->AddEtaRange(fForestFJRho.etaMin->at(ieta),fForestFJRho.etaMax->at(ieta),ieta,fForestFJRho.rho->at(ieta));
+  }
+  }
 
   return kTRUE; 
 }

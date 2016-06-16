@@ -12,6 +12,8 @@
 
 #include "UserCode/diall/interface/inputBase.h"
 #include "UserCode/diall/interface/hiEventContainer.h"
+#include <UserCode/diall/interface/ForestFJRho.h>
+#include "UserCode/diall/interface/rhoMap.h"
 
 class hiEventProducer : public inputBase {
  public:
@@ -49,7 +51,13 @@ class hiEventProducer : public inputBase {
 
   Int_t                        fcollisionEvtSel; //!
   Int_t                        fHBHENoise; //!
-  Int_t                        fphfCoincFilter;//!
+  Int_t                        fHBHENoiseLoose; //!
+  Int_t                        fPrimaryVertexFilter; //!
+  Int_t                        fClusterCompatibilityFilter; //!
+  Int_t                        fHFCoincFilter;//!
+  
+  ForestFJRho                  fForestFJRho; //!rho in forest tree
+  rhoMap                       *fRhoMap;     //rho mapping
 
   TBranch        *b_run;    //!
   TBranch        *b_evt;    //!
@@ -65,11 +73,13 @@ class hiEventProducer : public inputBase {
   TBranch        *b_HLT_HISinglePhoton30_Eta3p5_v1 ; //!
   TBranch        *b_HLT_FullTrack24ForPPRef_v1; //!
   TBranch        *b_HLT_FullTrack45ForPPRef_v1; //!
-
-  TBranch        *b_collisionEvtSel;//!
-  TBranch        *b_HBHENoise;      //!
-  TBranch        *b_phfCoincFilter; //!
- 
+  TBranch        *b_collisionEvtSel;
+  TBranch        *b_HBHENoise;
+  TBranch        *b_HBHENoiseLoose;
+  TBranch        *b_PrimaryVertexFilter;
+  TBranch        *b_ClusterCompatibilityFilter;
+  TBranch        *b_phfCoincFilter;
+  
  private:
   hiEventProducer(const hiEventProducer& obj); // copy constructor
   hiEventProducer& operator=(const hiEventProducer& other); // assignment

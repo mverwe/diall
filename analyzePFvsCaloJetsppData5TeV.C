@@ -178,11 +178,11 @@ void analyzePFvsCaloJetsppData5TeV(std::vector<std::string> urls, const char *ou
   //anaPFCaloJet->DoExcludePhoton30(false);//true);
   anaPFCaloJet->SetPFJetsName("akt4PF");
   anaPFCaloJet->SetCaloJetsName("akt4Calo");
-  //anaPFCaloJet->DoCollionEventSel(false);
+  //anaPFCaloJet->DoCollisionEventSel(false);
   //anaPFCaloJet->DoHBHENoiseFilter(false);
   if(isData) {
     anaPFCaloJet->DoPFJet80(true);
-    anaPFCaloJet->DoCollionEventSel(true);
+    anaPFCaloJet->DoCollisionEventSel(true);
     anaPFCaloJet->DoHBHENoiseFilter(true);
   }
   handler->Add(anaPFCaloJet);
@@ -196,7 +196,7 @@ void analyzePFvsCaloJetsppData5TeV(std::vector<std::string> urls, const char *ou
   anaCaloPFJet->SetCaloJetsName("akt4PF");
   if(isData) {
     anaCaloPFJet->DoPFJet80(true);
-    anaCaloPFJet->DoCollionEventSel(true);
+    anaCaloPFJet->DoCollisionEventSel(true);
     anaCaloPFJet->DoHBHENoiseFilter(true);
   }
   handler->Add(anaCaloPFJet);

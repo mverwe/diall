@@ -29,9 +29,13 @@ public:
    void AddTriggerSel(std::string s)     { fTriggerList.push_back(s); }
 
    bool   SelectEvent() const;
-   void   DoCollionEventSel(bool b)    { fCollSel   = b; }
-   void   DoHBHENoiseFilter(bool b)    { fHBHENoise = b; }
-   void   DoHFCoincFilter(bool b)      { fHFCoinc   = b; }
+   void   DoCollisionEventSel(bool b)    { fCollSel   = b; }
+   void   DoHBHENoiseFilter(bool b)      { fHBHENoise = b; }
+   void   DoHBHENoiseFilterLoose(bool b) { fHBHENoiseLoose = b; }
+   void   DoPrimaryVertexFilter(bool b)  { fPrimaryVertex = b; }
+   void   DoClusterCompatibilityFilter(bool b) {fClusterCompat = b;}
+   void   DoHFCoincFilter(bool b)        { fHFCoinc = b; }
+   
    void   SetCentralityRange(double min, double max) { fCentMin = min; fCentMax = max; }
    
    //temporary: need smarter way to store HLT triggers
@@ -54,7 +58,11 @@ public:
    std::vector<std::string> fTriggerList;       // triggers to add to event
    bool        fCollSel;                        //flag to do collision event sel
    bool        fHBHENoise;                      //HBHE noise filter
-   bool        fHFCoinc;                        //HF coincident (3) filter
+   bool        fHBHENoiseLoose;                 //HBHE noise filter loose
+   bool        fPrimaryVertex;                  // primary vertex filter
+   bool        fClusterCompat;                  // cluster compatibility
+   bool        fHFCoinc;                        // HF coincidence filter
+
    double      fCentMin;                        //cent min
    double      fCentMax;                        //cent max
    bool        fPFJet80;                        //PFJet80

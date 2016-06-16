@@ -23,7 +23,12 @@ TNamed("hiEventContainer","hiEventContainer"),
   fTrk24(0),
   fTrk45(0),
   fColl(0),
-  fHBHENoise(0)
+  fHBHENoise(0),
+  fHBHENoiseLoose(0),
+  fPrimaryVertexFilter(0),
+  fClusterCompatibilityFilter(0),
+  fHFCoincFilter(0),
+  fRhoMap(0)
 {
   //default constructor
 }
@@ -45,7 +50,12 @@ hiEventContainer::hiEventContainer(const char *name) :
   fTrk24(0),
   fTrk45(0),
   fColl(0),
-  fHBHENoise(0)
+  fHBHENoise(0),
+  fHBHENoiseLoose(0),
+  fPrimaryVertexFilter(0),
+  fClusterCompatibilityFilter(0),
+  fHFCoincFilter(0),
+  fRhoMap(0)
 {
   //standard constructor
 }

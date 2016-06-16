@@ -10,6 +10,7 @@
 <environment>
   <bin name="runExample"              file="runExample.cc"></bin>
   <bin name="runJES"                  file="runJES.cc"></bin>
+  <bin name="runJESPP"                file="runJESPP.cc"></bin>
   <bin name="runPuppiAna"             file="runPuppiAna.cc"></bin>
   <bin name="runPFCandAna"            file="runPFCandAna.cc"></bin>
   <bin name="runPFCandAna13TeVMC"     file="runPFCandAna13TeVMC.cc"></bin>
@@ -28,5 +29,9 @@
   <bin name="runDijetAjDataPbPb"      file="runDijetAjDataPbPb.cc"></bin>
   <bin name="runDijetAjDataPP"        file="runDijetAjDataPP.cc"></bin>
   <bin name="runSubJetMCPP"           file="runSubJetMCPP.cc"></bin>
+  <bin name="runZgHistosDataPP"       file="runZgHistosDataPP.cc"></bin>
+  <bin name="runZgHistosDataPbPb"     file="runZgHistosDataPbPb.cc"></bin>
+  <bin name="runZgHistosMCPP"         file="runZgHistosMCPP.cc"></bin>
+  <bin name="runZgHistosMCPbPb"       file="runZgHistosMCPbPb.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

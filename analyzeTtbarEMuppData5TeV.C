@@ -198,7 +198,7 @@ void analyzeTtbarEMuppData5TeV(std::vector<std::string> urls, const char *outnam
   anaCaloPFJet->SetCaloJetsName("akt4PF");
   if(isData) {
     anaCaloPFJet->DoPFJet80(true);
-    anaCaloPFJet->DoCollionEventSel(true);
+    anaCaloPFJet->DoCollisionEventSel(true);
     anaCaloPFJet->DoHBHENoiseFilter(true);
   }
   //handler->Add(anaCaloPFJet);

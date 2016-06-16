@@ -18,6 +18,9 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fTriggerList(0),
   fCollSel(0),
   fHBHENoise(0),
+  fHBHENoiseLoose(0),
+  fPrimaryVertex(0),
+  fClusterCompat(0),
   fHFCoinc(0),
   fCentMin(-999),
   fCentMax(999),
@@ -98,11 +101,31 @@ bool anaBaseTask::SelectEvent() const {
   
   if(fHiEvent) {
     if(std::abs(fHiEvent->GetVz())>15.) accept = false;
-    if(fCollSel && !fHiEvent->GetColl()) accept = false;
+    if(fCollSel && !fHiEvent->GetColl()) {
+      //Printf("collSel rejected");
+      accept = false;
+    }
     //  printf("accept 1 %d %d %d\n", accept, fCollSel, !fHiEvent->GetColl()); }
-    if(fHBHENoise && !fHiEvent->GetHBHENoise()) accept = false;
-    //  printf("accept 2 %d %d %d\n", accept, fHBHENoise, !fHiEvent->GetHBHENoise()); }
-    if(fHFCoinc && !fHiEvent->GetHFCoinc()) accept = false;
+    if(fHBHENoise && !fHiEvent->GetHBHENoise()) {
+      // Printf("HBHENoise rejected");
+      accept = false;
+    }
+    if(fHBHENoiseLoose && !fHiEvent->GetHBHENoiseLoose()) {
+      // Printf("HBHENoiseLoose rejected");
+      accept = false;
+    }
+    if(fPrimaryVertex && !fHiEvent->GetPrimaryVertexFilter()) {
+      // Printf("primvtx rejected");
+      accept = false;
+    }
+    if(fClusterCompat && !fHiEvent->GetClusterCompatibilityFilter()) {
+      // Printf("cluscompat rejected");
+      accept = false;
+    }
+    if(fHFCoinc && !fHiEvent->GetHFCoincFilter()) {
+      // Printf("HFcoinc rejected");
+      accept = false;
+    }
     if(fCentMin>-1) {
       double cent = fHiEvent->GetCentrality();
       if(cent<fCentMin && cent>fCentMax) accept = false;
@@ -135,6 +158,8 @@ bool anaBaseTask::SelectEvent() const {
     }
     accept = passTrig;
   }
+
+  //  Printf("accept: %d",(int)accept);
 
   return accept;
 }

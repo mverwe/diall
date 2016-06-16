@@ -41,13 +41,13 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
    */
 
   TString jetSDName = "aktCs4PFSoftDrop";
-  TString jetTreeSDName = "akCs4PFSoftDropJetAnalyzer";//"akCsSoftDrop4PFJetAnalyzer";//
+  TString jetTreeSDName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";//
   TString jetName = "aktCs4PF";
   TString jetTreeName = "akCs4PFJetAnalyzer";
 
   double minptjet = 30.;
   bool doDijet = false;
-  if(!doDijet) minptjet = 40.;
+  if(!doDijet) minptjet = 80.;
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
   std::cout << "analyzing subjets for: " << jetSDName << " tree: " << jetTreeSDName << std::endl;
@@ -164,6 +164,8 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->AddLeadingJetPtBin(260.,300.);
   anasubjets->AddLeadingJetPtBin(300.,500.);
   anasubjets->SetPtMinSubleading(30.);
+  anasubjets->SetStoreTree(true);
+  anasubjets->SetMinPtJetTree(140.);
   handler->Add(anasubjets);
 
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
@@ -184,7 +186,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsMassCut->AddLeadingJetPtBin(300.,500.);
   anasubjetsMassCut->SetPtMinSubleading(30.);
   anasubjetsMassCut->SetMinMassLeading(10.);
-  handler->Add(anasubjetsMassCut);
+  //handler->Add(anasubjetsMassCut);
  
   //---------------------------------------------------------------
   //Event loop
@@ -208,7 +210,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
     
   fEventObjects->Print();
 
-  TFile *out = new TFile(outname,"RECREATE");
+  TFile *out = new TFile(outname,"RECREATE","",8);
   TList *tasks = handler->GetListOfTasks();
   TIter next(tasks);
   anaBaseTask *obj;

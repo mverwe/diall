@@ -7,6 +7,7 @@
 
 #include <TNamed.h>
 #include <TChain.h>
+#include "UserCode/diall/interface/rhoMap.h"
 
 class hiEventContainer : public TNamed {
  public:
@@ -30,9 +31,14 @@ class hiEventContainer : public TNamed {
   void     SetTrk45(Int_t n)                   { fTrk45 = n  ; }
 
   void     SetColl(Int_t c)                    { fColl = c     ; }
-  void     SetHBHENoise(Int_t n)               { fHBHENoise = n; }
-  void     SetHFCoinc(Int_t p)                   { fphfCoinc = p ; } 
- 
+  void     SetHBHENoise(Int_t n)               { fHBHENoise = n; } 
+  void     SetHBHENoiseLoose(Int_t n)          { fHBHENoiseLoose = n; }
+  void     SetPrimaryVertexFilter(Int_t c)     { fPrimaryVertexFilter = c     ; }
+  void     SetClusterCompatibilityFilter(Int_t c)     { fClusterCompatibilityFilter = c     ; }
+  void     SetHFCoincFilter(int f)             { fHFCoincFilter = f; }
+  
+  void     SetRhoMap(rhoMap *rm)               { fRhoMap = rm; }
+  
   Int_t    GetRun()        const               { return fRun;  }
   Int_t    GetEvent()      const               { return fEvt;  }
   Int_t    GetLumi()       const               { return fLumi; }
@@ -51,8 +57,13 @@ class hiEventContainer : public TNamed {
 
   Int_t    GetColl()       const               { return fColl; }
   Int_t    GetHBHENoise()  const               { return fHBHENoise; }
-  Int_t    GetHFCoinc()    const               { return fphfCoinc ; }
-
+  Int_t    GetHBHENoiseLoose()  const          { return fHBHENoiseLoose; }
+  Int_t    GetPrimaryVertexFilter() const      { return fPrimaryVertexFilter; }
+  Int_t    GetClusterCompatibilityFilter() const { return fClusterCompatibilityFilter; }
+  Int_t    GetHFCoincFilter() const            { return fHFCoincFilter; }
+  
+  rhoMap  *GetRhoMap()     const               { return fRhoMap; }
+  
  protected:
   Int_t                        fRun;     //
   Int_t                        fEvt;     //
@@ -71,8 +82,12 @@ class hiEventContainer : public TNamed {
   Int_t                        fTrk45;   //
   Int_t                        fColl;    //
   Int_t                        fHBHENoise;//
-  Int_t                        fphfCoinc;//
- 
+  Int_t                        fHBHENoiseLoose;//
+  Int_t                        fPrimaryVertexFilter;//
+  Int_t                        fClusterCompatibilityFilter;//
+  Int_t                        fHFCoincFilter;//
+  rhoMap                      *fRhoMap;  ;//!
+  
  private:
   hiEventContainer(const hiEventContainer& obj); // copy constructor
   hiEventContainer& operator=(const hiEventContainer& other); // assignment

@@ -28,7 +28,8 @@ class rhoMap : public TNamed {
 
   void     SetValue(int index, double val);
   void     AddEtaRange(double etaMin, double etaMax, int index, double val);
-  
+  void     ClearMap() { fMapToIndex.clear(); fMapToVal.clear();}
+
  protected:
   icl::interval_map<double, int> fMapToIndex;
   std::map<int,double>           fMapToVal;

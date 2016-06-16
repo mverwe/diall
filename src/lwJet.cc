@@ -18,17 +18,23 @@ particleBase(),
   fSubJetEta(0),
   fSubJetPhi(0),
   fSubJetM(0),
+  fNDropped(-1),
   fRawPt(-1),
   fRawM(-1),
   fRefPt(-1),
   fRefEta(-999),
   fRefPhi(-999),
   fRefM(-1),
+  fRefPtG(-1),
+  fRefEtaG(-999),
+  fRefPhiG(-999),
+  fRefMG(-1),
   fRefDr(-1),
   fRefSubJetPt(0),
   fRefSubJetEta(0),
   fRefSubJetPhi(0),
   fRefSubJetM(0),
+  fRefNDropped(-1),
   fSube(-1),
   fChargedMax(-1.),
   fChargedSum(-1.),
@@ -68,17 +74,23 @@ lwJet::lwJet(Double_t pt, Double_t eta, Double_t phi, Double_t m, Int_t id, Int_
   fSubJetEta(0),
   fSubJetPhi(0),
   fSubJetM(0),
+  fNDropped(-1),
   fRawPt(-1),
   fRawM(-1),
   fRefPt(-1),
   fRefEta(-999),
   fRefPhi(-999),
   fRefM(-1),
+  fRefPtG(-1),
+  fRefEtaG(-999),
+  fRefPhiG(-999),
+  fRefMG(-1),
   fRefDr(-1),
   fRefSubJetPt(0),
   fRefSubJetEta(0),
   fRefSubJetPhi(0),
   fRefSubJetM(0),
+  fRefNDropped(-1),
   fSube(-1),
   fChargedMax(-1.),
   fChargedSum(-1.),
@@ -118,17 +130,23 @@ lwJet::lwJet(const lwJet &obj) :
   fSubJetEta(obj.fSubJetEta),
   fSubJetPhi(obj.fSubJetPhi),
   fSubJetM(obj.fSubJetM),
+  fNDropped(obj.fNDropped),
   fRawPt(obj.fRawPt),
   fRawM(obj.fRawM),
   fRefPt(obj.fRefPt),
   fRefEta(obj.fRefEta),
   fRefPhi(obj.fRefPhi),
   fRefM(obj.fRefM),
+  fRefPtG(obj.fRefPtG),
+  fRefEtaG(obj.fRefEtaG),
+  fRefPhiG(obj.fRefPhiG),
+  fRefMG(obj.fRefMG),
   fRefDr(obj.fRefDr),
   fRefSubJetPt(obj.fRefSubJetPt),
   fRefSubJetEta(obj.fRefSubJetEta),
   fRefSubJetPhi(obj.fRefSubJetPhi),
   fRefSubJetM(obj.fRefSubJetM),
+  fRefNDropped(obj.fRefNDropped),
   fSube(obj.fSube),
   fChargedMax(obj.fChargedMax),
   fChargedSum(obj.fChargedSum),
@@ -172,17 +190,23 @@ lwJet &lwJet::operator=(const lwJet &other)
     fSubJetEta = other.fSubJetEta;
     fSubJetPhi = other.fSubJetPhi;
     fSubJetM = other.fSubJetM;
+    fNDropped = other.fNDropped;
     fRawPt          = other.fRawPt;
     fRawM           = other.fRawM;
     fRefPt          = other.fRefPt;
     fRefEta         = other.fRefEta;
     fRefPhi         = other.fRefPhi;
     fRefM           = other.fRefM;
+    fRefPtG         = other.fRefPtG;
+    fRefEtaG        = other.fRefEtaG;
+    fRefPhiG        = other.fRefPhiG;
+    fRefMG          = other.fRefMG;
     fRefDr          = other.fRefDr;
     fRefSubJetPt = other.fRefSubJetPt;
     fRefSubJetEta = other.fRefSubJetEta;
     fRefSubJetPhi = other.fRefSubJetPhi;
     fRefSubJetM = other.fRefSubJetM;
+    fRefNDropped = other.fRefNDropped;
     fSube           = other.fSube;
     fChargedMax = other.fChargedMax;
     fChargedSum = other.fChargedSum;

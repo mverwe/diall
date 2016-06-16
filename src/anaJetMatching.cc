@@ -12,6 +12,7 @@ anaJetMatching::anaJetMatching(const char *name, const char *title)
   fJetsContTag(),
   fNcentBins(4),
   fMatchingType(0),
+  fMatchId(1),
   fh2PtJet1VsPtJet2(0),
   fh2PtJet2VsRelPt(0),
   fh2PtJet1VsDeltaR(0)
@@ -80,11 +81,13 @@ void anaJetMatching::MatchJetsGeo() {
 
   for (int i = 0; i < nJets1; i++) {
     lwJet *jet1 = fJetsContBase->GetJet(i);
-    jet1->SetMatchId1(-1);
+    SetMatchIdForJet(jet1,-1);
+//    jet1->SetMatchId1(-1);
   }
   for (int i = 0; i < nJets2; i++) {
     lwJet *jet2 = fJetsContTag->GetJet(i);
-    jet2->SetMatchId1(-1);
+    SetMatchIdForJet(jet2,-1);
+//    jet2->SetMatchId1(-1);
   }
 
   TArrayI faMatchIndex1;
@@ -165,8 +168,10 @@ void anaJetMatching::MatchJetsGeo() {
 
         // we have a unique correlation
         if(iFlag[i*nJets2+j]==3) {
-          jet1->SetMatchId1(j);
-          jet2->SetMatchId1(i);
+          SetMatchIdForJet(jet1,j);
+	  SetMatchIdForJet(jet2,i);
+          //jet1->SetMatchId1(j);
+          //jet2->SetMatchId1(i);
           //Printf("%f matched to %f",jet1->Pt(),jet2->Pt());
           //Fill histograms
           if(fCentBin>-1 && fCentBin<fNcentBins) {
@@ -192,9 +197,11 @@ void anaJetMatching::MatchJetsGeo() {
         lwJet *jet2 = fJetsContTag->GetJet(j);
         if(!jet2) continue;
         if(fabs(jet2->Pt())<1e-6) continue; //remove ghosts
-        
-        jet1->SetMatchId1(j);
-        jet2->SetMatchId1(i);
+       
+        SetMatchIdForJet(jet1,j);
+	SetMatchIdForJet(jet2,i);	 
+        //jet1->SetMatchId1(j);
+        //jet2->SetMatchId1(i);
         
         //Fill histograms
         if(fCentBin>-1 && fCentBin<fNcentBins) {

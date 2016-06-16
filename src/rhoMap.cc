@@ -30,14 +30,14 @@ rhoMap::rhoMap(const char *name) :
 double rhoMap::GetValue(double e) const {
 
   int index = GetIndex(e);
-  if(index>0 && index <= (int)fMapToVal.size()) return fMapToVal.at(index);
+  if(index>-1 && index <= (int)fMapToVal.size()) return fMapToVal.at(index);
   else                                          return -1.;
 }
 
 //__________________________________________________________
 double rhoMap::GetValue(int index) const {
 //get value from index
-  if(index>0 && index <= (int)fMapToVal.size()) return fMapToVal.at(index);
+  if(index>-1 && index <= (int)fMapToVal.size()) return fMapToVal.at(index);
   else                                          return -1.;
 }
 

@@ -99,7 +99,9 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("jtSubJetPhi", &fForestJets.jtSubJetPhi, &fForestJets.b_jtSubJetPhi);
     if (fChain->GetBranch("jtSubJetM"))
       fChain->SetBranchAddress("jtSubJetM", &fForestJets.jtSubJetM, &fForestJets.b_jtSubJetM);
-    
+    if (fChain->GetBranch("jtdroppedBranches"))
+      fChain->SetBranchAddress("jtdroppedBranches",&fForestJets.jtdroppedBranches,&fForestJets.b_jtdroppedBranches);
+        
     if (fChain->GetBranch("ref*")) fChain->SetBranchStatus("ref*",1);
     if (fChain->GetBranch("refpt")){
       fChain->SetBranchAddress("refpt", &fForestJets.refpt, &fForestJets.b_refpt);}
@@ -188,7 +190,8 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("refSubJetPhi", &fForestJets.refSubJetPhi, &fForestJets.b_refSubJetPhi);
     if (fChain->GetBranch("refSubJetM"))
       fChain->SetBranchAddress("refSubJetM", &fForestJets.refSubJetM, &fForestJets.b_refSubJetM);
-    
+    if (fChain->GetBranch("refdroppedBranches"))
+      fChain->SetBranchAddress("refdroppedBranches",&fForestJets.refdroppedBranches,&fForestJets.b_refdroppedBranches);
     
     if (fChain->GetBranch("ngen")) fChain->SetBranchStatus("ngen",1);
     if (fChain->GetBranch("gen*")) fChain->SetBranchStatus("gen*",1);
@@ -297,6 +300,7 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     if(fForestJets.jtSubJetEta) jet->SetSubJetEta(fForestJets.jtSubJetEta->at(i));
     if(fForestJets.jtSubJetPhi) jet->SetSubJetPhi(fForestJets.jtSubJetPhi->at(i));
     if(fForestJets.jtSubJetM)   jet->SetSubJetM(fForestJets.jtSubJetM->at(i));
+    if(fForestJets.jtdroppedBranches) jet->SetNDroppedBranches(fForestJets.jtdroppedBranches[i]);
     
     jet->SetRefToParton(fForestJets.refparton_flavor[i]);
     jet->SetRefToPartonForB(fForestJets.refparton_flavorForB[i]);
@@ -304,6 +308,12 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     jet->SetRefEta(fForestJets.refeta[i]);
     jet->SetRefPhi(fForestJets.refphi[i]);
     jet->SetRefM(fForestJets.refm[i]);
+
+    jet->SetRefPtG(fForestJets.refptG[i]);
+    jet->SetRefEtaG(fForestJets.refetaG[i]);
+    jet->SetRefPhiG(fForestJets.refphiG[i]);
+    jet->SetRefMG(fForestJets.refmG[i]);
+    
     jet->SetRefTau(1,fForestJets.reftau1[i]);
     jet->SetRefTau(2,fForestJets.reftau2[i]);
     jet->SetRefTau(3,fForestJets.reftau3[i]);
@@ -316,6 +326,8 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
         if(fForestJets.refSubJetPhi) jet->SetRefSubJetPhi(fForestJets.refSubJetPhi->at(i));
         if(fForestJets.refSubJetM)   jet->SetRefSubJetM(fForestJets.refSubJetM->at(i));
       }
+      if(fForestJets.refdroppedBranches) jet->SetRefNDroppedBranches(fForestJets.refdroppedBranches[i]);
+      
     }
 
     // if(fForestJets.refSubJetPt && fForestJets.refptG[i]>0.) {

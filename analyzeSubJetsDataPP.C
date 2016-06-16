@@ -49,7 +49,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
 
   double minptjet = 30.;
   bool doDijet = false;
-  if(!doDijet) minptjet = 40.;
+  if(!doDijet) minptjet = 80.;
 
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
@@ -167,6 +167,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjets->AddLeadingJetPtBin(260.,300.);
   anasubjets->AddLeadingJetPtBin(300.,500.);
   anasubjets->SetPtMinSubleading(30.);
+  anasubjets->SetStoreTree(true);
   handler->Add(anasubjets);
 
   anaSubJet *anasubjetsMassCut = new anaSubJet("anasubjetsMassCut","anasubjetsMassCut");
@@ -187,7 +188,7 @@ void analyzeSubJets(std::vector<std::string> urls, const char *outname = "eventO
   anasubjetsMassCut->AddLeadingJetPtBin(300.,500.);
   anasubjetsMassCut->SetPtMinSubleading(30.);
   anasubjetsMassCut->SetMinMassLeading(10.);
-  handler->Add(anasubjetsMassCut);
+  //handler->Add(anasubjetsMassCut);
  
   //---------------------------------------------------------------
   //Event loop

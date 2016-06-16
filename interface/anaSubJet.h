@@ -20,7 +20,8 @@ public:
 
    void SetNCentBins(Int_t n)             { fNcentBins    = n;  }
    void SetJetsName(TString name)         { fJetsName = name ; }
-   void SetJetsRefName(TString name)         { fJetsRefName = name ; } 
+   void SetJetsRefName(TString name)         { fJetsRefName = name ; }
+   void SetJets000Name(TString name)         { fJets000Name = name ; } 
    void SetJetEtaRange(float min, float max) { fJetEtaMin = min; fJetEtaMax = max; }
    
    void SetMinRefPt(float min)            { fMinRefPt = min ; }
@@ -44,6 +45,8 @@ public:
    lwJetContainer  *fJetsCont;    //!SD jet container
    TString          fJetsRefName;    //name of ref jet container (ungroomed)
    lwJetContainer  *fJetsRefCont;    //!ref jet container (ungroomed)
+   TString          fJets000Name;    //name of ref jet container (zcut=0)
+   lwJetContainer  *fJets000Cont;    //!ref jet container (zcut=0)
    float            fJetEtaMin;   //min jet eta
    float            fJetEtaMax;   //max jet eta
    float            fMinRefPt;    //min pt of corresponding true jet: reject fakes
@@ -126,12 +129,15 @@ public:
    float              fMinPtJetTree;
    
    struct subjetTreeVars {
+     int                fRun;
      float              fCent;
      std::vector<float> fPt;
+     std::vector<float> fPtRaw;
      std::vector<float> fEta;
      std::vector<float> fPhi;
      std::vector<float> fM;
      std::vector<float> fPtG;
+     std::vector<float> fPtRawG;
      std::vector<float> fEtaG;
      std::vector<float> fPhiG;
      std::vector<float> fMG;
@@ -141,22 +147,76 @@ public:
      std::vector<float> fEtaSJ2;
      std::vector<float> fPhiSJ1;
      std::vector<float> fPhiSJ2;
+     std::vector<float> fMSJ1;
+     std::vector<float> fMSJ2;
      std::vector<float> fZg;
      std::vector<float> fThetag;
+     std::vector<int>   fDropped;
+     std::vector<float> fCHF;
+     std::vector<float> fNHF;
+     std::vector<float> fCEF;
+     std::vector<float> fNEF;
+     std::vector<float> fMUF;
+     std::vector<float> fCHM;
+     std::vector<float> fNHM;
+     std::vector<float> fCEM;
+     std::vector<float> fNEM;
+     std::vector<float> fMUM;
      std::vector<float> fPtRef;
      std::vector<float> fEtaRef;
      std::vector<float> fPhiRef;
+     std::vector<float> fPtGRef;
+     std::vector<float> fEtaGRef;
+     std::vector<float> fPhiGRef;
      std::vector<float> fPtSJ1Ref;
      std::vector<float> fPtSJ2Ref;
      std::vector<float> fEtaSJ1Ref;
      std::vector<float> fEtaSJ2Ref;
      std::vector<float> fPhiSJ1Ref;
      std::vector<float> fPhiSJ2Ref;
+     std::vector<float> fMSJ1Ref;
+     std::vector<float> fMSJ2Ref;
      std::vector<float> fZgRef;
      std::vector<float> fThetagRef;
+     std::vector<int>   fDroppedRef;
      std::vector<bool>  fSwap;
-     std::vector<float> fDeltaRSJ1;
-     std::vector<float> fDeltaRSJ2;
+     std::vector<float> fDeltaRSJ11;
+     std::vector<float> fDeltaRSJ12;
+     std::vector<float> fDeltaRSJ21;
+     std::vector<float> fDeltaRSJ22;
+
+     //zcut=0 info
+     std::vector<float> fZCut0PtG;
+     std::vector<float> fZCut0PtRawG;
+     std::vector<float> fZCut0EtaG;
+     std::vector<float> fZCut0PhiG;
+     std::vector<float> fZCut0MG;
+     std::vector<float> fZCut0PtSJ1;
+     std::vector<float> fZCut0PtSJ2;
+     std::vector<float> fZCut0EtaSJ1;
+     std::vector<float> fZCut0EtaSJ2;
+     std::vector<float> fZCut0PhiSJ1;
+     std::vector<float> fZCut0PhiSJ2;
+     std::vector<float> fZCut0MSJ1;
+     std::vector<float> fZCut0MSJ2;
+     std::vector<float> fZCut0Zg;
+     std::vector<float> fZCut0Thetag;
+
+     std::vector<float> fZCut0PtGRef;
+     std::vector<float> fZCut0PtRawGRef;
+     std::vector<float> fZCut0EtaGRef;
+     std::vector<float> fZCut0PhiGRef;
+     std::vector<float> fZCut0MGRef;
+     std::vector<float> fZCut0PtSJ1Ref;
+     std::vector<float> fZCut0PtSJ2Ref;
+     std::vector<float> fZCut0EtaSJ1Ref;
+     std::vector<float> fZCut0EtaSJ2Ref;
+     std::vector<float> fZCut0PhiSJ1Ref;
+     std::vector<float> fZCut0PhiSJ2Ref;
+     std::vector<float> fZCut0MSJ1Ref;
+     std::vector<float> fZCut0MSJ2Ref;
+     std::vector<float> fZCut0ZgRef;
+     std::vector<float> fZCut0ThetagRef;
    };
 
    subjetTreeVars fSubjetTreeVars;

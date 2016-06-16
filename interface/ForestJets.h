@@ -41,6 +41,7 @@ public :
    std::vector<std::vector<float> > *jtSubJetEta = 0;
    std::vector<std::vector<float> > *jtSubJetPhi= 0;
    std::vector<std::vector<float> > *jtSubJetM = 0;
+   Int_t           jtdroppedBranches[maxJets]; //[nref]
    Float_t         discr_fr01[maxJets];   //[nref]
    Float_t         trackMax[maxJets];   //[nref]
    Float_t         trackSum[maxJets];   //[nref]
@@ -100,7 +101,8 @@ public :
    std::vector<std::vector<float> > *refSubJetEta = 0;
    std::vector<std::vector<float> > *refSubJetPhi= 0;
    std::vector<std::vector<float> > *refSubJetM = 0;
-
+   Int_t           refdroppedBranches[maxJets]; //[nref]
+   
    Float_t         genChargedSum[maxJets];   //[nref]
    Float_t         genHardSum[maxJets];   //[nref]
 
@@ -166,6 +168,7 @@ public :
    TBranch        *b_jtSubJetEta;   //!
    TBranch        *b_jtSubJetPhi;   //!
    TBranch        *b_jtSubJetM;   //!
+   TBranch        *b_jtdroppedBranches; //!
    TBranch        *b_discr_fr01;   //!
    TBranch        *b_trackMax;   //!
    TBranch        *b_trackSum;   //!
@@ -225,6 +228,7 @@ public :
    TBranch        *b_refSubJetEta;   //!
    TBranch        *b_refSubJetPhi;   //!
    TBranch        *b_refSubJetM;   //!
+   TBranch        *b_refdroppedBranches; //!
    
    TBranch        *b_genChargedSum;   //!
    TBranch        *b_genHardSum;   //!
