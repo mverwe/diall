@@ -114,7 +114,7 @@ void analyzeRho(std::vector<std::string> urls, const char *outname = "eventObjec
   triggerProducer *p_trg = new triggerProducer("trigProd");
   p_trg->SetInput(chain);
   p_trg->SetTriggerMapName("triggerMap");
-  p_trg->AddTrigger("HLT_HIL1MinimumBiasHF2AND_v1");
+  p_trg->AddTrigger("HLT_HIL1MinimumBiasHF1AND_v1");
   p_trg->SetEventObjects(fEventObjects);
 
   pfParticleProducerVector *p_pf = new pfParticleProducerVector("pfPartProd");
@@ -157,6 +157,7 @@ void analyzeRho(std::vector<std::string> urls, const char *outname = "eventObjec
   lwjkt->SetRadius(0.4);
   lwjkt->SetGhostArea(0.005);
   lwjkt->SetPtMinConst(0.);
+  //lwjkt->SetIdConst(4);//charged=1; EM=4
   lwjkt->SetParticlesName("pfParticles");
   lwjkt->SetJetContName("JetsKTR040");
   lwjkt->SetDoConstituentSubtraction(kFALSE);
@@ -167,7 +168,7 @@ void analyzeRho(std::vector<std::string> urls, const char *outname = "eventObjec
   rhoProd->SetJetsName("JetsKTR040");
   rhoProd->SetHiEvtName("hiEventContainer");
   rhoProd->SetTriggerMapName("triggerMap");
-  rhoProd->AddTriggerSel("HLT_HIL1MinimumBiasHF2AND_v1");
+  rhoProd->AddTriggerSel("HLT_HIL1MinimumBiasHF1AND_v1");
   rhoProd->DoHBHENoiseFilter(true);
   rhoProd->DoHFCoincFilter(true);
   rhoProd->SetNExcl(2);
@@ -187,7 +188,7 @@ void analyzeRho(std::vector<std::string> urls, const char *outname = "eventObjec
   rhoProdV2->SetJetsName("JetsKTR040");
   rhoProdV2->SetHiEvtName("hiEventContainer");
   rhoProdV2->SetTriggerMapName("triggerMap");
-  rhoProdV2->AddTriggerSel("HLT_HIL1MinimumBiasHF2AND_v1");
+  rhoProdV2->AddTriggerSel("HLT_HIL1MinimumBiasHF1AND_v1");
   rhoProdV2->DoHBHENoiseFilter(true);
   rhoProdV2->DoHFCoincFilter(true);
   rhoProdV2->SetNExcl(2);
@@ -205,58 +206,93 @@ void analyzeRho(std::vector<std::string> urls, const char *outname = "eventObjec
   handler->Add(rhoProdV2);
 
   //with min pt cut on constituents
-   LWJetProducer *lwjktptmin = new LWJetProducer("LWJetProducerKTR040PtMin050","LWJetProducerKTR040PtMin050");
+  LWJetProducer *lwjktptmin = new LWJetProducer("LWJetProducerKTR040PtMin100","LWJetProducerKTR040PtMin100");
   lwjktptmin->ConnectEventObject(fEventObjects);
   lwjktptmin->SetJetType(LWJetProducer::kKT);
   lwjktptmin->SetRadius(0.4);
   lwjktptmin->SetGhostArea(0.005);
-  lwjktptmin->SetPtMinConst(0.5);
+  lwjktptmin->SetPtMinConst(1.);
+  //lwjktptmin->SetIdConst(4);//charged
   lwjktptmin->SetParticlesName("pfParticles");
-  lwjktptmin->SetJetContName("JetsKTR040PtMin050");
+  lwjktptmin->SetJetContName("JetsKTR040PtMin100");
   lwjktptmin->SetDoConstituentSubtraction(kFALSE);
   handler->Add(lwjktptmin);
 
-  anaRhoProducer *rhoProdPtMin050 = new anaRhoProducer("anaRhoProducerKTR040PtMin050","anaRhoProducerKTR040PtMin050");
-  rhoProdPtMin050->ConnectEventObject(fEventObjects);
-  rhoProdPtMin050->SetJetsName("JetsKTR040PtMin050");
-  rhoProdPtMin050->SetHiEvtName("hiEventContainer");
-  rhoProdPtMin050->SetTriggerMapName("triggerMap");
-  rhoProdPtMin050->AddTriggerSel("HLT_HIL1MinimumBiasHF2AND_v1");
-  rhoProdPtMin050->DoHBHENoiseFilter(true);
-  rhoProdPtMin050->DoHFCoincFilter(true);
-  rhoProdPtMin050->SetNExcl(2);
-  rhoProdPtMin050->SetEtaRangeAll(-5.+0.2,5.-0.2);
-  rhoProdPtMin050->SetEtaLimit(1,-5.);//bin,eta
-  rhoProdPtMin050->SetEtaLimit(2,-3.);
-  rhoProdPtMin050->SetEtaLimit(3,-2.1);
-  rhoProdPtMin050->SetEtaLimit(4,-1.3);
-  rhoProdPtMin050->SetEtaLimit(5, 1.3);
-  rhoProdPtMin050->SetEtaLimit(6, 2.1);
-  rhoProdPtMin050->SetEtaLimit(7, 3.);
-  rhoProdPtMin050->SetEtaLimit(8, 5.);
-  handler->Add(rhoProdPtMin050);
+  anaRhoProducer *rhoProdPtMin100 = new anaRhoProducer("anaRhoProducerKTR040PtMin100","anaRhoProducerKTR040PtMin100");
+  rhoProdPtMin100->ConnectEventObject(fEventObjects);
+  rhoProdPtMin100->SetJetsName("JetsKTR040PtMin100");
+  rhoProdPtMin100->SetHiEvtName("hiEventContainer");
+  rhoProdPtMin100->SetTriggerMapName("triggerMap");
+  rhoProdPtMin100->AddTriggerSel("HLT_HIL1MinimumBiasHF1AND_v1");
+  rhoProdPtMin100->DoHBHENoiseFilter(true);
+  rhoProdPtMin100->DoHFCoincFilter(true);
+  rhoProdPtMin100->SetNExcl(2);
+  rhoProdPtMin100->SetEtaRangeAll(-5.+0.2,5.-0.2);
+  rhoProdPtMin100->SetEtaLimit(1,-5.);//bin,eta
+  rhoProdPtMin100->SetEtaLimit(2,-3.);
+  rhoProdPtMin100->SetEtaLimit(3,-2.1);
+  rhoProdPtMin100->SetEtaLimit(4,-1.3);
+  rhoProdPtMin100->SetEtaLimit(5, 1.3);
+  rhoProdPtMin100->SetEtaLimit(6, 2.1);
+  rhoProdPtMin100->SetEtaLimit(7, 3.);
+  rhoProdPtMin100->SetEtaLimit(8, 5.);
+  handler->Add(rhoProdPtMin100);
 
-  anaRhoProducer *rhoProdV2PtMin050 = new anaRhoProducer("anaRhoProducerKTR040V2PtMin050","anaRhoProducerKTR040V2PtMin050");
-  rhoProdV2PtMin050->ConnectEventObject(fEventObjects);
-  rhoProdV2PtMin050->SetJetsName("JetsKTR040PtMin050");
-  rhoProdV2PtMin050->SetHiEvtName("hiEventContainer");
-  rhoProdV2PtMin050->SetTriggerMapName("triggerMap");
-  rhoProdV2PtMin050->AddTriggerSel("HLT_HIL1MinimumBiasHF2AND_v1");
-  rhoProdV2PtMin050->DoHBHENoiseFilter(true);
-  rhoProdV2PtMin050->DoHFCoincFilter(true);
-  rhoProdV2PtMin050->SetNExcl(2);
-  rhoProdV2PtMin050->SetEtaRangeAll(-5.+0.2,5.-0.2);
-  rhoProdV2PtMin050->SetEtaLimit(1,-5.);//bin,eta
-  rhoProdV2PtMin050->SetEtaLimit(2,-3.);
-  rhoProdV2PtMin050->SetEtaLimit(3,-2.);
-  rhoProdV2PtMin050->SetEtaLimit(4,-1.5);
-  rhoProdV2PtMin050->SetEtaLimit(5,-1.);
-  rhoProdV2PtMin050->SetEtaLimit(6, 1.);
-  rhoProdV2PtMin050->SetEtaLimit(7, 1.5);
-  rhoProdV2PtMin050->SetEtaLimit(8, 2.);
-  rhoProdV2PtMin050->SetEtaLimit(9, 3.);
-  rhoProdV2PtMin050->SetEtaLimit(10, 5.);
-  handler->Add(rhoProdV2PtMin050);
+  anaRhoProducer *rhoProdV2PtMin100 = new anaRhoProducer("anaRhoProducerKTR040V2PtMin100","anaRhoProducerKTR040V2PtMin100");
+  rhoProdV2PtMin100->ConnectEventObject(fEventObjects);
+  rhoProdV2PtMin100->SetJetsName("JetsKTR040PtMin100");
+  rhoProdV2PtMin100->SetHiEvtName("hiEventContainer");
+  rhoProdV2PtMin100->SetTriggerMapName("triggerMap");
+  rhoProdV2PtMin100->AddTriggerSel("HLT_HIL1MinimumBiasHF1AND_v1");
+  rhoProdV2PtMin100->DoHBHENoiseFilter(true);
+  rhoProdV2PtMin100->DoHFCoincFilter(true);
+  rhoProdV2PtMin100->SetNExcl(2);
+  rhoProdV2PtMin100->SetEtaRangeAll(-5.+0.2,5.-0.2);
+  rhoProdV2PtMin100->SetEtaLimit(1,-5.);//bin,eta
+  rhoProdV2PtMin100->SetEtaLimit(2,-3.);
+  rhoProdV2PtMin100->SetEtaLimit(3,-2.);
+  rhoProdV2PtMin100->SetEtaLimit(4,-1.5);
+  rhoProdV2PtMin100->SetEtaLimit(5,-1.);
+  rhoProdV2PtMin100->SetEtaLimit(6, 1.);
+  rhoProdV2PtMin100->SetEtaLimit(7, 1.5);
+  rhoProdV2PtMin100->SetEtaLimit(8, 2.);
+  rhoProdV2PtMin100->SetEtaLimit(9, 3.);
+  rhoProdV2PtMin100->SetEtaLimit(10, 5.);
+  handler->Add(rhoProdV2PtMin100);
+
+  LWJetProducer *lwjktR020 = new LWJetProducer("LWJetProducerKTR020","LWJetProducerKTR020");
+  lwjktR020->ConnectEventObject(fEventObjects);
+  lwjktR020->SetJetType(LWJetProducer::kKT);
+  lwjktR020->SetRadius(0.4);
+  lwjktR020->SetGhostArea(0.005);
+  lwjktR020->SetPtMinConst(0.);
+  //lwjktR020->SetIdConst(1);//charged
+  lwjktR020->SetParticlesName("pfParticles");
+  lwjktR020->SetJetContName("JetsKTR020");
+  lwjktR020->SetDoConstituentSubtraction(kFALSE);
+  handler->Add(lwjktR020);
+
+  anaRhoProducer *rhoProdR020 = new anaRhoProducer("anaRhoProducerKTR020","anaRhoProducerKTR020");
+  rhoProdR020->ConnectEventObject(fEventObjects);
+  rhoProdR020->SetRhoName("rhoMapR020");
+  rhoProdR020->SetRhoMName("rhoMMapR020");
+  rhoProdR020->SetJetsName("JetsKTR020");
+  rhoProdR020->SetHiEvtName("hiEventContainer");
+  rhoProdR020->SetTriggerMapName("triggerMap");
+  rhoProdR020->AddTriggerSel("HLT_HIL1MinimumBiasHF1AND_v1");
+  rhoProdR020->DoHBHENoiseFilter(true);
+  rhoProdR020->DoHFCoincFilter(true);
+  rhoProdR020->SetNExcl(2);
+  rhoProdR020->SetEtaRangeAll(-5.+0.2,5.-0.2);
+  rhoProdR020->SetEtaLimit(1,-5.);//bin,eta
+  rhoProdR020->SetEtaLimit(2,-3.);
+  rhoProdR020->SetEtaLimit(3,-2.1);
+  rhoProdR020->SetEtaLimit(4,-1.3);
+  rhoProdR020->SetEtaLimit(5, 1.3);
+  rhoProdR020->SetEtaLimit(6, 2.1);
+  rhoProdR020->SetEtaLimit(7, 3.);
+  rhoProdR020->SetEtaLimit(8, 5.);
+  handler->Add(rhoProdR020);
 
   //---------------------------------------------------------------
   //Event loop
