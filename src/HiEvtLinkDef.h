@@ -56,6 +56,7 @@
 #include "UserCode/diall/interface/anaZJetMCResponse.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
 #include "UserCode/diall/interface/anaZgHistos.h"
+#include "UserCode/diall/interface/anaZgHistosCrossChecks.h"
 
 #ifdef __CINT__
 
@@ -124,6 +125,7 @@
 #pragma link C++ class anaZJetMCResponse+;
 #pragma link C++ class anaZToMuMu+;
 #pragma link C++ class anaZgHistos+;
+#pragma link C++ class anaZgHistosCrossChecks+;
 
 #endif
 

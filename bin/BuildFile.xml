@@ -33,5 +33,6 @@
   <bin name="runZgHistosDataPbPb"     file="runZgHistosDataPbPb.cc"></bin>
   <bin name="runZgHistosMCPP"         file="runZgHistosMCPP.cc"></bin>
   <bin name="runZgHistosMCPbPb"       file="runZgHistosMCPbPb.cc"></bin>
+  <bin name="runZgHistosCrossChecksDataPbPb" file="runZgHistosCrossChecksDataPbPb.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>
