@@ -21,6 +21,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fMaxDeltaR(999.),
   fMinRefPt(-10000.),
   fUseRhoMCWeight(false),
+  fRhoMax(10000.),
   fDoSubjetSmearing(false),
   fSubjetSmearing(),
   fDoSubjetSmearingResolution(false),
@@ -41,6 +42,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac2(),
   fh2PtSubjetPtInvMass21(),
   fh2PtZg(),
+  fh2PtZgAll(),
   fh2PtZgTrue(),
   fh2PtZgNoRef(),
   fh3PtRecPtTrueZg(),
@@ -55,6 +57,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
   fh3PtRecPtTrueThetag(),
+  fh3PtTrueZgScaleZg(),
   fhnZgResponse()
 {
   
@@ -67,6 +70,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac1   = new TH2F*[fNcentBins];
   fh2PtSubjetPtFrac2   = new TH2F*[fNcentBins];
   fh2PtZg              = new TH2F*[fNcentBins];
+  fh2PtZgAll           = new TH2F*[fNcentBins];
   fh2PtZgTrue          = new TH2F*[fNcentBins];
   fh2PtZgNoRef         = new TH2F*[fNcentBins];
   fh3PtRecPtTrueZg     = new TH3F*[fNcentBins];
@@ -82,6 +86,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtThetagNoRef     = new TH2F*[fNcentBins];
   fh3PtRecPtTrueThetag = new TH3F*[fNcentBins];
   fh2PtSubjetPtInvMass21 = new TH2F*[fNcentBins];
+  fh3PtTrueZgScaleZg   = new TH3F*[fNcentBins];
 
   fhnZgResponse        = new THnSparse*[fNcentBins];
 
@@ -96,6 +101,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh2PtSubjetPtFrac2[i]   = 0;
     fh2PtSubjetPtInvMass21[i]   = 0;
     fh2PtZg[i]                  = 0;
+    fh2PtZgAll[i]               = 0;
     fh2PtZgTrue[i]              = 0;
     fh2PtZgNoRef[i]             = 0;
     fh3PtRecPtTrueZg[i]         = 0;
@@ -110,6 +116,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
     fh3PtRecPtTrueThetag[i]     = 0;
+    fh3PtTrueZgScaleZg[i]       = 0;
     fhnZgResponse[i]            = 0;
   }
 }
@@ -120,7 +127,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
   //printf("anaZgHistos executing\n");
   anaBaseTask::Exec();
   if(!SelectEvent()) return;
-  
+  //Printf("event selected");
   if(!fInitOutput) CreateOutputObjects();
 
   //Groomed jet. default zcut
@@ -172,6 +179,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       rhoCentral = rm->GetValue(icentral);
     }
   }
+  if(rhoCentral>fRhoMax) return;
 
   rhoMCWeights rhomcW;
   double weightRho = 1.;
@@ -220,15 +228,26 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       fh2PtGenNSubjets[fCentBin]->Fill(jetNotGroomed->GetRefPt(),nsubjets,weight);
     }
 
-    if(nsubjets<2) continue;
+    double ptrecsj1 = 1.;
+    double ptrecsj2 = 0.;
 
-    double ptrecsj1 = sjpt.at(0);
-    double ptrecsj2 = sjpt.at(1);
-    
-    double zg = std::min(sjpt.at(0),sjpt.at(1))/(sjpt.at(0)+sjpt.at(1));
+    double zg = 0.;
     double thetag = -1.;
     double deltaR12 = 999.;
+    //Printf("keeping all jets now nsubjets: %d",nsubjets);
+    if(nsubjets>1) {
 
+    ptrecsj1 = sjpt.at(0);
+    ptrecsj2 = sjpt.at(1);
+    
+    zg = std::min(sjpt.at(0),sjpt.at(1))/(sjpt.at(0)+sjpt.at(1));
+    }
+    //Printf("zg: %f",zg);
+    //Fill zg histogram with all reconstructed jets including those with zg<zcut
+    if(fCentBin>-1 && fCentBin<fNcentBins) fh2PtZgAll[fCentBin]->Fill(pt,zg,weight);
+
+    if(nsubjets<2) continue;
+    //Printf("passed nsubjets cut");
     //gen-level jet and subjets
     //double refpt = jetNotGroomed->GetRefPt();
     std::vector<float> refsjpt   = jet->GetRefSubJetPt();
@@ -322,26 +341,41 @@ void anaZgHistos::Exec(Option_t * /*option*/)
         fh2PtThetagTrue[fCentBin]->Fill(pt,thetag,weight);
         fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg,weight);
         fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag,weight);
-        
-        double dptrel = (pt - jetNotGroomed->GetRefPt())/jetNotGroomed->GetRefPt();
-        double var[6] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt(),dptrel,dzgrel};
-        fhnZgResponse[fCentBin]->Fill(var,weight);
-        fh3PtTrueDeltaPtDeltaZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),pt-jetNotGroomed->GetRefPt(),zg-refzg,weight);
 
-        for(uint sj = 0; sj<refsjpt.size(); ++sj) {
-          if(sj>1) continue;
-          if(sj>=sjpt.size()) continue;
-            double dptrel = (sjpt.at(sj)-refsjpt.at(sj))/refsjpt.at(sj);
-            fh3PtTruePtSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-            fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
-            if(sj==0) {
-              fh3PtTruePtLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-              fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+        if(sjphi.size()>1 && refsjphi.size()>1) {
+          if(sjphi[0]>-10. && refsjphi[0]>-10. && sjphi[1]>-10. && refsjphi[1]>-10) {
+          
+            double dr11 = DeltaR(sjphi.at(0),refsjphi.at(0),sjeta.at(0),refsjeta.at(0));
+            double dr12 = DeltaR(sjphi.at(0),refsjphi.at(1),sjeta.at(0),refsjeta.at(1));
+
+            double dr21 = DeltaR(sjphi.at(1),refsjphi.at(0),sjeta.at(1),refsjeta.at(0));
+            double dr22 = DeltaR(sjphi.at(1),refsjphi.at(1),sjeta.at(1),refsjeta.at(1));
+
+            if(dr12>dr11 && dr21>dr22) {
+        
+              double dptrel = (pt - jetNotGroomed->GetRefPt())/jetNotGroomed->GetRefPt();
+              double var[6] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt(),dptrel,dzgrel};
+              fhnZgResponse[fCentBin]->Fill(var,weight);
+              fh3PtTrueDeltaPtDeltaZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),pt-jetNotGroomed->GetRefPt(),zg-refzg,weight);
+              if(refzg>0.) fh3PtTrueZgScaleZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refzg,zg/refzg);
+        
+              for(uint sj = 0; sj<refsjpt.size(); ++sj) {
+                if(sj>1) continue;
+                if(sj>=sjpt.size()) continue;
+                double dptrel = (sjpt.at(sj)-refsjpt.at(sj))/refsjpt.at(sj);
+                fh3PtTruePtSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
+                fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                if(sj==0) {
+                  fh3PtTruePtLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
+                  fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                }
+                else if(sj==1) {
+                  fh3PtTruePtSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
+                  fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                }
+              }//subjet loop
             }
-            else if(sj==1) {
-              fh3PtTruePtSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-              fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
-            }
+          }
         }
       }//true jet matched
     }//centbins
@@ -448,6 +482,11 @@ void anaZgHistos::CreateOutputObjects() {
     fh2PtZg[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
     fOutput->Add(fh2PtZg[i]);
 
+    histName = Form("fh2PtZgAll_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh2PtZgAll[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
+    fOutput->Add(fh2PtZgAll[i]);
+
     histName = Form("fh2PtZgTrue_%d",i);
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtZgTrue[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
@@ -523,6 +562,11 @@ void anaZgHistos::CreateOutputObjects() {
     histTitle = Form("%s;p_{T,jet,true};p_{T,SJ,true};#Delta p_{T}/p_{T,SJ,true};",histName.Data());
     fh3PtTruePtRecoSLSJScalePtSLSJ[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,50,0,200,200,0.,4.);
     fOutput->Add(fh3PtTruePtRecoSLSJScalePtSLSJ[i]);
+
+    histName = Form("fh3PtTrueZgScaleZg_%d",i);
+    histTitle = Form("%s;p_{T,jet,true};z_{g,true};z_{g,reco}/z_{g,true};",histName.Data());
+    fh3PtTrueZgScaleZg[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5,200,0.,4.);
+    fOutput->Add(fh3PtTrueZgScaleZg[i]);
   }
 
 }

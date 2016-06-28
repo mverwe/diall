@@ -74,8 +74,14 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
 
+  TChain *skimTree = new TChain("skimanalysis/HltTree");
+  for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
+  chain->AddFriend(skimTree);
+  Printf("skimTree done");
+
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
+  chain->AddFriend(hltTree);
   Printf("hltTree done");
   
   TChain *jetTree = new TChain(Form("%s/t",jetTreeName.Data()));
@@ -99,7 +105,7 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   p_evt->SetEventObjects(fEventObjects);
 
   triggerProducer *p_trg = new triggerProducer("trigProd");
-  p_trg->SetInput(hltTree);
+  p_trg->SetInput(chain);//hltTree);
   p_trg->SetTriggerMapName("triggerMap");
   p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   p_trg->SetEventObjects(fEventObjects);
@@ -128,11 +134,17 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anaDijetAj *anadijetAj = new anaDijetAj("anaDijetAj","anaDijetAj");
   anadijetAj->ConnectEventObject(fEventObjects);
   anadijetAj->SetHiEvtName("hiEventContainer");
+  anadijetAj->DoCollisionEventSel(true);
+  anadijetAj->DoHBHENoiseFilter(true);
+  anadijetAj->DoHBHENoiseFilterLoose(true);
+  anadijetAj->DoPrimaryVertexFilter(true);
+  anadijetAj->DoClusterCompatibilityFilter(true);
+  anadijetAj->DoHFCoincFilter(true);
   anadijetAj->SetTriggerMapName("triggerMap");
   anadijetAj->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anadijetAj->SetJetsName(jetName);
   anadijetAj->SetNCentBins(5);
-  anadijetAj->SetJetEtaRange(-2.,2.);
+  anadijetAj->SetJetEtaRange(-1.3,1.3);
   anadijetAj->SetDoDijets(true);
   anadijetAj->AddLeadingJetPtBin(120.,150.);
   anadijetAj->AddLeadingJetPtBin(150.,180.);
@@ -140,17 +152,23 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAj->AddLeadingJetPtBin(220.,260.);
   anadijetAj->AddLeadingJetPtBin(260.,300.);
   anadijetAj->AddLeadingJetPtBin(300.,500.);
-  anadijetAj->SetPtMinSubleading(30.);
+  anadijetAj->SetPtMinSubleading(40.);
   handler->Add(anadijetAj);
 
   anaDijetAj *anadijetAjMassCut = new anaDijetAj("anaDijetAjMassCut","anaDijetAjMassCut");
   anadijetAjMassCut->ConnectEventObject(fEventObjects);
   anadijetAjMassCut->SetHiEvtName("hiEventContainer");
+  anadijetAjMassCut->DoCollisionEventSel(true);
+  anadijetAjMassCut->DoHBHENoiseFilter(true);
+  anadijetAjMassCut->DoHBHENoiseFilterLoose(true);
+  anadijetAjMassCut->DoPrimaryVertexFilter(true);
+  anadijetAjMassCut->DoClusterCompatibilityFilter(true);
+  anadijetAjMassCut->DoHFCoincFilter(true);
   anadijetAjMassCut->SetTriggerMapName("triggerMap");
   anadijetAjMassCut->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anadijetAjMassCut->SetJetsName(jetName);
   anadijetAjMassCut->SetNCentBins(5);
-  anadijetAjMassCut->SetJetEtaRange(-2.,2.);
+  anadijetAjMassCut->SetJetEtaRange(-1.,3.);
   anadijetAjMassCut->SetDoDijets(true);
   anadijetAjMassCut->AddLeadingJetPtBin(120.,150.);
   anadijetAjMassCut->AddLeadingJetPtBin(150.,180.);
@@ -158,7 +176,7 @@ void analyzeDijetAj(std::vector<std::string> urls, const char *outname = "eventO
   anadijetAjMassCut->AddLeadingJetPtBin(220.,260.);
   anadijetAjMassCut->AddLeadingJetPtBin(260.,300.);
   anadijetAjMassCut->AddLeadingJetPtBin(300.,500.);
-  anadijetAjMassCut->SetPtMinSubleading(30.);
+  anadijetAjMassCut->SetPtMinSubleading(40.);
   anadijetAjMassCut->SetMinMassLeading(10.);
   handler->Add(anadijetAjMassCut);
   

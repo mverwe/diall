@@ -86,6 +86,11 @@ void analyzeZgHistosCrossChecks(std::vector<std::string> urls, const char *outna
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
 
+  TChain *skimTree = new TChain("skimanalysis/HltTree");
+  for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
+  chain->AddFriend(skimTree);
+  Printf("skimTree done");
+
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
   chain->AddFriend(hltTree);

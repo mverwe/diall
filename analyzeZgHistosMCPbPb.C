@@ -183,6 +183,24 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistos->SetZgReweight(doZgReweight,f1ZgReweight);
   handler->Add(anazghistos);
 
+  anaZgHistos *anazghistosNoDrCut = new anaZgHistos("anaZgHistosNoDrCut","anaZgHistosNoDrCut");
+  anazghistosNoDrCut->ConnectEventObject(fEventObjects);
+  anazghistosNoDrCut->SetHiEvtName("hiEventContainer");
+  anazghistosNoDrCut->SetJetsName(jetSDName);
+  anazghistosNoDrCut->SetJetsRefName(jetName);
+  anazghistosNoDrCut->SetNCentBins(4);
+  anazghistosNoDrCut->SetJetEtaRange(-1.3,1.3);
+  anazghistosNoDrCut->SetDeltaRRange(0.,999.);
+  anazghistosNoDrCut->SetUseRhoMCWeight(true);
+  if(doJES) {
+    anazghistosNoDrCut->DoSubjetSmearing(true);
+    for(int ic = 0; ic<4; ++ic)
+      anazghistosNoDrCut->SetSubjetSmearing(sm[ic],ic);
+  }
+  anazghistosNoDrCut->DoJetShift(doJetShift,jetShift);
+  anazghistosNoDrCut->SetZgReweight(doZgReweight,f1ZgReweight);
+  handler->Add(anazghistosNoDrCut);
+
   anaZgHistos *anazghistosdrSmall = new anaZgHistos("anaZgHistosDrSmall","anaZgHistosDrSmall");
   anazghistosdrSmall->ConnectEventObject(fEventObjects);
   anazghistosdrSmall->SetHiEvtName("hiEventContainer");

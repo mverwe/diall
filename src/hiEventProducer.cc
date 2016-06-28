@@ -123,7 +123,7 @@ Bool_t hiEventProducer::Init() {
     if(fChain->GetBranch("pHBHENoiseFilterResultRun2Loose"))
       fChain->SetBranchAddress("pHBHENoiseFilterResultRun2Loose",&fHBHENoiseLoose,&b_HBHENoiseLoose);
     if(fChain->GetBranch("pprimaryVertexFilter"))
-      fChain->SetBranchAddress("pprimaryVerexFilter",&fPrimaryVertexFilter,&b_PrimaryVertexFilter);
+      fChain->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilter,&b_PrimaryVertexFilter);
     if(fChain->GetBranch("pclusterCompatibilityFilter"))
       fChain->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilter,&b_ClusterCompatibilityFilter);
     if(fChain->GetBranch("phfCoincFilter3"))

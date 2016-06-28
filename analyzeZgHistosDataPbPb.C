@@ -86,6 +86,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   for(size_t i=firstFile; i<lastFile; i++) chain->Add(urls[i].c_str());
   Printf("hiTree done");
 
+  TChain *skimTree = new TChain("skimanalysis/HltTree");
+  for(size_t i=firstFile; i<lastFile; i++) skimTree->Add(urls[i].c_str());
+  chain->AddFriend(skimTree);
+  Printf("skimTree done");
+
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   for(size_t i=firstFile; i<lastFile; i++) hltTree->Add(urls[i].c_str());
   chain->AddFriend(hltTree);
@@ -148,6 +153,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   jetQA->ConnectEventObject(fEventObjects);
   jetQA->SetJetsName(jetName);
   jetQA->SetTriggerMapName("triggerMap");
+  jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
   handler->Add(jetQA);
 
@@ -155,6 +161,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   match->ConnectEventObject(fEventObjects);
   match->SetHiEvtName("hiEventContainer");
   match->SetTriggerMapName("triggerMap");
+  match->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   match->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
   match->SetJetsNameBase(jetName);
   match->SetJetsNameTag(jetSDName);
@@ -171,7 +178,9 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistos->DoClusterCompatibilityFilter(true);
   anazghistos->DoHFCoincFilter(true);
   anazghistos->SetTriggerMapName("triggerMap");
+  anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
+  anazghistos->SetRhoMax(330.);
   anazghistos->SetJetsName(jetSDName);
   anazghistos->SetJetsRefName(jetName);
   anazghistos->SetNCentBins(4);
@@ -190,7 +199,9 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrSmall->DoClusterCompatibilityFilter(true);
   anazghistosdrSmall->DoHFCoincFilter(true);
   anazghistosdrSmall->SetTriggerMapName("triggerMap");
+  anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
+  anazghistosdrSmall->SetRhoMax(330.);
   anazghistosdrSmall->SetJetsName(jetSDName);
   anazghistosdrSmall->SetJetsRefName(jetName);
   anazghistosdrSmall->SetNCentBins(4);
@@ -209,7 +220,9 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrLarge->DoClusterCompatibilityFilter(true);
   anazghistosdrLarge->DoHFCoincFilter(true);
   anazghistosdrLarge->SetTriggerMapName("triggerMap");
+  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
+  anazghistosdrLarge->SetRhoMax(330.);
   anazghistosdrLarge->SetJetsName(jetSDName);
   anazghistosdrLarge->SetJetsRefName(jetName);
   anazghistosdrLarge->SetNCentBins(4);
@@ -229,12 +242,14 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     anazghistosDRVarDown->DoClusterCompatibilityFilter(true);
     anazghistosDRVarDown->DoHFCoincFilter(true);
     anazghistosDRVarDown->SetTriggerMapName("triggerMap");
+    anazghistosDRVarDown->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
     anazghistosDRVarDown->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
+    anazghistosDRVarDown->SetRhoMax(330.);
     anazghistosDRVarDown->SetJetsName(jetSDName);
     anazghistosDRVarDown->SetJetsRefName(jetName);
     anazghistosDRVarDown->SetNCentBins(4);
     anazghistosDRVarDown->SetJetEtaRange(-1.3,1.3);
-    anazghistosDRVarDown->SetDeltaRRange(0.1*0.9,999.);
+    anazghistosDRVarDown->SetDeltaRRange(0.1*0.85,999.);
     anazghistosDRVarDown->DoJetShift(doJetShift,jetShift);
     handler->Add(anazghistosDRVarDown);
 
@@ -248,12 +263,14 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     anazghistosDRVarUp->DoClusterCompatibilityFilter(true);
     anazghistosDRVarUp->DoHFCoincFilter(true);
     anazghistosDRVarUp->SetTriggerMapName("triggerMap");
+    anazghistosDRVarUp->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
     anazghistosDRVarUp->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
+    anazghistosDRVarUp->SetRhoMax(330.);
     anazghistosDRVarUp->SetJetsName(jetSDName);
     anazghistosDRVarUp->SetJetsRefName(jetName);
     anazghistosDRVarUp->SetNCentBins(4);
     anazghistosDRVarUp->SetJetEtaRange(-1.3,1.3);
-    anazghistosDRVarUp->SetDeltaRRange(0.1*1.1,999.);
+    anazghistosDRVarUp->SetDeltaRRange(0.1*1.15,999.);
     anazghistosDRVarUp->DoJetShift(doJetShift,jetShift);
     handler->Add(anazghistosDRVarUp);
   }

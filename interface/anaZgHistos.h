@@ -28,6 +28,7 @@ public:
    
    void SetMinRefPt(float min)            { fMinRefPt = min ; }
    void SetUseRhoMCWeight(bool b)         { fUseRhoMCWeight = b; }
+   void SetRhoMax(float max)              { fRhoMax = max; }
 
    void DoSubjetSmearing(bool b)          { fDoSubjetSmearing = b; }
    void SetSubjetSmearing(subjetSmearing sm, int icent) {if(icent<100) fSubjetSmearing[icent] = sm;}
@@ -52,6 +53,7 @@ public:
    float            fMaxDeltaR;   //max distance between subjets
    float            fMinRefPt;    //min pt of corresponding true jet: reject fakes
    bool             fUseRhoMCWeight; //flag to activate rho mc weighting
+   float            fRhoMax;      // max rho for event selection
 
    bool             fDoSubjetSmearing;    //flag to activate subjet smearing
    subjetSmearing   fSubjetSmearing[100]; //subjet resolution smearing module
@@ -82,6 +84,7 @@ public:
    TH2F           **fh2PtSubjetPtInvMass21; //!jet pt vs subjetratio 2/1
 
    TH2F           **fh2PtZg; //!jet pt vs zg
+   TH2F           **fh2PtZgAll; //!jet pt vs zg all jets (including zg<zcut)
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueZg; //!jet pt reco vs pt true vs zg
@@ -99,6 +102,8 @@ public:
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtThetagNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueThetag; //!jet pt reco vs pt true vs thetag
+
+   TH3F           **fh3PtTrueZgScaleZg; //! jet pt true vs zg true vs zgRec/zgTrue
 
    THnSparse      **fhnZgResponse;                  //!response matrix
    

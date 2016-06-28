@@ -142,6 +142,7 @@ void anaZgHistosCrossChecks::Exec(Option_t * /*option*/)
   fhCentrality->Fill(cent,weight);
   fh2RhoCent->Fill(cent,rhoCentral,weight);
 
+  bool foundL = false;
   for (int i = 0; i < fJetsCont->GetNJets(); i++) {
     lwJet *jet = fJetsCont->GetJet(i);
     lwJet *jetNotGroomed = 0x0;
@@ -283,6 +284,7 @@ void anaZgHistosCrossChecks::Exec(Option_t * /*option*/)
     }
 
     //Do dijet balance here as function of Zg. Use same binning as LLR analysis
+    if(foundL) continue;
     if(pt<100.) continue;
     
     bool foundSL = false;
@@ -305,7 +307,7 @@ void anaZgHistosCrossChecks::Exec(Option_t * /*option*/)
       if(fMinRefPt>-1. && jet2->GetRefPt()<fMinRefPt) continue; //remove fakes in MC
 
       if(jet2->Pt()<40.) continue;
-      
+      if(jet2->Pt()>pt) continue; 
       foundSL = true;
 
       double dphi = acos(cos(jet->Phi() - jet2->Phi()));
@@ -313,12 +315,12 @@ void anaZgHistosCrossChecks::Exec(Option_t * /*option*/)
       //fill dijet asymmetry histos
       if(dphi>(2./3.*TMath::Pi())) {
         if(fCentBin>-1 && fCentBin<fNcentBins) {
-          fh2ZgPtRatio[fCentBin]->Fill(zg,pt/jet2->Pt());
+          fh2ZgPtRatio[fCentBin]->Fill(zg,jet2->Pt()/pt);
         }
       }
       
     }
-    
+   foundL = true; 
   }//jet loop
 }
 
