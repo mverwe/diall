@@ -55,7 +55,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   if(activateJetShift==2) jetShift = -0.04;
 
   double minptjet = 30.;
-  bool doDijet = false;
+  //bool doDijet = false;
   //if(!doDijet) minptjet = 80.;
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;

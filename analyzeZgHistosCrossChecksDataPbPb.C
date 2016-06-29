@@ -55,8 +55,8 @@ void analyzeZgHistosCrossChecks(std::vector<std::string> urls, const char *outna
   if(activateJetShift==2) jetShift = -0.04;
 
   double minptjet = 30.;
-  bool doDijet = false;
-  if(!doDijet) minptjet = 80.;
+  //bool doDijet = false;
+  //if(!doDijet) minptjet = 80.;
 
   std::cout << "analyzing subjets for: " << jetName << " tree: " << jetTreeName << std::endl;
   std::cout << "analyzing subjets for: " << jetSDName << " tree: " << jetTreeSDName << std::endl;
