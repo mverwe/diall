@@ -118,10 +118,12 @@ Bool_t hiEventProducer::Init() {
       fChain->SetBranchAddress("PAcollisionEventSelection",&fcollisionEvtSel,&b_collisionEvtSel);
     else if(fChain->GetBranch("pcollisionEventSelection"))
       fChain->SetBranchAddress("pcollisionEventSelection",&fcollisionEvtSel,&b_collisionEvtSel);
-    if(fChain->GetBranch("pHBHENoiseFilterResult"))
-      fChain->SetBranchAddress("pHBHENoiseFilterResult",&fHBHENoise,&b_HBHENoise);
-    if(fChain->GetBranch("pHBHENoiseFilterResultRun2Loose"))
-      fChain->SetBranchAddress("pHBHENoiseFilterResultRun2Loose",&fHBHENoiseLoose,&b_HBHENoiseLoose);
+    if(fChain->GetBranch("HBHENoiseFilterResult")) {
+      //Printf("found HBHENoiseFilterResult branch"); 
+      fChain->SetBranchAddress("HBHENoiseFilterResult",&fHBHENoise,&b_HBHENoise);
+    }
+    if(fChain->GetBranch("HBHENoiseFilterResultRun2Loose"))
+      fChain->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseLoose,&b_HBHENoiseLoose);
     if(fChain->GetBranch("pprimaryVertexFilter"))
       fChain->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilter,&b_PrimaryVertexFilter);
     if(fChain->GetBranch("pclusterCompatibilityFilter"))
@@ -197,6 +199,7 @@ Bool_t hiEventProducer::Run(Long64_t entry) {
   fhiEventContainer->SetTrk24(fHLT_FullTrack24ForPPRef_v1);
   fhiEventContainer->SetTrk45(fHLT_FullTrack45ForPPRef_v1);
   fhiEventContainer->SetColl(fcollisionEvtSel);
+  //if(fHBHENoise<1) Printf("fHBHENoise: %d",fHBHENoise);
   fhiEventContainer->SetHBHENoise(fHBHENoise);
   fhiEventContainer->SetHBHENoiseLoose(fHBHENoiseLoose);
   fhiEventContainer->SetPrimaryVertexFilter(fPrimaryVertexFilter);

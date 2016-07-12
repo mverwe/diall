@@ -107,11 +107,11 @@ bool anaBaseTask::SelectEvent() const {
     }
     //  printf("accept 1 %d %d %d\n", accept, fCollSel, !fHiEvent->GetColl()); }
     if(fHBHENoise && !fHiEvent->GetHBHENoise()) {
-      // Printf("HBHENoise rejected");
+      //Printf("HBHENoise rejected");
       accept = false;
     }
     if(fHBHENoiseLoose && !fHiEvent->GetHBHENoiseLoose()) {
-      // Printf("HBHENoiseLoose rejected");
+      //Printf("HBHENoiseLoose rejected");
       accept = false;
     }
     if(fPrimaryVertex && !fHiEvent->GetPrimaryVertexFilter()) {
