@@ -57,6 +57,10 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
   fh3PtRecPtTrueThetag(),
+  fh2PtDeltaR12(),
+  fh2PtDeltaR12True(),
+  fh2PtDeltaR12NoRef(),
+  fh3PtRecPtTrueDeltaR12(),
   fh3PtTrueZgScaleZg(),
   fhnZgResponse()
 {
@@ -85,6 +89,10 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtThetagTrue      = new TH2F*[fNcentBins];
   fh2PtThetagNoRef     = new TH2F*[fNcentBins];
   fh3PtRecPtTrueThetag = new TH3F*[fNcentBins];
+  fh2PtDeltaR12          = new TH2F*[fNcentBins];
+  fh2PtDeltaR12True      = new TH2F*[fNcentBins];
+  fh2PtDeltaR12NoRef     = new TH2F*[fNcentBins];
+  fh3PtRecPtTrueDeltaR12 = new TH3F*[fNcentBins];
   fh2PtSubjetPtInvMass21 = new TH2F*[fNcentBins];
   fh3PtTrueZgScaleZg   = new TH3F*[fNcentBins];
 
@@ -116,6 +124,10 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
     fh3PtRecPtTrueThetag[i]     = 0;
+    fh2PtDeltaR12[i]              = 0;
+    fh2PtDeltaR12True[i]          = 0;
+    fh2PtDeltaR12NoRef[i]         = 0;
+    fh3PtRecPtTrueDeltaR12[i]     = 0;
     fh3PtTrueZgScaleZg[i]       = 0;
     fhnZgResponse[i]            = 0;
   }
@@ -331,16 +343,21 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       fh2PtPtGF[fCentBin]->Fill(pt,ptg/pt);
       fh2PtZg[fCentBin]->Fill(pt,zg,weight);
       fh2PtThetag[fCentBin]->Fill(pt,thetag,weight);
+      fh2PtDeltaR12[fCentBin]->Fill(pt,deltaR12,weight);
 
       if(jetNotGroomed->GetRefPt()<10.) { //fakes
         fh2PtZgNoRef[fCentBin]->Fill(pt,zg,weight);
         fh2PtThetagNoRef[fCentBin]->Fill(pt,thetag,weight);
+        fh2PtDeltaR12NoRef[fCentBin]->Fill(pt,deltaR12,weight);
       }
       else { //true matches: filling reco level info
         fh2PtZgTrue[fCentBin]->Fill(pt,zg,weight);
         fh2PtThetagTrue[fCentBin]->Fill(pt,thetag,weight);
+        fh2PtDeltaR12True[fCentBin]->Fill(pt,deltaR12,weight);
+                
         fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg,weight);
         fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag,weight);
+        fh3PtRecPtTrueDeltaR12[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),deltaR12,weight);
 
         if(sjphi.size()>1 && refsjphi.size()>1) {
           if(sjphi[0]>-10. && refsjphi[0]>-10. && sjphi[1]>-10. && refsjphi[1]>-10) {
@@ -521,6 +538,26 @@ void anaZgHistos::CreateOutputObjects() {
     histTitle = Form("%s;p_{T,rec};p_{T,true};#theta_{g};",histName.Data());
     fh3PtRecPtTrueThetag[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,50,0,500,50,0,1.);
     fOutput->Add(fh3PtRecPtTrueThetag[i]);
+
+    histName = Form("fh2PtDeltaR12_%d",i);
+    histTitle = Form("%s;p_{T};#theta_{g};",histName.Data());
+    fh2PtDeltaR12[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,100,0,1.);
+    fOutput->Add(fh2PtDeltaR12[i]);
+
+    histName = Form("fh2PtDeltaR12True_%d",i);
+    histTitle = Form("%s;p_{T};#theta_{g};",histName.Data());
+    fh2PtDeltaR12True[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,100,0,1.);
+    fOutput->Add(fh2PtDeltaR12True[i]);
+
+    histName = Form("fh2PtDeltaR12NoRef_%d",i);
+    histTitle = Form("%s;p_{T};#theta_{g};",histName.Data());
+    fh2PtDeltaR12NoRef[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,100,0,1.);
+    fOutput->Add(fh2PtDeltaR12NoRef[i]);
+
+    histName = Form("fh3PtRecPtTrueDeltaR12_%d",i);
+    histTitle = Form("%s;p_{T,rec};p_{T,true};#theta_{g};",histName.Data());
+    fh3PtRecPtTrueDeltaR12[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,50,0,500,50,0,1.);
+    fOutput->Add(fh3PtRecPtTrueDeltaR12[i]);
 
     histName = Form("fhnZgResponse_%d",i);
     histTitle = Form("%s;#it{z}_{g,det};#it{z}_{g,part};#it{p}_{T,det};#it{p}_{T,part}",histName.Data());

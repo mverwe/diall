@@ -103,6 +103,12 @@ public:
    TH2F           **fh2PtThetagNoRef; //!jet pt vs zg for jets without MC match
    TH3F           **fh3PtRecPtTrueThetag; //!jet pt reco vs pt true vs thetag
 
+   TH2F           **fh2PtDeltaR12; //!jet pt vs DR12
+   TH2F           **fh2PtDeltaR12True; //!jet pt vs DR12 for true jets
+   TH2F           **fh2PtDeltaR12NoRef; //!jet pt vs DR12 for jets without MC match
+   TH3F           **fh3PtRecPtTrueDeltaR12; //!jet pt reco vs pt true vs DR12
+
+
    TH3F           **fh3PtTrueZgScaleZg; //! jet pt true vs zg true vs zgRec/zgTrue
 
    THnSparse      **fhnZgResponse;                  //!response matrix

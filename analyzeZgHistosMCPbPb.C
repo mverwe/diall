@@ -157,6 +157,16 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   jetQA->SetJetsName(jetName);
   handler->Add(jetQA);
 
+  anaJetEnergyScale *anajesForest = new anaJetEnergyScale("anaJESForest","anaJESForest");
+  anajesForest->ConnectEventObject(fEventObjects);
+  anajesForest->SetHiEvtName("hiEventContainer");
+  anajesForest->SetGenJetsName("akt4Gen");
+  anajesForest->SetRecJetsName(jetName);
+  anajesForest->SetNCentBins(4);
+  anajesForest->SetUseForestMatching(true);
+  //anajesForest->SetMaxDistance(0.2);
+  handler->Add(anajesForest);
+
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
   match->ConnectEventObject(fEventObjects);
   match->SetHiEvtName("hiEventContainer");
