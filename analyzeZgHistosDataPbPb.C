@@ -46,11 +46,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   TString jetName = "aktCs4PF";
   TString jetTreeName = "akCs4PFJetAnalyzer";
 
-  TString triggerName = "HLT_HIPuAK4CaloJet100_Eta5p1_v1";
-  //TString triggerName = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
+  //TString triggerName = "HLT_HIPuAK4CaloJet100_Eta5p1_v1";
+  TString triggerName = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
   // TString triggerName = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
-  //TString triggerName2 = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
-  //TString triggerName3 = "HLT_HIPuAK4CaloJet40_Eta5p1_v1";
+  TString triggerName2 = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
+  TString triggerName3 = "HLT_HIPuAK4CaloJet40_Eta5p1_v1";
 
   bool doDRVar = false;
 
@@ -129,8 +129,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   p_trg->SetInput(chain);
   p_trg->SetTriggerMapName("triggerMap");
   p_trg->AddTrigger(triggerName.Data());
-  //p_trg->AddTrigger(triggerName2.Data());
-  //p_trg->AddTrigger(triggerName3.Data());
+  p_trg->AddTrigger(triggerName2.Data());
+  p_trg->AddTrigger(triggerName3.Data());
   //p_trg->AddTrigger("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //p_trg->AddTrigger("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
@@ -164,8 +164,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   jetQA->SetJetsName(jetName);
   jetQA->SetTriggerMapName("triggerMap");
   jetQA->AddTriggerSel(triggerName.Data());
-  //jetQA->AddTriggerSel(triggerName2.Data());
-  //jetQA->AddTriggerSel(triggerName3.Data());
+  jetQA->AddTriggerSel(triggerName2.Data());
+  jetQA->AddTriggerSel(triggerName3.Data());
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
@@ -176,8 +176,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   match->SetHiEvtName("hiEventContainer");
   match->SetTriggerMapName("triggerMap");
   match->AddTriggerSel(triggerName.Data());
-  //match->AddTriggerSel(triggerName2.Data());
-  //match->AddTriggerSel(triggerName3.Data());
+  match->AddTriggerSel(triggerName2.Data());
+  match->AddTriggerSel(triggerName3.Data());
   //match->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  match->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //  match->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
@@ -197,8 +197,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistos->DoHFCoincFilter(true);
   anazghistos->SetTriggerMapName("triggerMap");
   anazghistos->AddTriggerSel(triggerName.Data());
-  //anazghistos->AddTriggerSel(triggerName2.Data());
-  //anazghistos->AddTriggerSel(triggerName3.Data());
+  anazghistos->AddTriggerSel(triggerName2.Data());
+  anazghistos->AddTriggerSel(triggerName3.Data());
   //anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //  anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
@@ -222,8 +222,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrSmall->DoHFCoincFilter(true);
   anazghistosdrSmall->SetTriggerMapName("triggerMap");
   anazghistosdrSmall->AddTriggerSel(triggerName.Data());
-  //anazghistosdrSmall->AddTriggerSel(triggerName2.Data());
-  //anazghistosdrSmall->AddTriggerSel(triggerName3.Data());
+  anazghistosdrSmall->AddTriggerSel(triggerName2.Data());
+  anazghistosdrSmall->AddTriggerSel(triggerName3.Data());
   //anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //  anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
@@ -247,8 +247,8 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrLarge->DoHFCoincFilter(true);
   anazghistosdrLarge->SetTriggerMapName("triggerMap");
   anazghistosdrLarge->AddTriggerSel(triggerName.Data());
-  //anazghistosdrLarge->AddTriggerSel(triggerName2.Data());
-  //anazghistosdrLarge->AddTriggerSel(triggerName3.Data());
+  anazghistosdrLarge->AddTriggerSel(triggerName2.Data());
+  anazghistosdrLarge->AddTriggerSel(triggerName3.Data());
   //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
