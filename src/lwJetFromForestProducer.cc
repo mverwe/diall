@@ -99,6 +99,8 @@ Bool_t lwJetFromForestProducer::Init() {
       fChain->SetBranchAddress("jtSubJetPhi", &fForestJets.jtSubJetPhi, &fForestJets.b_jtSubJetPhi);
     if (fChain->GetBranch("jtSubJetM"))
       fChain->SetBranchAddress("jtSubJetM", &fForestJets.jtSubJetM, &fForestJets.b_jtSubJetM);
+    if (fChain->GetBranch("jtsym")) {
+      fChain->SetBranchAddress("jtsym", &fForestJets.jtsym, &fForestJets.b_jtsym); }
     if (fChain->GetBranch("jtdroppedBranches"))
       fChain->SetBranchAddress("jtdroppedBranches",&fForestJets.jtdroppedBranches,&fForestJets.b_jtdroppedBranches);
         
@@ -301,7 +303,9 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     if(fForestJets.jtSubJetPhi) jet->SetSubJetPhi(fForestJets.jtSubJetPhi->at(i));
     if(fForestJets.jtSubJetM)   jet->SetSubJetM(fForestJets.jtSubJetM->at(i));
     if(fForestJets.jtdroppedBranches) jet->SetNDroppedBranches(fForestJets.jtdroppedBranches[i]);
-    
+  
+    // if(fForestJets.jtpt[i]>100.) Printf("SD jet: %f eta: %f phi: %f zg: %f",fForestJets.jtpt[i],fForestJets.jteta[i],fForestJets.jtphi[i],fForestJets.jtsym[i]);
+  
     jet->SetRefToParton(fForestJets.refparton_flavor[i]);
     jet->SetRefToPartonForB(fForestJets.refparton_flavorForB[i]);
     jet->SetRefPt(fForestJets.refpt[i]);

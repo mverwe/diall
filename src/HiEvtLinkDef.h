@@ -14,6 +14,7 @@
 #include "UserCode/diall/interface/hiEventContainer.h"
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/inputBase.h"
+#include "UserCode/diall/interface/jewelZgReweight.h"
 #include "UserCode/diall/interface/lwElectron.h"
 #include "UserCode/diall/interface/lwElectronProducer.h"
 #include "UserCode/diall/interface/lwJet.h"
@@ -82,6 +83,7 @@
 #pragma link C++ class hiEventContainer+;
 #pragma link C++ class hiEventProducer+;
 #pragma link C++ class inputBase+;
+#pragma link C++ class jewelZgReweight+;
 #pragma link C++ class lwElectron+;
 #pragma link C++ class lwElectronProducer+;
 #pragma link C++ class lwJet+;

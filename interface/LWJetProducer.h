@@ -33,6 +33,9 @@ class LWJetProducer : public anaBaseTask {
     kKT=1<<0,
     kAKT=1<<1
   };
+
+  typedef boost::shared_ptr<fastjet::ClusterSequence>        ClusterSequencePtr;
+  typedef boost::shared_ptr<fastjet::JetDefinition>          JetDefPtr;
   
   LWJetProducer();
   LWJetProducer(const char *name, const char* title);
@@ -65,7 +68,12 @@ class LWJetProducer : public anaBaseTask {
   void                   SetDoConstituentSubtraction(Bool_t b) {fDoConstSubtraction = b;}
   void                   SetRhoMapName(TString n)    { fRhoMapName    = n ; }
   void                   SetRhoMMapName(TString n)   { fRhoMMapName   = n ; }
-  void                   SetAlpha(double a)          { fAlpha         = a ; } 
+  void                   SetAlpha(double a)          { fAlpha         = a ; }
+
+  void                   SetDoSoftDrop(bool b)       { fDoSoftDrop = b; }
+  void                   SetUseKtForSoftDrop(bool b) { fUseKtForSoftDrop = b;}
+  void                   SetSoftDropZCut(double zcut){ fSDZcut = zcut   ; }
+  void                   SetSoftDropBeta(double beta){ fSDBeta = beta  ; }
  
   UInt_t                 GetJetType()          const { return fJetType         ; }
   Double_t               GetRadius()           const { return fRadius          ; }
@@ -102,6 +110,12 @@ class LWJetProducer : public anaBaseTask {
   TString          flwCSJetContName;        // name of constituent subtracted jet container
   double           fAlpha;                  // power of pt in constituent subtraction metric
 
+  bool             fDoSoftDrop;             // run softdrop
+  bool             fUseKtForSoftDrop;       // use kt instead of C/A for reclustering
+  double           fSDZcut;                 // zcut for SoftDrop
+  double           fSDBeta;                 // beta for SoftDrop
+  lwJetContainer  *flwSDJetContainer;       //!lwJetContainer for SoftDrop jets
+
   bool             fDoJEC;                  //apply JEC to standard jets
   bool             fDoJECCS;                //apply JEC to constituent subtracted jets
   FactorizedJetCorrector *fJetCorrector;    //jet corrector
@@ -114,7 +128,7 @@ class LWJetProducer : public anaBaseTask {
   LWJetProducer(const LWJetProducer& obj); // copy constructor
   LWJetProducer& operator=(const LWJetProducer& other); // assignment
   
-  ClassDef(LWJetProducer,5)
+  ClassDef(LWJetProducer,6)
 
 };
 #endif

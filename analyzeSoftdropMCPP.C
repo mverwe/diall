@@ -1,8 +1,9 @@
+
 #include "UserCode/diall/interface/genParticleProducer.h"
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/jewelZgReweight.h"
 #include "UserCode/diall/interface/lwMuonProducer.h"
-#include "UserCode/diall/interface/pfParticleProducer.h"
+#include "UserCode/diall/interface/pfParticleProducerVector.h"
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
@@ -29,7 +30,9 @@
 
 using namespace std;
 
-void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int activateJetShift = 0, int activateZgReweight = 0) {
+TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
+
+void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int activateJetShift = 0, int activateZgReweight = 0) {
 
   /*
     ptminType: minimum raw pt for particles used by puppi
@@ -42,42 +45,25 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     1 : particle-level jets (gen jets)
    */
 
-  bool doJES = false;
-  subjetSmearing sm[4];
-  TF1 *f1Scale[4];
-  if(doJES) {
-    for( int i = 0; i<4; ++i) {
-      sm[i].setInputFileList(Form("/afs/cern.ch/user/m/mverweij/work/PbPb5TeV/mc/subjet/eigenVectors/PbPb/Pythia8/dijet120/inputCent%d.list",i));
-      sm[i].initFileList();
-      f1Scale[i] = new TF1("f1Scale","[0]",0.,1000.);
-      f1Scale[i]->SetParameter(0,-0.04);
-      sm[i].setDoScaleVariation(true);
-      sm[i].setResolutionFunction(f1Scale[i]);
-    }
-  }
+  
+  TString strL1 = Form("%s/75X_mcRun2_HeavyIon_v12_L1FastJet_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2Rel = Form("%s/75X_mcRun2_HeavyIon_v12_L2Relative_AK4PF_offline.txt",baseJEC.Data());
+  TString strL3Abs = Form("%s/75X_mcRun2_HeavyIon_v12_L3Absolute_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2L3Res = Form("%s/75X_mcRun2_HeavyIon_v12_L2L3Residual_AK4PF_offline.txt",baseJEC.Data());
+
+  TString jetSDName = "akt4PFSD";
+  TString jetTreeSDName = "akSoftDrop4PFJetAnalyzer";
+  TString jetSDChName = "akt4PFSDCh";
+  TString jetTreeSDChName = "akSoftDropCh4PFJetAnalyzer";
+  TString jetName = "akt4PF";
+  TString jetTreeName = "ak4PFJetAnalyzer";
 
   bool doJetShift = false;
   if(activateJetShift>0) doJetShift = true;
-  float jetShift = 0.;
-  if(activateJetShift==1) jetShift = 0.04;
-  if(activateJetShift==2) jetShift = -0.04;
-  Printf("jetShift: %f",jetShift);
-
-  bool doZgReweight = false;
-  if(activateZgReweight>0) doZgReweight = true;
-  TF1 *f1ZgReweight = new TF1("f1ZgReweight","pol1",0.,1.);
-  f1ZgReweight->SetParameters(9.25354e-01,3.30200e-01);
-
-  bool doJewelZgReweight = false;
-  jewelZgReweight jrw;
-
-  TString jetSDName = "aktCs4PFSoftDrop";
-  TString jetTreeSDName = "akCsSoftDrop4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
-  TString jetName = "aktCs4PF";
-  TString jetTreeName = "akCs4PFJetAnalyzer";//"akCs4PFSoftDropJetAnalyzer";
-  //jetName = "akCs4PFFilter";
-  //jetTreeName = "akCs4PFFilterJetAnalyzer";
-
+  float jetShift = 0.02;
+  if(activateJetShift==1) jetShift = 0.02;
+  if(activateJetShift==2) jetShift = -0.02;
+  
   double minptjet = 30.;
   bool doDijet = false;
   if(!doDijet) minptjet = 40.;
@@ -122,6 +108,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   TChain *rhoTree = new TChain("hiFJRhoAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) rhoTree->Add(urls[i].c_str());
   chain->AddFriend(rhoTree);
+
+  TChain *pfTree = new TChain("pfcandAnalyzer/pfTree");
+  for(size_t i=firstFile; i<lastFile; i++) pfTree->Add(urls[i].c_str());
+  //chain->AddFriend(pfTree);
+  Printf("pfTree done");
   
   TList *fEventObjects = new TList();
 
@@ -133,6 +124,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
+  pfParticleProducerVector *p_pf = new pfParticleProducerVector("pfPartProd");
+  p_pf->SetInput(pfTree);
+  p_pf->SetpfParticlesName("pfParticles");
+  p_pf->SetEventObjects(fEventObjects);
+  
   lwJetFromForestProducer *p_SDJet = new lwJetFromForestProducer("lwJetForestProdSD");
   p_SDJet->SetInput(chain);
   p_SDJet->SetJetContName(jetSDName);
@@ -156,103 +152,112 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   //handler to which all modules will be added
   anaBaseTask *handler = new anaBaseTask("handler","handler");
 
+  //anti-kt jet finder on reconstructed pf candidates
+  LWJetProducer *lwjaktCA = new LWJetProducer("LWJetProducerAKTR040","LWJetProducerAKTR040");
+  //lwjaktCA->SetInput(chain);
+  lwjaktCA->ConnectEventObject(fEventObjects);
+  lwjaktCA->SetJetType(LWJetProducer::kAKT);
+  lwjaktCA->SetRadius(0.4);
+  lwjaktCA->SetGhostArea(0.01);
+  //lwjaktCA->SetGhostArea(0.005);
+  lwjaktCA->SetPtMinConst(0.);
+  lwjaktCA->SetParticlesName("pfParticles");
+  lwjaktCA->SetJetContName("JetsAKTR040SDCA");
+  lwjaktCA->SetDoConstituentSubtraction(kFALSE);
+  lwjaktCA->SetDoSoftDrop(true);
+  lwjaktCA->SetUseKtForSoftDrop(false);
+  lwjaktCA->SetSoftDropZCut(0.1);
+  lwjaktCA->SetSoftDropBeta(0.);
+  lwjaktCA->SetDoJEC(false);//
+  //lwjaktCA->SetL1Fastjet(strL1);
+  //lwjaktCA->SetL2Relative(strL2Rel);
+  //lwjaktCA->SetL3Absolute(strL3Abs);
+  handler->Add(lwjaktCA);
+
+  jetSDName = "JetsAKTR040SDCA";
+
+  LWJetProducer *lwjaktKT = new LWJetProducer("LWJetProducerAKTR040","LWJetProducerAKTR040");
+  //lwjaktKT->SetInput(chain);
+  lwjaktKT->ConnectEventObject(fEventObjects);
+  lwjaktKT->SetJetType(LWJetProducer::kAKT);
+  lwjaktKT->SetRadius(0.4);
+  lwjaktKT->SetGhostArea(0.01);
+  //lwjaktKT->SetGhostArea(0.005);
+  lwjaktKT->SetPtMinConst(0.);
+  lwjaktKT->SetParticlesName("pfParticles");
+  lwjaktKT->SetJetContName("JetsAKTR040SDKT");
+  lwjaktKT->SetDoConstituentSubtraction(kFALSE);
+  lwjaktKT->SetDoSoftDrop(true);
+  lwjaktKT->SetUseKtForSoftDrop(true);
+  lwjaktKT->SetSoftDropZCut(0.1);
+  lwjaktKT->SetSoftDropBeta(0.);
+  lwjaktKT->SetDoJEC(false);//
+  //lwjaktKT->SetL1Fastjet(strL1);
+  //lwjaktKT->SetL2Relative(strL2Rel);
+  //lwjaktKT->SetL3Absolute(strL3Abs);
+  handler->Add(lwjaktKT);
+
+  TString jetSDKTName = "JetsAKTR040SDKT";
+  
   anaJetQA *jetQA = new anaJetQA("anaJetQA","anaJetQA");
   jetQA->ConnectEventObject(fEventObjects);
   jetQA->SetJetsName(jetName);
   handler->Add(jetQA);
 
-  anaJetEnergyScale *anajesForest = new anaJetEnergyScale("anaJESForest","anaJESForest");
-  anajesForest->ConnectEventObject(fEventObjects);
-  anajesForest->SetHiEvtName("hiEventContainer");
-  anajesForest->SetGenJetsName("akt4Gen");
-  anajesForest->SetRecJetsName(jetName);
-  anajesForest->SetNCentBins(4);
-  anajesForest->SetUseForestMatching(true);
-  //anajesForest->SetMaxDistance(0.2);
-  handler->Add(anajesForest);
-
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
   match->ConnectEventObject(fEventObjects);
   match->SetHiEvtName("hiEventContainer");
   match->SetJetsNameBase(jetName);
-  match->SetJetsNameTag(jetSDName);
+  match->SetJetsNameTag(jetSDKTName);
   match->SetMatchingType(0);
   handler->Add(match);
 
   anaZgHistos *anazghistos = new anaZgHistos("anaZgHistos","anaZgHistos");
   anazghistos->ConnectEventObject(fEventObjects);
   anazghistos->SetHiEvtName("hiEventContainer");
-  anazghistos->SetJetsName(jetSDName);
+  anazghistos->SetJetsName(jetSDKTName);
   anazghistos->SetJetsRefName(jetName);
-  anazghistos->SetNCentBins(4);
+  anazghistos->SetNCentBins(1);
   anazghistos->SetJetEtaRange(-1.3,1.3);
   anazghistos->SetDeltaRRange(0.1,999.);
-  anazghistos->SetUseRhoMCWeight(true);
-  if(doJES) {
-    anazghistos->DoSubjetSmearing(true);
-    for(int ic = 0; ic<4; ++ic)
-      anazghistos->SetSubjetSmearing(sm[ic],ic);
-  }
+  anazghistos->SetUseRhoMCWeight(false);
   anazghistos->DoJetShift(doJetShift,jetShift);
-  anazghistos->SetZgReweight(doZgReweight,f1ZgReweight);
-  anazghistos->SetZgReweightMulti(doJewelZgReweight,jrw);
   handler->Add(anazghistos);
 
   anaZgHistos *anazghistosNoDrCut = new anaZgHistos("anaZgHistosNoDrCut","anaZgHistosNoDrCut");
   anazghistosNoDrCut->ConnectEventObject(fEventObjects);
   anazghistosNoDrCut->SetHiEvtName("hiEventContainer");
-  anazghistosNoDrCut->SetJetsName(jetSDName);
+  anazghistosNoDrCut->SetJetsName(jetSDKTName);
   anazghistosNoDrCut->SetJetsRefName(jetName);
-  anazghistosNoDrCut->SetNCentBins(4);
+  anazghistosNoDrCut->SetNCentBins(1);
   anazghistosNoDrCut->SetJetEtaRange(-1.3,1.3);
   anazghistosNoDrCut->SetDeltaRRange(0.,999.);
-  anazghistosNoDrCut->SetUseRhoMCWeight(true);
-  if(doJES) {
-    anazghistosNoDrCut->DoSubjetSmearing(true);
-    for(int ic = 0; ic<4; ++ic)
-      anazghistosNoDrCut->SetSubjetSmearing(sm[ic],ic);
-  }
+  anazghistosNoDrCut->SetUseRhoMCWeight(false);
   anazghistosNoDrCut->DoJetShift(doJetShift,jetShift);
-  anazghistosNoDrCut->SetZgReweight(doZgReweight,f1ZgReweight);
-  anazghistosNoDrCut->SetZgReweightMulti(doJewelZgReweight,jrw);
   handler->Add(anazghistosNoDrCut);
 
   anaZgHistos *anazghistosdrSmall = new anaZgHistos("anaZgHistosDrSmall","anaZgHistosDrSmall");
   anazghistosdrSmall->ConnectEventObject(fEventObjects);
   anazghistosdrSmall->SetHiEvtName("hiEventContainer");
-  anazghistosdrSmall->SetJetsName(jetSDName);
+  anazghistosdrSmall->SetJetsName(jetSDKTName);
   anazghistosdrSmall->SetJetsRefName(jetName);
-  anazghistosdrSmall->SetNCentBins(4);
+  anazghistosdrSmall->SetNCentBins(1);
   anazghistosdrSmall->SetJetEtaRange(-1.3,1.3);
   anazghistosdrSmall->SetDeltaRRange(0.1,0.2);
-  anazghistosdrSmall->SetUseRhoMCWeight(true);
-  if(doJES) {
-    anazghistosdrSmall->DoSubjetSmearing(true);
-    for(int ic = 0; ic<4; ++ic)
-      anazghistosdrSmall->SetSubjetSmearing(sm[ic],ic);
-  }
+  anazghistosdrSmall->SetUseRhoMCWeight(false);
   anazghistosdrSmall->DoJetShift(doJetShift,jetShift);
-  anazghistosdrSmall->SetZgReweight(doZgReweight,f1ZgReweight);
-  anazghistosdrSmall->SetZgReweightMulti(doJewelZgReweight,jrw);
   handler->Add(anazghistosdrSmall);
 
   anaZgHistos *anazghistosdrLarge = new anaZgHistos("anaZgHistosDrLarge","anaZgHistosDrLarge");
   anazghistosdrLarge->ConnectEventObject(fEventObjects);
   anazghistosdrLarge->SetHiEvtName("hiEventContainer");
-  anazghistosdrLarge->SetJetsName(jetSDName);
+  anazghistosdrLarge->SetJetsName(jetSDKTName);
   anazghistosdrLarge->SetJetsRefName(jetName);
-  anazghistosdrLarge->SetNCentBins(4);
+  anazghistosdrLarge->SetNCentBins(1);
   anazghistosdrLarge->SetJetEtaRange(-1.3,1.3);
   anazghistosdrLarge->SetDeltaRRange(0.2,999.);
-  anazghistosdrLarge->SetUseRhoMCWeight(true);
-  if(doJES) {
-    anazghistosdrLarge->DoSubjetSmearing(true);
-    for(int ic = 0; ic<4; ++ic)
-      anazghistosdrLarge->SetSubjetSmearing(sm[ic],ic);
-  }
+  anazghistosdrLarge->SetUseRhoMCWeight(false);
   anazghistosdrLarge->DoJetShift(doJetShift,jetShift);
-  anazghistosdrLarge->SetZgReweight(doZgReweight,f1ZgReweight);
-  anazghistosdrLarge->SetZgReweightMulti(doJewelZgReweight,jrw);
   handler->Add(anazghistosdrLarge);
 
 
@@ -261,11 +266,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosGen->SetHiEvtName("hiEventContainer");
   anazghistosGen->SetJetsName("akt4Gen"); //ungroomed jets with groomed subjet variables at gen level
   anazghistosGen->SetJetsRefName(""); //
-  anazghistosGen->SetNCentBins(4);
+  anazghistosGen->SetNCentBins(1);
   anazghistosGen->SetJetEtaRange(-1.3,1.3);
   anazghistosGen->SetDeltaRRange(0.1,999.);
-  anazghistosGen->SetUseRhoMCWeight(true);
-  anazghistosGen->SetZgReweightMulti(doJewelZgReweight,jrw);
+  anazghistosGen->SetUseRhoMCWeight(false);
   handler->Add(anazghistosGen);
 
   anaZgHistos *anazghistosDrSmallGen = new anaZgHistos("anazghistosDrSmallGen","anazghistosDrSmallGen");
@@ -273,11 +277,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosDrSmallGen->SetHiEvtName("hiEventContainer");
   anazghistosDrSmallGen->SetJetsName("akt4Gen"); //ungroomed jets with groomed subjet variables at gen level
   anazghistosDrSmallGen->SetJetsRefName(""); //
-  anazghistosDrSmallGen->SetNCentBins(4);
+  anazghistosDrSmallGen->SetNCentBins(1);
   anazghistosDrSmallGen->SetJetEtaRange(-1.3,1.3);
   anazghistosDrSmallGen->SetDeltaRRange(0.1,0.2);
-  anazghistosDrSmallGen->SetUseRhoMCWeight(true);
-  anazghistosDrSmallGen->SetZgReweightMulti(doJewelZgReweight,jrw);
+  anazghistosDrSmallGen->SetUseRhoMCWeight(false);
   handler->Add(anazghistosDrSmallGen);
 
   anaZgHistos *anazghistosDrLargeGen = new anaZgHistos("anazghistosDrLargeGen","anazghistosDrLargeGen");
@@ -285,11 +288,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosDrLargeGen->SetHiEvtName("hiEventContainer");
   anazghistosDrLargeGen->SetJetsName("akt4Gen"); //ungroomed jets with groomed subjet variables at gen level
   anazghistosDrLargeGen->SetJetsRefName(""); //
-  anazghistosDrLargeGen->SetNCentBins(4);
+  anazghistosDrLargeGen->SetNCentBins(1);
   anazghistosDrLargeGen->SetJetEtaRange(-1.3,1.3);
   anazghistosDrLargeGen->SetDeltaRRange(0.2,999.);
-  anazghistosDrLargeGen->SetUseRhoMCWeight(true);
-  anazghistosDrLargeGen->SetZgReweightMulti(doJewelZgReweight,jrw);
+  anazghistosDrLargeGen->SetUseRhoMCWeight(false);
   handler->Add(anazghistosDrLargeGen);
 
   anaZgHistos *anazghistosNoFakes = new anaZgHistos("anaZgHistosNoFakes","anaZgHistosNoFakes");
@@ -297,10 +299,31 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosNoFakes->SetHiEvtName("hiEventContainer");
   anazghistosNoFakes->SetJetsName(jetSDName);
   anazghistosNoFakes->SetJetsRefName(jetName);
-  anazghistosNoFakes->SetNCentBins(4);
-  anazghistosNoFakes->SetJetEtaRange(-2.,2.);
+  anazghistosNoFakes->SetNCentBins(1);
+  anazghistosNoFakes->SetJetEtaRange(-1.3,1.3);
   anazghistosNoFakes->SetMinRefPt(10.);
-  //handler->Add(anazghistosNoFakes);
+  handler->Add(anazghistosNoFakes);
+
+
+  anaJetMatching *matchCAKT = new anaJetMatching("jetMatchingCAKT","jetMatchingCAKT");
+  matchCAKT->ConnectEventObject(fEventObjects);
+  matchCAKT->SetHiEvtName("hiEventContainer");
+  matchCAKT->SetJetsNameBase(jetSDName);
+  matchCAKT->SetJetsNameTag(jetSDKTName);
+  matchCAKT->SetMatchingType(0);
+  handler->Add(matchCAKT);
+
+  anaZgHistos *anazghistosCAKT = new anaZgHistos("anaZgHistosCAKT","anaZgHistosCAKT");
+  anazghistosCAKT->ConnectEventObject(fEventObjects);
+  anazghistosCAKT->SetHiEvtName("hiEventContainer");
+  anazghistosCAKT->SetJetsName(jetSDKTName);
+  anazghistosCAKT->SetJetsRefName(jetSDName);
+  anazghistosCAKT->SetNCentBins(1);
+  anazghistosCAKT->SetJetEtaRange(-1.3,1.3);
+  anazghistosCAKT->SetDeltaRRange(0.1,999.);
+  anazghistosCAKT->SetUseRhoMCWeight(false);
+  anazghistosCAKT->DoJetShift(doJetShift,jetShift);
+  handler->Add(anazghistosCAKT);
  
   //---------------------------------------------------------------
   //Event loop
@@ -313,11 +336,14 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     //Run producers
     //Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
-    //Printf("produce jets");
+    p_pf->Run(jentry);    //pf candidates
+    // Printf("produce SD jets");
     p_SDJet->Run(jentry); //forest SoftDrop jets
+    //Printf("produce ungroomed jets");
     p_Jet->Run(jentry); //forest jets
 	    
     //Execute all analysis tasks
+    //Printf("exec tasks");
     handler->ExecuteTask();
   }
     

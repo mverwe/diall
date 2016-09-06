@@ -28,6 +28,8 @@
   <bin name="runSubJetDataPP"         file="runSubJetDataPP.cc"></bin>
   <bin name="runDijetAjDataPbPb"      file="runDijetAjDataPbPb.cc"></bin>
   <bin name="runDijetAjDataPP"        file="runDijetAjDataPP.cc"></bin>
+  <bin name="runSoftdropMCPbPb"       file="runSoftdropMCPbPb.cc"></bin>
+  <bin name="runSoftdropMCPP"         file="runSoftdropMCPP.cc"></bin>
   <bin name="runSubJetMCPP"           file="runSubJetMCPP.cc"></bin>
   <bin name="runZgHistosDataPP"       file="runZgHistosDataPP.cc"></bin>
   <bin name="runZgHistosDataPbPb"     file="runZgHistosDataPbPb.cc"></bin>

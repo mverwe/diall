@@ -41,6 +41,7 @@ public :
    std::vector<std::vector<float> > *jtSubJetEta = 0;
    std::vector<std::vector<float> > *jtSubJetPhi= 0;
    std::vector<std::vector<float> > *jtSubJetM = 0;
+   Float_t         jtsym[maxJets]; //[nref]
    Int_t           jtdroppedBranches[maxJets]; //[nref]
    Float_t         discr_fr01[maxJets];   //[nref]
    Float_t         trackMax[maxJets];   //[nref]
@@ -168,6 +169,7 @@ public :
    TBranch        *b_jtSubJetEta;   //!
    TBranch        *b_jtSubJetPhi;   //!
    TBranch        *b_jtSubJetM;   //!
+   TBranch        *b_jtsym; //!
    TBranch        *b_jtdroppedBranches; //!
    TBranch        *b_discr_fr01;   //!
    TBranch        *b_trackMax;   //!

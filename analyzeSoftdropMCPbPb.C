@@ -2,7 +2,7 @@
 #include "UserCode/diall/interface/hiEventProducer.h"
 #include "UserCode/diall/interface/jewelZgReweight.h"
 #include "UserCode/diall/interface/lwMuonProducer.h"
-#include "UserCode/diall/interface/pfParticleProducer.h"
+#include "UserCode/diall/interface/pfParticleProducerVector.h"
 #include "UserCode/diall/interface/LWJetProducer.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
@@ -29,7 +29,9 @@
 
 using namespace std;
 
-void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int activateJetShift = 0, int activateZgReweight = 0) {
+TString baseJEC = "/afs/cern.ch/user/m/mverweij/work/jetsPbPb/puppi/perf/jec";
+
+void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "eventObjects.root", Long64_t nentries = 20, Int_t firstF = -1, Int_t lastF = -1, Int_t firstEvent = 0, int activateJetShift = 0, int activateZgReweight = 0) {
 
   /*
     ptminType: minimum raw pt for particles used by puppi
@@ -41,6 +43,12 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     0 : detector-level jets (akPu4PF)
     1 : particle-level jets (gen jets)
    */
+
+  
+  TString strL1 = Form("%s/75X_mcRun2_HeavyIon_v12_L1FastJet_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2Rel = Form("%s/75X_mcRun2_HeavyIon_v12_L2Relative_AK4PF_offline.txt",baseJEC.Data());
+  TString strL3Abs = Form("%s/75X_mcRun2_HeavyIon_v12_L3Absolute_AK4PF_offline.txt",baseJEC.Data());
+  TString strL2L3Res = Form("%s/75X_mcRun2_HeavyIon_v12_L2L3Residual_AK4PF_offline.txt",baseJEC.Data());
 
   bool doJES = false;
   subjetSmearing sm[4];
@@ -122,6 +130,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   TChain *rhoTree = new TChain("hiFJRhoAnalyzer/t");
   for(size_t i=firstFile; i<lastFile; i++) rhoTree->Add(urls[i].c_str());
   chain->AddFriend(rhoTree);
+
+  TChain *pfTree = new TChain("pfcandAnalyzerCS/pfTree");
+  for(size_t i=firstFile; i<lastFile; i++) pfTree->Add(urls[i].c_str());
+  //chain->AddFriend(pfTree);
+  Printf("pfTree done");
   
   TList *fEventObjects = new TList();
 
@@ -133,6 +146,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   p_evt->SetHIEventContName("hiEventContainer");
   p_evt->SetEventObjects(fEventObjects);
 
+  pfParticleProducerVector *p_pf = new pfParticleProducerVector("pfPartProd");
+  p_pf->SetInput(pfTree);
+  p_pf->SetpfParticlesName("pfParticles");
+  p_pf->SetEventObjects(fEventObjects);
+  
   lwJetFromForestProducer *p_SDJet = new lwJetFromForestProducer("lwJetForestProdSD");
   p_SDJet->SetInput(chain);
   p_SDJet->SetJetContName(jetSDName);
@@ -156,20 +174,34 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   //handler to which all modules will be added
   anaBaseTask *handler = new anaBaseTask("handler","handler");
 
+  //anti-kt jet finder on reconstructed pf candidates
+  LWJetProducer *lwjakt = new LWJetProducer("LWJetProducerAKTR040","LWJetProducerAKTR040");
+  //lwjakt->SetInput(chain);
+  lwjakt->ConnectEventObject(fEventObjects);
+  lwjakt->SetJetType(LWJetProducer::kAKT);
+  lwjakt->SetRadius(0.4);
+  lwjakt->SetGhostArea(0.01);
+  //lwjakt->SetGhostArea(0.005);
+  lwjakt->SetPtMinConst(0.);
+  lwjakt->SetParticlesName("pfParticles");
+  lwjakt->SetJetContName("JetsAKTR040");
+  lwjakt->SetDoConstituentSubtraction(kFALSE);
+  lwjakt->SetDoSoftDrop(true);
+  lwjakt->SetUseKtForSoftDrop(false);
+  lwjakt->SetSoftDropZCut(0.1);
+  lwjakt->SetSoftDropBeta(0.);
+  lwjakt->SetDoJEC(true);
+  lwjakt->SetL1Fastjet(strL1);
+  lwjakt->SetL2Relative(strL2Rel);
+  lwjakt->SetL3Absolute(strL3Abs);
+  handler->Add(lwjakt);
+
+  jetSDName = "JetsAKTR040SD";
+  
   anaJetQA *jetQA = new anaJetQA("anaJetQA","anaJetQA");
   jetQA->ConnectEventObject(fEventObjects);
   jetQA->SetJetsName(jetName);
   handler->Add(jetQA);
-
-  anaJetEnergyScale *anajesForest = new anaJetEnergyScale("anaJESForest","anaJESForest");
-  anajesForest->ConnectEventObject(fEventObjects);
-  anajesForest->SetHiEvtName("hiEventContainer");
-  anajesForest->SetGenJetsName("akt4Gen");
-  anajesForest->SetRecJetsName(jetName);
-  anajesForest->SetNCentBins(4);
-  anajesForest->SetUseForestMatching(true);
-  //anajesForest->SetMaxDistance(0.2);
-  handler->Add(anajesForest);
 
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
   match->ConnectEventObject(fEventObjects);
@@ -300,7 +332,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosNoFakes->SetNCentBins(4);
   anazghistosNoFakes->SetJetEtaRange(-2.,2.);
   anazghistosNoFakes->SetMinRefPt(10.);
-  //handler->Add(anazghistosNoFakes);
+  handler->Add(anazghistosNoFakes);
  
   //---------------------------------------------------------------
   //Event loop
@@ -313,11 +345,14 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     //Run producers
     //Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
-    //Printf("produce jets");
+    p_pf->Run(jentry);    //pf candidates
+    // Printf("produce SD jets");
     p_SDJet->Run(jentry); //forest SoftDrop jets
+    //Printf("produce ungroomed jets");
     p_Jet->Run(jentry); //forest jets
 	    
     //Execute all analysis tasks
+    //Printf("exec tasks");
     handler->ExecuteTask();
   }
     

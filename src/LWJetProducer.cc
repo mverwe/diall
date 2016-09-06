@@ -11,6 +11,8 @@
 
 #include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
 
+#include "fastjet/contrib/SoftDrop.hh"
+
 using namespace std;
 
 ClassImp(LWJetProducer)
@@ -40,6 +42,10 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   flwCSJetContainer(),
   flwCSJetContName(""),
   fAlpha(0.),
+  fDoSoftDrop(false),
+  fUseKtForSoftDrop(false),
+  fSDZcut(0.1),
+  fSDBeta(0.),
   fDoJEC(false),
   fDoJECCS(false),
   fJetCorrector(0),
@@ -76,6 +82,10 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   flwCSJetContainer(),
   flwCSJetContName(""),
   fAlpha(0.),
+  fDoSoftDrop(false),
+  fUseKtForSoftDrop(false),
+  fSDZcut(0.1),
+  fSDBeta(0.),
   fDoJEC(false),
   fDoJECCS(false),
   fJetCorrector(0),
@@ -156,6 +166,14 @@ Bool_t LWJetProducer::Init() {
     fEventObjects->Add(flwCSJetContainer);
   }
 
+  if(fDoSoftDrop) {
+    TString flwSDJetContName = Form("%sSD",flwJetContName.Data());
+    flwSDJetContainer = new lwJetContainer(flwSDJetContName);
+    flwSDJetContainer->Init();
+    flwSDJetContainer->SetJetRadius(fRadius);
+    fEventObjects->Add(flwSDJetContainer);
+  }
+
   if(!fL1Fastjet.IsNull() || !fL2Relative.IsNull() || !fL3Absolute.IsNull() || !fL2L3Residual.IsNull()) {
     JetCorrectorParameters *ResJetPar = 0x0; 
     if(!fL2L3Residual.IsNull()) ResJetPar = new JetCorrectorParameters(fL2L3Residual.Data()); 
@@ -215,6 +233,7 @@ Int_t LWJetProducer::FindJets() {
 
   //loop over jets and store in jet container
   Int_t jetCount = 0;
+  Int_t jetCountSD = 0;
   for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
     Int_t ij = indexes[ijet];
     if(jets_incl[ij].perp()<1e-6) continue; //remove pure ghost jets
@@ -236,12 +255,14 @@ Int_t LWJetProducer::FindJets() {
 
     // Fill constituent info
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper.GetJetConstituents(ij));
+    std::vector<fastjet::PseudoJet> inputsRecluster;
     Int_t nc = 0;
     for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
       if (uid == -1) continue; //ghost particle
       else {
         jet->AddConstituent(uid);
+        inputsRecluster.push_back(constituents[ic]);
         nc++;
       }
     }
@@ -249,9 +270,84 @@ Int_t LWJetProducer::FindJets() {
     if(nc>0) { //only store if not pure ghost jet
       flwJetContainer->AddJet(jet,jetCount);
       ++jetCount;
+
+      if(fDoSoftDrop) {
+        JetDefPtr fjJetDefinitionRecluster_;
+        if(fUseKtForSoftDrop)
+          fjJetDefinitionRecluster_ = JetDefPtr(new fastjet::JetDefinition(fastjet::kt_algorithm,999.));
+        else
+          fjJetDefinitionRecluster_ = JetDefPtr(new fastjet::JetDefinition(fastjet::cambridge_algorithm,999.));
+        ClusterSequencePtr fjClusterSeqRecluster_ = ClusterSequencePtr( new fastjet::ClusterSequence( inputsRecluster, *fjJetDefinitionRecluster_ ));
+
+        std::vector<fastjet::PseudoJet> tempJets = fastjet::sorted_by_pt(fjClusterSeqRecluster_->inclusive_jets(10.));
+        if(tempJets.size()<1) continue;
+
+        fastjet::contrib::SoftDrop * sd = new fastjet::contrib::SoftDrop(fSDBeta, fSDZcut, fRadius );
+        sd->set_verbose_structure(true);
+
+        fastjet::PseudoJet transformedJet = tempJets[0];
+        if ( transformedJet == 0 ) {
+          //fjClusterSeqRecluster_->delete_self_when_unused();
+          if(sd) { delete sd; sd = 0;}
+          continue;
+        }
+
+        transformedJet = (*sd)(transformedJet);
+        //double sym = transformedJet.structure_of<fastjet::contrib::SoftDrop>().symmetry();
+        //int ndrop = transformedJet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+              
+        //get subjets
+        std::vector<fastjet::PseudoJet> subjets = transformedJet.pieces();
+        std::vector<fastjet::PseudoJet>::const_iterator itSubJetBegin = subjets.begin(),
+          itSubJet = itSubJetBegin, itSubJetEnd = subjets.end();
+
+
+        std::vector<float> sjpt;
+        std::vector<float> sjeta;
+        std::vector<float> sjphi;
+        std::vector<float> sjm;
+        
+        for (; itSubJet != itSubJetEnd; ++itSubJet ){
+          
+          fastjet::PseudoJet const & subjet = *itSubJet;
+          sjpt.push_back(subjet.perp());
+          sjeta.push_back(subjet.eta());
+          sjphi.push_back(subjet.phi());
+          sjm.push_back(subjet.m());
+        }
+          
+        double ptSD = transformedJet.perp();
+        double massSD = transformedJet.m();
+        if(fJetCorrector && fDoJEC) {
+          fJetCorrector->setJetEta(transformedJet.eta());
+          fJetCorrector->setJetPt(pt);
+          fJetCorrector->setJetA(fFastJetWrapper.GetJetArea(ij));
+          fJetCorrector->setRho(0.); 
+          double correction = fJetCorrector->getCorrection();
+          ptSD *= correction;
+          massSD *= correction;
+        }
+
+        // if(ptSD>100.) Printf("SD jet: %f eta: %f phi: %f zg: %f",ptSD,transformedJet.eta(),transformedJet.phi(),sym);
+        
+        lwJet *jetSD = new lwJet(ptSD, transformedJet.eta(), transformedJet.phi(), massSD,transformedJet.user_index());
+        jetSD->SetRawPt(transformedJet.perp());
+        jetSD->SetRawM(transformedJet.m());
+        jetSD->SetSubJetPt(sjpt);
+        jetSD->SetSubJetEta(sjeta);
+        jetSD->SetSubJetPhi(sjphi);
+        jetSD->SetSubJetM(sjm);
+
+        flwSDJetContainer->AddJet(jetSD,jetCountSD);
+        ++jetCountSD;
+        
+        if(sd) { delete sd; sd = 0;}
+      }
+      
     }
   }
   flwJetContainer->SortJets();
+  if(flwSDJetContainer) flwSDJetContainer->SortJets();
   //Printf("Event had %d jets  %d",jetCount,(Int_t)fFastJetWrapper.GetInclusiveJets().size());
 
   if(fDoConstSubtraction && flwCSJetContainer && fRhoMap && fRhoMMap) {

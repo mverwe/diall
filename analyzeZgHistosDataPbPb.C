@@ -46,11 +46,11 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   TString jetName = "aktCs4PF";
   TString jetTreeName = "akCs4PFJetAnalyzer";
 
-  //TString triggerName = "HLT_HIPuAK4CaloJet100_Eta5p1_v1";
-  TString triggerName = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
+  TString triggerName = "HLT_HIPuAK4CaloJet100_Eta5p1_v1";
+  //  TString triggerName = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
   // TString triggerName = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
-  TString triggerName2 = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
-  TString triggerName3 = "HLT_HIPuAK4CaloJet40_Eta5p1_v1";
+  TString triggerName2 = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
+  TString triggerName3 = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
 
   bool doDRVar = false;
 
