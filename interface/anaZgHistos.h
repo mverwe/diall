@@ -7,6 +7,7 @@
 #include "THnSparse.h"
 
 #include "UserCode/diall/interface/anaBaseTask.h"
+#include "UserCode/diall/interface/jewelZgReweight.h"
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/subjetSmearing.h"
 #include "UserCode/diall/interface/subjetSmearingResolution.h"
@@ -38,7 +39,8 @@ public:
    void DoJetShift(bool b, float shift)   { fDoJetShift = b; fJetShift = shift; }
 
    void SetZgReweight(bool b, TF1 *f1)    { fDoZgReweight = b; f1ZgReweight = f1; }
-   
+   void SetZgReweightMulti(bool b, jewelZgReweight rw) { fDoJewelZgReweight = b; fJewelZgReweight = rw; }
+ 
  protected:
    double DeltaR(double phi1, double phi2, double eta1, double eta2);
    
@@ -66,6 +68,9 @@ public:
 
    bool             fDoZgReweight; //flag to activate zg reweighting
    TF1             *f1ZgReweight; //!reweight function based on pp data/mc ratio
+
+   bool            fDoJewelZgReweight; //flag  
+   jewelZgReweight fJewelZgReweight; //jewel true zg reweight factors
  
    TH1F            *fhCentrality;  //!centrality
    TH2F            *fh2RhoCent;         //!rho_central vs cent

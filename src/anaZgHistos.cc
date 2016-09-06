@@ -30,6 +30,8 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fJetShift(0.04),
   fDoZgReweight(false),
   f1ZgReweight(0x0),
+  fDoJewelZgReweight(false),
+  fJewelZgReweight(),
   fhCentrality(0),
   fh2RhoCent(),
   fh3PtEtaPhi(),
@@ -279,6 +281,10 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       weightzg = f1ZgReweight->Eval(refzg);
       weight*=weightzg;
     }
+    if(fDoJewelZgReweight && refzg>0.) {
+      weightzg = fJewelZgReweight.getWeight(jetNotGroomed->GetRefPt(),refzg,cent);
+      weight*=weightzg;
+    }
 
     if(fDoSubjetSmearing) {
       if(fCentBin<0 || fCentBin>=fNcentBins)
@@ -333,7 +339,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     // v1.SetPtEtaPhiM(sjpt.at(0),sjeta.at(0),sjphi.at(0),sjm.at(0));
     // v2.SetPtEtaPhiM(sjpt.at(1),sjeta.at(1),sjphi.at(1),sjm.at(1));
     thetag = v1.Angle(v2.Vect());
-    //Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
+    Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
     deltaR12 = DeltaR(sjphi.at(0),sjphi.at(1),sjeta.at(0),sjeta.at(1));
     
     if(deltaR12<fMinDeltaR || deltaR12>fMaxDeltaR) continue;
