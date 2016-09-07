@@ -339,7 +339,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     // v1.SetPtEtaPhiM(sjpt.at(0),sjeta.at(0),sjphi.at(0),sjm.at(0));
     // v2.SetPtEtaPhiM(sjpt.at(1),sjeta.at(1),sjphi.at(1),sjm.at(1));
     thetag = v1.Angle(v2.Vect());
-    Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
+    //Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
     deltaR12 = DeltaR(sjphi.at(0),sjphi.at(1),sjeta.at(0),sjeta.at(1));
     
     if(deltaR12<fMinDeltaR || deltaR12>fMaxDeltaR) continue;

@@ -105,9 +105,9 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   for(size_t i=firstFile; i<lastFile; i++) jetTree->Add(urls[i].c_str());
   Printf("jetTree done");
 
-  TChain *rhoTree = new TChain("hiFJRhoAnalyzer/t");
-  for(size_t i=firstFile; i<lastFile; i++) rhoTree->Add(urls[i].c_str());
-  chain->AddFriend(rhoTree);
+  //  TChain *rhoTree = new TChain("hiFJRhoAnalyzer/t");
+  //for(size_t i=firstFile; i<lastFile; i++) rhoTree->Add(urls[i].c_str());
+  //chain->AddFriend(rhoTree);
 
   TChain *pfTree = new TChain("pfcandAnalyzer/pfTree");
   for(size_t i=firstFile; i<lastFile; i++) pfTree->Add(urls[i].c_str());
@@ -176,7 +176,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
 
   jetSDName = "JetsAKTR040SDCA";
 
-  LWJetProducer *lwjaktKT = new LWJetProducer("LWJetProducerAKTR040","LWJetProducerAKTR040");
+  LWJetProducer *lwjaktKT = new LWJetProducer("LWJetProducerAKTR040CA","LWJetProducerAKTR040CA");
   //lwjaktKT->SetInput(chain);
   lwjaktKT->ConnectEventObject(fEventObjects);
   lwjaktKT->SetJetType(LWJetProducer::kAKT);
@@ -210,6 +210,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   match->SetJetsNameBase(jetName);
   match->SetJetsNameTag(jetSDKTName);
   match->SetMatchingType(0);
+  match->SetNCentBins(1);
   handler->Add(match);
 
   anaZgHistos *anazghistos = new anaZgHistos("anaZgHistos","anaZgHistos");
@@ -311,6 +312,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   matchCAKT->SetJetsNameBase(jetSDName);
   matchCAKT->SetJetsNameTag(jetSDKTName);
   matchCAKT->SetMatchingType(0);
+  matchCAKT->SetNCentBins(1);
   handler->Add(matchCAKT);
 
   anaZgHistos *anazghistosCAKT = new anaZgHistos("anaZgHistosCAKT","anaZgHistosCAKT");
