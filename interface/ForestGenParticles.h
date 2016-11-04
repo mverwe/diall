@@ -27,6 +27,7 @@ public :
    std::vector<float>   *pt=0;
    std::vector<float>   *eta=0;
    std::vector<float>   *phi=0;
+   std::vector<float>   *m=0;
    std::vector<int>     *pdg=0;
    std::vector<int>     *chg=0;
    std::vector<int>     *matchingID=0;
@@ -42,19 +43,20 @@ public :
    Float_t         vr;
 
    // List of branches
-   TBranch        *b_event;   //!
-   TBranch        *b_b;   //!
-   TBranch        *b_npart;   //!
-   TBranch        *b_ncoll;   //!
-   TBranch        *b_nhard;   //!
+   TBranch        *b_event;  //!
+   TBranch        *b_b;      //!
+   TBranch        *b_npart;  //!
+   TBranch        *b_ncoll;  //!
+   TBranch        *b_nhard;  //!
    TBranch        *b_phi0;   //!
-   TBranch        *b_scale;   //!
-   TBranch        *b_n;   //!
+   TBranch        *b_scale;  //!
+   TBranch        *b_n;      //!
    TBranch        *b_ptav;   //!
    TBranch        *b_mult;   //!
-   TBranch        *b_pt;   //!
-   TBranch        *b_eta;   //!
-   TBranch        *b_phi;   //!
+   TBranch        *b_pt;     //!
+   TBranch        *b_eta;    //!
+   TBranch        *b_phi;    //!
+   TBranch        *b_m;      //!
    TBranch        *b_pdg;   //!
    TBranch        *b_chg;   //!
    TBranch        *b_sube;   //!

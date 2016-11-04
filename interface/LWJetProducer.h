@@ -57,7 +57,8 @@ class LWJetProducer : public anaBaseTask {
   void                   SetGhostArea(Double_t gh)   { fGhostArea     = gh; }
   void                   SetPtMinConst(Double_t pt)  { fPtMinConst    = pt; } 
   void                   SetIdConst(int i)           { fIdConst       = i ; }
-
+  void                   SetChargedOnly(bool b)      { fChargedJets   = b ; }
+  
   void                   SetDoJEC(bool b)            { fDoJEC         = b; }
   void                   SetDoJECCS(bool b)          { fDoJECCS       = b; }
   void                   SetL1Fastjet(TString s)     { fL1Fastjet     = s; }
@@ -90,7 +91,8 @@ class LWJetProducer : public anaBaseTask {
   Double_t         fGhostArea;              // ghost area
   Double_t         fPtMinConst;             // minimum pT of input constituents
   int              fIdConst;                // id of constituents
-
+  bool             fChargedJets;            // use only charged particles for jet reco
+  
   std::vector<fastjet::PseudoJet> fjInputs; // fastjet inputs
   std::vector<fastjet::PseudoJet> fjJets;   // fastjet reconstructed jets
 

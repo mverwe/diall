@@ -31,6 +31,8 @@ public:
    void SetUseRhoMCWeight(bool b)         { fUseRhoMCWeight = b; }
    void SetRhoMax(float max)              { fRhoMax = max; }
 
+   void SetNotUseRef(bool b)              { fNotUseRef = b; }
+
    void DoSubjetSmearing(bool b)          { fDoSubjetSmearing = b; }
    void SetSubjetSmearing(subjetSmearing sm, int icent) {if(icent<100) fSubjetSmearing[icent] = sm;}
    void DoSubjetSmearingResolution(bool b)          { fDoSubjetSmearingResolution = b; }
@@ -57,6 +59,8 @@ public:
    bool             fUseRhoMCWeight; //flag to activate rho mc weighting
    float            fRhoMax;      // max rho for event selection
 
+   bool             fNotUseRef;   //used matched jet as ref info
+   
    bool             fDoSubjetSmearing;    //flag to activate subjet smearing
    subjetSmearing   fSubjetSmearing[100]; //subjet resolution smearing module
 

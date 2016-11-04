@@ -5,6 +5,8 @@
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
 #include "UserCode/diall/interface/lwJet.h"
 
+#include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
+
 #include <iostream>
 ClassImp(lwJetFromForestProducer)
 
@@ -18,7 +20,13 @@ inputBase("lwJetFromForestProducer"),
   fForestJets(),
   fRadius(-1.),
   fMinJetPt(-1.),
-  fDoPFJetID(false)
+  fDoPFJetID(false),
+  fDoJEC(false),
+  fJetCorrector(0),
+  fL1Fastjet(""),
+  fL2Relative(""),
+  fL3Absolute(""),
+  fL2L3Residual("")
 {
   //default constructor
 }
@@ -33,7 +41,13 @@ lwJetFromForestProducer::lwJetFromForestProducer(const char *name) :
   fForestJets(),
   fRadius(-1.),
   fMinJetPt(-1.),
-  fDoPFJetID(false)
+  fDoPFJetID(false),
+  fDoJEC(false),
+  fJetCorrector(0),
+  fL1Fastjet(""),
+  fL2Relative(""),
+  fL3Absolute(""),
+  fL2L3Residual("")
 {
   //standard constructor
 }
@@ -263,6 +277,24 @@ Bool_t lwJetFromForestProducer::InitEventObjects() {
     }
   }
 
+  if(!fL1Fastjet.IsNull() || !fL2Relative.IsNull() || !fL3Absolute.IsNull() || !fL2L3Residual.IsNull()) {
+    JetCorrectorParameters *ResJetPar = 0x0;
+    if(!fL2L3Residual.IsNull()) ResJetPar = new JetCorrectorParameters(fL2L3Residual.Data());
+    JetCorrectorParameters *L3JetPar  = 0x0;
+    if(!fL3Absolute.IsNull()) L3JetPar = new JetCorrectorParameters(fL3Absolute.Data());
+    JetCorrectorParameters *L2JetPar  = 0x0;
+    if(!fL2Relative.IsNull()) L2JetPar = new JetCorrectorParameters(fL2Relative.Data());
+    JetCorrectorParameters *L1JetPar  = 0x0;
+    if(!fL1Fastjet.IsNull()) L1JetPar = new JetCorrectorParameters(fL1Fastjet.Data());
+    //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!!
+    std::vector<JetCorrectorParameters> vPar;
+    if(L1JetPar)  vPar.push_back(*L1JetPar);
+    if(L2JetPar)  vPar.push_back(*L2JetPar);
+    if(L3JetPar)  vPar.push_back(*L3JetPar);
+    if(ResJetPar) vPar.push_back(*ResJetPar);
+    fJetCorrector = new FactorizedJetCorrector(vPar);
+  }
+
   return kTRUE;
 }
 
@@ -289,7 +321,20 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
       continue;
     }
     //Printf("%s: jet pt: %f",GetName(),fForestJets.jtpt[i]);
-    lwJet *jet = new lwJet(fForestJets.jtpt[i],
+
+    double pt = fForestJets.rawpt[i];
+    if(fJetCorrector && fDoJEC) {
+      fJetCorrector->setJetEta(fForestJets.jteta[i]);
+      fJetCorrector->setJetPt(pt);
+      fJetCorrector->setJetA(fForestJets.jtarea[i]);
+      fJetCorrector->setRho(0.);
+      double correction = fJetCorrector->getCorrection();
+      pt *= correction;
+    }
+    else
+      pt = fForestJets.jtpt[i];
+
+    lwJet *jet = new lwJet(pt,
                            fForestJets.jteta[i],
                            fForestJets.jtphi[i],
                            fForestJets.jtm[i]);

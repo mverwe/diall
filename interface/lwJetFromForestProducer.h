@@ -10,6 +10,8 @@
 #include <TString.h>
 #include <TClonesArray.h>
 
+#include <CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h>
+
 #include "UserCode/diall/interface/inputBase.h"
 #include <UserCode/diall/interface/lwJetContainer.h>
 #include <UserCode/diall/interface/ForestJets.h>
@@ -34,6 +36,12 @@ class lwJetFromForestProducer : public inputBase {
   const char* GetJetContName()    const { return flwJetContName.Data()    ; }
   const char* GetGenJetContName() const { return flwGenJetContName.Data() ; }
   Double_t    GetRadius()         const { return fRadius                  ; }
+
+  void                   SetDoJEC(bool b)            { fDoJEC         = b; }
+  void                   SetL1Fastjet(TString s)     { fL1Fastjet     = s; }
+  void                   SetL2Relative(TString s)    { fL2Relative    = s; }
+  void                   SetL3Absolute(TString s)    { fL3Absolute    = s; }
+  void                   SetL2L3Residual(TString s)  { fL2L3Residual  = s; }
   
  protected:
   bool                         IsGoodPFJet(int i) const;
@@ -46,6 +54,13 @@ class lwJetFromForestProducer : public inputBase {
   Double_t                     fRadius;             // the R parameter to use
   double                       fMinJetPt;           // min jet pt
   bool                         fDoPFJetID;          // do PF jet quality selection
+
+  bool             fDoJEC;                  //apply JEC to standard jets
+  FactorizedJetCorrector *fJetCorrector;    //jet corrector
+  TString          fL1Fastjet;
+  TString          fL2Relative;
+  TString          fL3Absolute;
+  TString          fL2L3Residual;
 
  private:
   lwJetFromForestProducer(const lwJetFromForestProducer& obj); // copy constructor

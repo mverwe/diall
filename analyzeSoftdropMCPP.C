@@ -153,7 +153,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   anaBaseTask *handler = new anaBaseTask("handler","handler");
 
   //anti-kt jet finder on reconstructed pf candidates
-  LWJetProducer *lwjaktCA = new LWJetProducer("LWJetProducerAKTR040","LWJetProducerAKTR040");
+  LWJetProducer *lwjaktCA = new LWJetProducer("LWJetProducerAKTR040CA","LWJetProducerAKTR040CA");
   //lwjaktCA->SetInput(chain);
   lwjaktCA->ConnectEventObject(fEventObjects);
   lwjaktCA->SetJetType(LWJetProducer::kAKT);
@@ -174,9 +174,9 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   //lwjaktCA->SetL3Absolute(strL3Abs);
   handler->Add(lwjaktCA);
 
-  jetSDName = "JetsAKTR040SDCA";
+  TString jetSDCAName = "JetsAKTR040SDCASD";
 
-  LWJetProducer *lwjaktKT = new LWJetProducer("LWJetProducerAKTR040CA","LWJetProducerAKTR040CA");
+  LWJetProducer *lwjaktKT = new LWJetProducer("LWJetProducerAKTR040KT","LWJetProducerAKTR040KT");
   //lwjaktKT->SetInput(chain);
   lwjaktKT->ConnectEventObject(fEventObjects);
   lwjaktKT->SetJetType(LWJetProducer::kAKT);
@@ -197,21 +197,42 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   //lwjaktKT->SetL3Absolute(strL3Abs);
   handler->Add(lwjaktKT);
 
-  TString jetSDKTName = "JetsAKTR040SDKT";
+  TString jetSDKTName = "JetsAKTR040SDKTSD";
   
   anaJetQA *jetQA = new anaJetQA("anaJetQA","anaJetQA");
   jetQA->ConnectEventObject(fEventObjects);
   jetQA->SetJetsName(jetName);
   handler->Add(jetQA);
 
-  anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
+  anaJetMatching *match = new anaJetMatching("jetMatchingCA","jetMatchingCA");
   match->ConnectEventObject(fEventObjects);
   match->SetHiEvtName("hiEventContainer");
   match->SetJetsNameBase(jetName);
-  match->SetJetsNameTag(jetSDKTName);
+  match->SetJetsNameTag(jetSDCAName);
   match->SetMatchingType(0);
   match->SetNCentBins(1);
   handler->Add(match);
+
+  anaZgHistos *anazghistosCA = new anaZgHistos("anaZgHistosCA","anaZgHistosCA");
+  anazghistosCA->ConnectEventObject(fEventObjects);
+  anazghistosCA->SetHiEvtName("hiEventContainer");
+  anazghistosCA->SetJetsName(jetSDCAName);
+  anazghistosCA->SetJetsRefName(jetName);
+  anazghistosCA->SetNCentBins(1);
+  anazghistosCA->SetJetEtaRange(-1.3,1.3);
+  anazghistosCA->SetDeltaRRange(0.1,999.);
+  anazghistosCA->SetUseRhoMCWeight(false);
+  anazghistosCA->DoJetShift(doJetShift,jetShift);
+  handler->Add(anazghistosCA);
+
+  anaJetMatching *matchKT = new anaJetMatching("jetMatchingKT","jetMatchingKT");
+  matchKT->ConnectEventObject(fEventObjects);
+  matchKT->SetHiEvtName("hiEventContainer");
+  matchKT->SetJetsNameBase(jetName);
+  matchKT->SetJetsNameTag(jetSDKTName);
+  matchKT->SetMatchingType(0);
+  matchKT->SetNCentBins(1);
+  handler->Add(matchKT);
 
   anaZgHistos *anazghistos = new anaZgHistos("anaZgHistos","anaZgHistos");
   anazghistos->ConnectEventObject(fEventObjects);
@@ -298,7 +319,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   anaZgHistos *anazghistosNoFakes = new anaZgHistos("anaZgHistosNoFakes","anaZgHistosNoFakes");
   anazghistosNoFakes->ConnectEventObject(fEventObjects);
   anazghistosNoFakes->SetHiEvtName("hiEventContainer");
-  anazghistosNoFakes->SetJetsName(jetSDName);
+  anazghistosNoFakes->SetJetsName(jetSDKTName);
   anazghistosNoFakes->SetJetsRefName(jetName);
   anazghistosNoFakes->SetNCentBins(1);
   anazghistosNoFakes->SetJetEtaRange(-1.3,1.3);
@@ -309,7 +330,7 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   anaJetMatching *matchCAKT = new anaJetMatching("jetMatchingCAKT","jetMatchingCAKT");
   matchCAKT->ConnectEventObject(fEventObjects);
   matchCAKT->SetHiEvtName("hiEventContainer");
-  matchCAKT->SetJetsNameBase(jetSDName);
+  matchCAKT->SetJetsNameBase(jetSDCAName);
   matchCAKT->SetJetsNameTag(jetSDKTName);
   matchCAKT->SetMatchingType(0);
   matchCAKT->SetNCentBins(1);
@@ -319,12 +340,13 @@ void analyzeSoftdrop(std::vector<std::string> urls, const char *outname = "event
   anazghistosCAKT->ConnectEventObject(fEventObjects);
   anazghistosCAKT->SetHiEvtName("hiEventContainer");
   anazghistosCAKT->SetJetsName(jetSDKTName);
-  anazghistosCAKT->SetJetsRefName(jetSDName);
+  anazghistosCAKT->SetJetsRefName(jetSDCAName);
   anazghistosCAKT->SetNCentBins(1);
   anazghistosCAKT->SetJetEtaRange(-1.3,1.3);
   anazghistosCAKT->SetDeltaRRange(0.1,999.);
   anazghistosCAKT->SetUseRhoMCWeight(false);
   anazghistosCAKT->DoJetShift(doJetShift,jetShift);
+  anazghistosCAKT->SetNotUseRef(true);
   handler->Add(anazghistosCAKT);
  
   //---------------------------------------------------------------

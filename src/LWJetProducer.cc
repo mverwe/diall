@@ -26,6 +26,7 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   fGhostArea(0.005),
   fPtMinConst(0.),
   fIdConst(-1),
+  fChargedJets(false),
   fjInputs(),
   fjJets(),
   fIsInit(0),
@@ -66,6 +67,7 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   fGhostArea(0.005),
   fPtMinConst(0.),
   fIdConst(-1),
+  fChargedJets(false),
   fjInputs(),
   fjJets(),
   fIsInit(0),
@@ -213,7 +215,8 @@ Int_t LWJetProducer::FindJets() {
     particleBase *fRecoParticle = static_cast<particleBase*>(fConst->At(i));
     if(fRecoParticle->GetLorentzVector().Pt()<fPtMinConst) continue;
     if(fIdConst>-1 && TMath::Abs(fRecoParticle->GetId())!=fIdConst) continue;
-
+    if(fChargedJets && fRecoParticle->GetCharge()==0) continue;
+    
     fFastJetWrapper.AddInputVector(fRecoParticle->GetLorentzVector().Px(),
                                    fRecoParticle->GetLorentzVector().Py(),
                                    fRecoParticle->GetLorentzVector().Pz(),
@@ -284,6 +287,7 @@ Int_t LWJetProducer::FindJets() {
 
         fastjet::contrib::SoftDrop * sd = new fastjet::contrib::SoftDrop(fSDBeta, fSDZcut, fRadius );
         sd->set_verbose_structure(true);
+        sd->set_reclustering(false);
 
         fastjet::PseudoJet transformedJet = tempJets[0];
         if ( transformedJet == 0 ) {
@@ -328,7 +332,8 @@ Int_t LWJetProducer::FindJets() {
           massSD *= correction;
         }
 
-        // if(ptSD>100.) Printf("SD jet: %f eta: %f phi: %f zg: %f",ptSD,transformedJet.eta(),transformedJet.phi(),sym);
+        double sym = transformedJet.structure_of<fastjet::contrib::SoftDrop>().symmetry();
+        if(ptSD>100.) Printf("%s: SD jet: %f eta: %f phi: %f zg: %f nsubjets: %d",GetName(),ptSD,transformedJet.eta(),transformedJet.phi(),sym,(int)sjpt.size());
         
         lwJet *jetSD = new lwJet(ptSD, transformedJet.eta(), transformedJet.phi(), massSD,transformedJet.user_index());
         jetSD->SetRawPt(transformedJet.perp());

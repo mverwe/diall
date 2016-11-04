@@ -33,6 +33,8 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fh3PtTrueEtaDeltaPt(0),
   fh3PtTrueEtaDeltaPtRel(0),
   fh3PtTrueEtaScalePt(0),
+  fh3PtTrueEtaFineScalePt(0),
+  fh3PtRawEtaFineScalePt(0),
   fh3PtTruePtSubEta(0),
   fh3PtTrueEtaDeltaR(0),
   fh3PtTrueEtaDeltaM(0),
@@ -52,6 +54,8 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fh3PtTrueEtaDeltaPt          = new TH3F*[fNcentBins];
   fh3PtTrueEtaDeltaPtRel       = new TH3F*[fNcentBins];
   fh3PtTrueEtaScalePt          = new TH3F*[fNcentBins];
+  fh3PtTrueEtaFineScalePt      = new TH3F*[fNcentBins];
+  fh3PtRawEtaFineScalePt      = new TH3F*[fNcentBins];
   fh3PtTruePtSubEta            = new TH3F*[fNcentBins];
   fh3PtTrueEtaDeltaR           = new TH3F*[fNcentBins];
 
@@ -72,6 +76,8 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
     fh3PtTrueEtaDeltaPt[i]          = 0;
     fh3PtTrueEtaDeltaPtRel[i]       = 0;
     fh3PtTrueEtaScalePt[i]          = 0;
+    fh3PtTrueEtaFineScalePt[i]      = 0;
+    fh3PtRawEtaFineScalePt[i]       = 0;
     fh3PtTruePtSubEta[i]            = 0;
     fh3PtTrueEtaDeltaR[i]           = 0;
 
@@ -160,7 +166,8 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
        //reject unmatched or badly matched jets
        if(jet->GetRefDr()>fMaxDist
           || jet->GetSubEvent()!=0
-          || jet->GetRefPt()<10.)//e-3)
+          || jet->GetRefPt()<1.) //changed for pPb
+ //         || jet->GetRefPt()<10.)//e-3)
          continue;
        
        //select jets originating from certain parton flavor
@@ -187,6 +194,9 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
          if(jet->GetRefPt()>0.) {
            fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),dpt/jet->GetRefPt(),weight);
            fh3PtTrueEtaScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),pt/jet->GetRefPt(),weight);
+           //fh3PtTrueEtaFineScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),pt/jet->GetRefPt(),weight);
+           fh3PtTrueEtaFineScalePt[fCentBin]->Fill(jet->GetRefPt(),jet->Eta(),pt/jet->GetRefPt(),weight);
+           fh3PtRawEtaFineScalePt[fCentBin]->Fill(jet->GetRawPt(),jet->Eta(),pt/jet->GetRefPt(),weight);
            fh3PtTrueEtaDeltaR[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->GetRefDr(),weight);
          }
          if(jet->GetRefM()>0.) {
@@ -265,6 +275,9 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
          if(jet1->Pt()>0.) {
            fh3PtTrueEtaDeltaPtRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dpt/jet1->Pt(),weight);
            fh3PtTrueEtaScalePt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),ptrec/jet1->Pt(),weight);
+           //fh3PtTrueEtaFineScalePt[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),ptrec/jet1->Pt(),weight);
+           fh3PtTrueEtaFineScalePt[fCentBin]->Fill(jet1->Pt(),jet2->Eta(),ptrec/jet1->Pt(),weight);
+           fh3PtRawEtaFineScalePt[fCentBin]->Fill(jet2->GetRawPt(),jet2->Eta(),ptrec/jet1->Pt(),weight);
          }
          if(jet1->M()>0.) {
            fh3PtTrueEtaDeltaMRel[fCentBin]->Fill(jet1->Pt(),jet1->Eta(),dm/jet1->M(),weight);
@@ -416,6 +429,26 @@ void anaJetEnergyScale::CreateOutputObjects() {
   for(int i = 0; i<=nBinsEta; ++i)
     binsEta[i] = etaEdge[i];
 
+  const int nBinsEtaFine = 82;
+  double etaEdgeFine[nBinsEtaFine+1] = {
+    -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013,
+    -3.839, -3.664, -3.489, -3.314, -3.139, -2.964, -2.853,
+    -2.650, -2.500, -2.322, -2.172, -2.043, -1.930, -1.830,
+    -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, -1.218,
+    -1.131, -1.044, -0.957, -0.879, -0.783, -0.696, -0.609,
+    -0.522, -0.435, -0.348, -0.261, -0.174, -0.087,
+    0.000,
+    0.087,  0.174,  0.261,  0.348,  0.435,  0.522,  0.609,
+    0.696,  0.783,  0.879,  0.957,  1.044,  1.131,  1.218,
+    1.305,  1.392,  1.479,  1.566,  1.653,  1.740,  1.830,
+    1.930,  2.043,  2.172,  2.322,  2.500,  2.650,  2.853,
+    2.964,  3.139,  3.314,  3.489,  3.664,  3.839,  4.013,
+    4.191,  4.363,  4.538,  4.716,  4.889,  5.191
+  };
+  double *binsEtaFine = new double[nBinsEtaFine];
+  for(int i = 0; i<=nBinsEtaFine; ++i)
+    binsEtaFine[i] = etaEdgeFine[i];
+
   fhEventSel = new TH1F("fhEventSel","fhEventSel",10,0,10);
   fOutput->Add(fhEventSel);
 
@@ -481,6 +514,17 @@ void anaJetEnergyScale::CreateOutputObjects() {
     fh3PtTrueEtaScalePt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsScalePt,binsScalePt);
     fOutput->Add(fh3PtTrueEtaScalePt[i]);
 
+    //new
+    histName = Form("fh3PtTrueEtaFineScalePt_%d",i);
+    histTitle = Form("%s;#it{p}_{T,gen};#eta;#it{p}_{T,rec}/#it{p}_{T,gen}",histName.Data());
+    fh3PtTrueEtaFineScalePt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEtaFine,binsEtaFine,nBinsScalePt,binsScalePt);
+    fOutput->Add(fh3PtTrueEtaFineScalePt[i]);
+
+    histName = Form("fh3PtRawEtaFineScalePt_%d",i);
+    histTitle = Form("%s;#it{p}_{T,raw};#eta;#it{p}_{T,rec}/#it{p}_{T,gen}",histName.Data());
+    fh3PtRawEtaFineScalePt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEtaFine,binsEtaFine,nBinsScalePt,binsScalePt);
+    fOutput->Add(fh3PtRawEtaFineScalePt[i]);
+    
     histName = Form("fh3PtTrueEtaDeltaR_%d",i);
     histTitle = Form("%s;#it{p}_{T,gen};Eta;#Delta R_{rec,gen}",histName.Data());
     fh3PtTrueEtaDeltaR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtPart,binsPtPart,nBinsEta,binsEta,nBinsDeltaR,binsDeltaR);
@@ -516,6 +560,7 @@ void anaJetEnergyScale::CreateOutputObjects() {
   
   if(binsPhi)               delete [] binsPhi;
   if(binsEta)               delete [] binsEta;
+  if(binsEtaFine)           delete [] binsEtaFine;
   if(binsPtPart)            delete [] binsPtPart;
   if(binsPtDet)             delete [] binsPtDet;
   if(binsDPt)               delete [] binsDPt;

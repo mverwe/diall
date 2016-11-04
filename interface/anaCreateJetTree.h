@@ -1,8 +1,8 @@
-// analysis to extract jet energy scale
+// task to extract jet tree
 // Author: M. Verweij
 
-#ifndef anaJetEnergyScale_h
-#define anaJetEnergyScale_h
+#ifndef anaCreateJetTree_h
+#define anaCreateJetTree_h
 
 #include "TString.h"
 #include "TH2F.h"
@@ -13,12 +13,14 @@
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include <UserCode/diall/interface/rhoMap.h>
 
-class anaJetEnergyScale : public anaBaseTask {
+#include <UserCode/diall/interface/ForestJets.h>
+
+class anaCreateJetTree : public anaBaseTask {
    
 public:
-   anaJetEnergyScale() {;}
-   anaJetEnergyScale(const char *name, const char *title);
-   virtual ~anaJetEnergyScale() {;}
+   anaCreateJetTree() {;}
+   anaCreateJetTree(const char *name, const char *title);
+   virtual ~anaCreateJetTree() {;}
    void Exec(Option_t *option="");
    void CreateOutputObjects();
 
@@ -31,6 +33,8 @@ public:
    void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
    void SetRefPartonFlavor(int min, int max)  { fRefPartonFlavorMin = min; fRefPartonFlavorMax = max;} 
    void SetMinJetPtRec(double pt)      { fMinJetPtRec = pt ; }
+
+   void ClearOutJetTreeVars();
    
  protected:
    Int_t             fNcentBins;
@@ -50,33 +54,22 @@ public:
    int               fRefPartonFlavorMax;     //required parton flavor
    double            fMinJetPtRec;            //min jet pt for reco jets
 
-   TH1F      *fhEventSel;
-   TH1F      *fhCentrality;
-   TH1F      *fhNPV;
-   
-   TH2F      **fh2PtEtaNoMatching;    //!
-   TH3F      **fh3PtEtaPhiNotMatched; //!
-   TH3F      **fh3PtEtaPhiMatched;    //!
-   TH3F      **fh3PtEtaPhiMatched2;   //!
+   TTree             *fTreeOut;
 
-   TH3F      **fh3PtTrueNPVDeltaPt;   //!
-   TH3F      **fh3PtTrueNPVDeltaPtRel;//!
-   TH3F      **fh3PtTrueNPVScalePt;   //!
-   TH3F      **fh3PtTruePtSubNPV;     //!
+   struct outJetTreeVars {
+     int                fRun;
+     float              fCent;
+     std::vector<float> fPt;
+     std::vector<float> fPtRaw;
+     std::vector<float> fEta;
+     std::vector<float> fPhi;
+     std::vector<float> fM;
+     std::vector<float> fPtRef;
+   };
 
-   TH3F      **fh3PtTrueEtaDeltaPt;   //!
-   TH3F      **fh3PtTrueEtaDeltaPtRel;//!
-   TH3F      **fh3PtTrueEtaScalePt;   //!
-   TH3F      **fh3PtTrueEtaFineScalePt; //!
-   TH3F      **fh3PtRawEtaFineScalePt; //!
-   TH3F      **fh3PtTruePtSubEta;     //!
-   TH3F      **fh3PtTrueEtaDeltaR;    //! 
- 
-   TH3F      **fh3PtTrueEtaDeltaM;    //!
-   TH3F      **fh3PtTrueEtaDeltaMRel; //!
-   TH3F      **fh3PtTrueEtaScaleM;    //!
-   TH3F      **fh3PtTrueMTrueScaleM;  //!
+   outJetTreeVars     fOutJetTreeVars;
+   //   ForestJets         fForestJetsOut;         //jet forest type tree output
 
-   ClassDef(anaJetEnergyScale,3)
+   ClassDef(anaCreateJetTree,1)
 };
 #endif

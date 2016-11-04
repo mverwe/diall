@@ -22,6 +22,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fMinRefPt(-10000.),
   fUseRhoMCWeight(false),
   fRhoMax(10000.),
+  fNotUseRef(false),
   fDoSubjetSmearing(false),
   fSubjetSmearing(),
   fDoSubjetSmearingResolution(false),
@@ -224,7 +225,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     
     if(pt<10.) continue;
     if(eta<fJetEtaMin || eta>fJetEtaMax) continue;
-    if(fMinRefPt>-1. && jetNotGroomed->GetRefPt()<fMinRefPt) continue; //remove fakes in MC    
+    //if(fMinRefPt>-1. && jetNotGroomed->GetRefPt()<fMinRefPt) continue; //remove fakes in MC    
  
     if(fCentBin>-1 && fCentBin<fNcentBins) {
       fh3PtEtaPhi[fCentBin]->Fill(pt,eta,phi,weight);
@@ -269,6 +270,17 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     std::vector<float> refsjphi  = jet->GetRefSubJetPhi();
     std::vector<float> refsjm    = jet->GetRefSubJetM();
 
+    if(fNotUseRef) {
+      Printf("Gen level not found, used matched jet");
+      refsjpt = jetNotGroomed->GetSubJetPt();
+      refsjeta = jetNotGroomed->GetSubJetEta();
+      refsjphi = jetNotGroomed->GetSubJetPhi();
+      refsjm = jetNotGroomed->GetSubJetM();
+    }
+
+    double refpt = jetNotGroomed->GetRefPt();
+    if(fNotUseRef) refpt = jetNotGroomed->Pt();
+    
     float refzg = -1.;
     double dzgrel = -999.;
     if(refsjpt.size()>1) {
@@ -276,13 +288,15 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       dzgrel = (zg - refzg)/refzg;
     }
 
+    Printf("n ref jets: %d refzg: %f",(int)refsjpt.size(),refzg);
+    
     float weightzg = 1.;
     if(fDoZgReweight && refzg>0.) {
       weightzg = f1ZgReweight->Eval(refzg);
       weight*=weightzg;
     }
     if(fDoJewelZgReweight && refzg>0.) {
-      weightzg = fJewelZgReweight.getWeight(jetNotGroomed->GetRefPt(),refzg,cent);
+      weightzg = fJewelZgReweight.getWeight(refpt,refzg,cent);
       weight*=weightzg;
     }
 
@@ -351,7 +365,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       fh2PtThetag[fCentBin]->Fill(pt,thetag,weight);
       fh2PtDeltaR12[fCentBin]->Fill(pt,deltaR12,weight);
 
-      if(jetNotGroomed->GetRefPt()<10.) { //fakes
+      if(refpt<fMinRefPt) { //fakes
         fh2PtZgNoRef[fCentBin]->Fill(pt,zg,weight);
         fh2PtThetagNoRef[fCentBin]->Fill(pt,thetag,weight);
         fh2PtDeltaR12NoRef[fCentBin]->Fill(pt,deltaR12,weight);
@@ -361,9 +375,9 @@ void anaZgHistos::Exec(Option_t * /*option*/)
         fh2PtThetagTrue[fCentBin]->Fill(pt,thetag,weight);
         fh2PtDeltaR12True[fCentBin]->Fill(pt,deltaR12,weight);
                 
-        fh3PtRecPtTrueZg[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),zg,weight);
-        fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),thetag,weight);
-        fh3PtRecPtTrueDeltaR12[fCentBin]->Fill(pt,jetNotGroomed->GetRefPt(),deltaR12,weight);
+        fh3PtRecPtTrueZg[fCentBin]->Fill(pt,refpt,zg,weight);
+        fh3PtRecPtTrueThetag[fCentBin]->Fill(pt,refpt,thetag,weight);
+        fh3PtRecPtTrueDeltaR12[fCentBin]->Fill(pt,refpt,deltaR12,weight);
 
         if(sjphi.size()>1 && refsjphi.size()>1) {
           if(sjphi[0]>-10. && refsjphi[0]>-10. && sjphi[1]>-10. && refsjphi[1]>-10) {
@@ -376,25 +390,25 @@ void anaZgHistos::Exec(Option_t * /*option*/)
 
             if(dr12>dr11 && dr21>dr22) {
         
-              double dptrel = (pt - jetNotGroomed->GetRefPt())/jetNotGroomed->GetRefPt();
-              double var[6] = {(double)zg,(double)refzg,(double)pt,(double)jetNotGroomed->GetRefPt(),dptrel,dzgrel};
+              double dptrel = (pt - refpt)/refpt;
+              double var[6] = {(double)zg,(double)refzg,(double)pt,(double)refpt,dptrel,dzgrel};
               fhnZgResponse[fCentBin]->Fill(var,weight);
-              fh3PtTrueDeltaPtDeltaZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),pt-jetNotGroomed->GetRefPt(),zg-refzg,weight);
-              if(refzg>0.) fh3PtTrueZgScaleZg[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refzg,zg/refzg);
+              fh3PtTrueDeltaPtDeltaZg[fCentBin]->Fill(refpt,pt-refpt,zg-refzg,weight);
+              if(refzg>0.) fh3PtTrueZgScaleZg[fCentBin]->Fill(refpt,refzg,zg/refzg);
         
               for(uint sj = 0; sj<refsjpt.size(); ++sj) {
                 if(sj>1) continue;
                 if(sj>=sjpt.size()) continue;
                 double dptrel = (sjpt.at(sj)-refsjpt.at(sj))/refsjpt.at(sj);
-                fh3PtTruePtSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-                fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                fh3PtTruePtSJScalePtSJ[fCentBin]->Fill(refpt,refsjpt.at(sj),dptrel,weight);
+                fh3PtTruePtRecoSJScalePtSJ[fCentBin]->Fill(refpt,sjpt.at(sj),dptrel+1.,weight);
                 if(sj==0) {
-                  fh3PtTruePtLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-                  fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                  fh3PtTruePtLSJScalePtLSJ[fCentBin]->Fill(refpt,refsjpt.at(sj),dptrel,weight);
+                  fh3PtTruePtRecoLSJScalePtLSJ[fCentBin]->Fill(refpt,sjpt.at(sj),dptrel+1.,weight);
                 }
                 else if(sj==1) {
-                  fh3PtTruePtSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),refsjpt.at(sj),dptrel,weight);
-                  fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(jetNotGroomed->GetRefPt(),sjpt.at(sj),dptrel+1.,weight);
+                  fh3PtTruePtSLSJScalePtSLSJ[fCentBin]->Fill(refpt,refsjpt.at(sj),dptrel,weight);
+                  fh3PtTruePtRecoSLSJScalePtSLSJ[fCentBin]->Fill(refpt,sjpt.at(sj),dptrel+1.,weight);
                 }
               }//subjet loop
             }
