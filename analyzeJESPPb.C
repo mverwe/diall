@@ -41,7 +41,8 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     jetSignalType: jets used to select jetty region in events
     0 : detector-level jets (akPu4PF)
     1 : particle-level jets (gen jets)
-   */
+   :q
+*/
 
   //TString strL1 = Form("%s/80X_mcRun2_asymptotic_2016_miniAODv2_v1_L1FastJet_AK4Calo.txt",baseJEC.Data());
   TString strL1 = Form("%s/HI_PythiaCUETP8M1_5020GeV_753p1_v1_L1FastJet_AK4Calo_offline.txt",baseJEC.Data());
@@ -49,7 +50,9 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   TString strL3Abs = Form("%s/80X_mcRun2_asymptotic_2016_miniAODv2_v1_L3Absolute_AK4Calo.txt",baseJEC.Data());
   TString strL2L3Res = Form("%s/80X_mcRun2_asymptotic_2016_miniAODv2_v1_L2L3Residual_AK4Calo.txt",baseJEC.Data());
   //TString strL2Rel = Form("%s/80X_mcRun2_pA_v0_L2Relative_AK4CaloHLT.txt",baseJEC.Data());
-  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_v2.txt",baseJEC.Data());
+//  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_v2.txt",baseJEC.Data());
+//  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_RawReco.txt",baseJEC.Data());
+  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_RawOnlyVsRefPt.txt",baseJEC.Data());
   //TString strL3Abs = Form("%s/80X_mcRun2_pA_v0_L3Absolute_AK4CaloHLT.txt",baseJEC.Data());
   //TString strL2L3Res = Form("%s/80X_mcRun2_pA_v0_L2L3Residual_AK4CaloHLT.txt",baseJEC.Data());
 

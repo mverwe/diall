@@ -69,6 +69,7 @@ public:
    TH3F      **fh3PtTrueEtaScalePt;   //!
    TH3F      **fh3PtTrueEtaFineScalePt; //!
    TH3F      **fh3PtRawEtaFineScalePt; //!
+   TH3F      **fh3PtRecoEtaFineScalePt; //!
    TH3F      **fh3PtTruePtSubEta;     //!
    TH3F      **fh3PtTrueEtaDeltaR;    //! 
  
@@ -77,6 +78,6 @@ public:
    TH3F      **fh3PtTrueEtaScaleM;    //!
    TH3F      **fh3PtTrueMTrueScaleM;  //!
 
-   ClassDef(anaJetEnergyScale,3)
+   ClassDef(anaJetEnergyScale,4)
 };
 #endif
