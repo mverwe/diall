@@ -50,8 +50,8 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   TString strL3Abs = Form("%s/80X_mcRun2_asymptotic_2016_miniAODv2_v1_L3Absolute_AK4Calo.txt",baseJEC.Data());
   TString strL2L3Res = Form("%s/80X_mcRun2_asymptotic_2016_miniAODv2_v1_L2L3Residual_AK4Calo.txt",baseJEC.Data());
   //TString strL2Rel = Form("%s/80X_mcRun2_pA_v0_L2Relative_AK4CaloHLT.txt",baseJEC.Data());
-//  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_v2.txt",baseJEC.Data());
-//  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_RawReco.txt",baseJEC.Data());
+  //  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_v2.txt",baseJEC.Data());
+  //  TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_RawReco.txt",baseJEC.Data());
   TString strL2Rel = Form("%s/MV_Unf_L2Relative_ak4Calo_RawOnlyVsRefPt.txt",baseJEC.Data());
   //TString strL3Abs = Form("%s/80X_mcRun2_pA_v0_L3Absolute_AK4CaloHLT.txt",baseJEC.Data());
   //TString strL2L3Res = Form("%s/80X_mcRun2_pA_v0_L2L3Residual_AK4CaloHLT.txt",baseJEC.Data());
@@ -147,6 +147,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     anajesForest[ij]->SetRecJetsName(jetName[ij]);
     anajesForest[ij]->SetNCentBins(1);
     anajesForest[ij]->SetUseForestMatching(true);
+    //if(jetName[ij].Contains("Calo")) anajesForest[ij]->SetMinJetPtRaw(6.);
     //anajesForest[ij]->SetMaxDistance(0.2);
     handler->Add(anajesForest[ij]);
 

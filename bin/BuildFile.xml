@@ -23,6 +23,7 @@
   <bin name="runZJetMCResponse"       file="runZJetMCResponse.cc"></bin>
   <bin name="runZToMuMu"              file="runZToMuMu.cc"></bin>
   <bin name="runHadronIsolation"      file="runHadronIsolation.cc"></bin>
+  <bin name="runChJetMass"            file="runChJetMass.cc"></bin>
   <bin name="runCSZJet"               file="runCSZJet.cc"></bin>
   <bin name="runRho"                  file="runRho.cc"></bin>
   <bin name="runSubJet"               file="runSubJet.cc"></bin>

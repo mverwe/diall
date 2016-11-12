@@ -120,8 +120,10 @@ Bool_t genParticleProducer::Run(Long64_t entry) {
                                       i);
     
     //gp->SetCharge((int)(fFGenParts.chg->at(i)));
-    int pdg = fFGenParts.pdg->at(i);
-    gp->SetCharge(fabs(pdg)/pdg);
+    //int pdg = fFGenParts.pdg->at(i);
+    gp->SetCharge(fFGenParts.chg->at(i));//fabs(pdg)/pdg);
+    //if(fFGenParts.chg->at(i)==0) Printf("!!!!!!!!!!!!! found zero charge");
+    //Printf("pt=%f chg: %d",fFGenParts.pt->at(i),fFGenParts.chg->at(i));
     gp->SetPID((int)fFGenParts.pdg->at(i));
     //if(fabs(fFGenParts.pdg->at(i))==13) Printf("%d pdg: %d",i,fFGenParts.pdg->at(i)); 
     gp->SetPIDMom(0);

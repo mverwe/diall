@@ -47,6 +47,7 @@ anaBaseTask("LWJetProducer","LWJetProducer"),
   fUseKtForSoftDrop(false),
   fSDZcut(0.1),
   fSDBeta(0.),
+  flwSDJetContainer(0),
   fDoJEC(false),
   fDoJECCS(false),
   fJetCorrector(0),
@@ -88,6 +89,7 @@ LWJetProducer::LWJetProducer(const char *name, const char *title) :
   fUseKtForSoftDrop(false),
   fSDZcut(0.1),
   fSDBeta(0.),
+  flwSDJetContainer(0),
   fDoJEC(false),
   fDoJECCS(false),
   fJetCorrector(0),
@@ -174,7 +176,8 @@ Bool_t LWJetProducer::Init() {
     flwSDJetContainer->Init();
     flwSDJetContainer->SetJetRadius(fRadius);
     fEventObjects->Add(flwSDJetContainer);
-  }
+  } else
+    flwSDJetContainer = NULL;
 
   if(!fL1Fastjet.IsNull() || !fL2Relative.IsNull() || !fL3Absolute.IsNull() || !fL2L3Residual.IsNull()) {
     JetCorrectorParameters *ResJetPar = 0x0; 
@@ -201,6 +204,7 @@ Bool_t LWJetProducer::Init() {
 //__________________________________________________________
 Int_t LWJetProducer::FindJets() {
 
+  //  Printf(" LWJetProducer::FindJets() ");
   //clear
   fFastJetWrapper.Clear();
   fjInputs.clear();
@@ -210,20 +214,24 @@ Int_t LWJetProducer::FindJets() {
   //collect input particles and pass to fj wrapper
   Int_t npart = fConst->GetEntriesFast();
   fjInputs.reserve(npart);
-  
+
+  int nacc = 0;
   for (int i = 0; i < npart; i++) {
     particleBase *fRecoParticle = static_cast<particleBase*>(fConst->At(i));
     if(fRecoParticle->GetLorentzVector().Pt()<fPtMinConst) continue;
     if(fIdConst>-1 && TMath::Abs(fRecoParticle->GetId())!=fIdConst) continue;
     if(fChargedJets && fRecoParticle->GetCharge()==0) continue;
+
+    //Printf("%d Accept particle: pt=%f eta=%f phi=%f ch=%d",nacc+1,fRecoParticle->Pt(),fRecoParticle->Eta(),fRecoParticle->Phi(),fRecoParticle->GetCharge());
     
     fFastJetWrapper.AddInputVector(fRecoParticle->GetLorentzVector().Px(),
                                    fRecoParticle->GetLorentzVector().Py(),
                                    fRecoParticle->GetLorentzVector().Pz(),
                                    fRecoParticle->GetLorentzVector().E(),
                                    i);
+    ++nacc;
   }
-
+  //  Printf("nacc: %d",nacc);
   if (fFastJetWrapper.GetInputVectors().size() == 0) return 0;
 
   // run jet finder
@@ -242,6 +250,7 @@ Int_t LWJetProducer::FindJets() {
     if(jets_incl[ij].perp()<1e-6) continue; //remove pure ghost jets
     double pt = jets_incl[ij].perp();
     double mass = jets_incl[ij].m();
+    //Printf("Found jet %d pt=%f mass=%f",ij,pt,mass);
     if(fJetCorrector && fDoJEC) {
       fJetCorrector->setJetEta(jets_incl[ij].eta());
       fJetCorrector->setJetPt(pt);
@@ -273,7 +282,7 @@ Int_t LWJetProducer::FindJets() {
     if(nc>0) { //only store if not pure ghost jet
       flwJetContainer->AddJet(jet,jetCount);
       ++jetCount;
-
+      //Printf("jet added %d",jetCount);
       if(fDoSoftDrop) {
         JetDefPtr fjJetDefinitionRecluster_;
         if(fUseKtForSoftDrop)
@@ -351,11 +360,14 @@ Int_t LWJetProducer::FindJets() {
       
     }
   }
+  //Printf("jet finding done. Now sort");
   flwJetContainer->SortJets();
+  //Printf("Sorting done");
   if(flwSDJetContainer) flwSDJetContainer->SortJets();
   //Printf("Event had %d jets  %d",jetCount,(Int_t)fFastJetWrapper.GetInclusiveJets().size());
 
   if(fDoConstSubtraction && flwCSJetContainer && fRhoMap && fRhoMMap) {
+    //Printf("doing constituent subtraction");
     flwCSJetContainer->ClearVec();
     //first put jets in separate vectors for eta ranges
     std::vector<fastjet::PseudoJet> unsub;
@@ -415,6 +427,8 @@ Int_t LWJetProducer::FindJets() {
     flwCSJetContainer->SortJets();
     jets_sub.clear();
   }//constituent subtraction
+
+  //  Printf("done jet finding");
 
   // return fFastJetWrapper.GetInclusiveJets().size();
   return jets_incl.size();

@@ -19,6 +19,7 @@ anaJetEnergyScale::anaJetEnergyScale(const char *name, const char *title)
   fRefPartonFlavorMin(-1),
   fRefPartonFlavorMax(-1),
   fMinJetPtRec(0.),
+  fMinJetPtRaw(0.),
   fhEventSel(0),
   fhCentrality(0),
   fhNPV(0),
@@ -187,6 +188,7 @@ void anaJetEnergyScale::Exec(Option_t * /*option*/)
          fh3PtTruePtSubEta[fCentBin]->Fill(jet->GetRefPt(),pt,jet->GetRefEta(),weight);
        
        if(pt<fMinJetPtRec) continue;
+       if(jet->GetRawPt()<fMinJetPtRaw) continue;
 
        if(fCentBin>-1 && fCentBin<fNcentBins)
          fh3PtEtaPhiMatched[fCentBin]->Fill(jet->GetRefPt(),jet->GetRefEta(),jet->GetRefPhi(),weight);

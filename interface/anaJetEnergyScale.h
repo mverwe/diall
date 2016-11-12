@@ -31,7 +31,8 @@ public:
    void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
    void SetRefPartonFlavor(int min, int max)  { fRefPartonFlavorMin = min; fRefPartonFlavorMax = max;} 
    void SetMinJetPtRec(double pt)      { fMinJetPtRec = pt ; }
-   
+   void SetMinJetPtRaw(double pt)      { fMinJetPtRaw = pt ; } 
+  
  protected:
    Int_t             fNcentBins;
    TString           fJetsGenName;       //name of gen jet container
@@ -49,6 +50,7 @@ public:
    int               fRefPartonFlavorMin;     //required parton flavor
    int               fRefPartonFlavorMax;     //required parton flavor
    double            fMinJetPtRec;            //min jet pt for reco jets
+   double            fMinJetPtRaw;            //min RAW jet pt for reco jets
 
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;
