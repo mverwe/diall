@@ -147,7 +147,7 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     anajesForest[ij]->SetRecJetsName(jetName[ij]);
     anajesForest[ij]->SetNCentBins(1);
     anajesForest[ij]->SetUseForestMatching(true);
-    //if(jetName[ij].Contains("Calo")) anajesForest[ij]->SetMinJetPtRaw(6.);
+    //if(jetName[ij].Contains("Calo")) anajesForest[ij]->SetMinJetPtRaw(20.);
     //anajesForest[ij]->SetMaxDistance(0.2);
     handler->Add(anajesForest[ij]);
 
