@@ -175,6 +175,18 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
     }
   }
 
+  anaJetEnergyScale *anajesForestCaloLead = new anaJetEnergyScale(Form("anaJESForestLead_%s",jetName[0].Data()),Form("anaJESForest_%s",jetName[0].Data()));
+  anajesForestCaloLead->ConnectEventObject(fEventObjects);
+  anajesForestCaloLead->SetHiEvtName("hiEventContainer");
+  anajesForestCaloLead->SetGenJetsName(Form("akt%dGenFor%s",rad[0],jetName[0].Data()));
+  anajesForestCaloLead->SetRecJetsName(jetName[0]);
+  anajesForestCaloLead->SetNCentBins(1);
+  anajesForestCaloLead->SetUseForestMatching(true);
+  anajesForestCaloLead->SetUseOnlyLeadingJet(true,rad[0]);
+  //if(jetName[ij].Contains("Calo")) anajesForestCaloLead->SetMinJetPtRaw(6.);
+  //anajesForestCaloLead->SetMaxDistance(0.2);
+  handler->Add(anajesForestCaloLead);
+
   // anaJetEnergyScale *anajesForestQuarks = new anaJetEnergyScale("anaJESForestQuarks","anaJESForestQuarks");
   // anajesForestQuarks->ConnectEventObject(fEventObjects);
   // anajesForestQuarks->SetHiEvtName("hiEventContainer");

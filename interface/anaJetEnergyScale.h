@@ -26,6 +26,9 @@ public:
    void SetGenJetsName(TString name)   { fJetsGenName = name ;  }
    void SetRecJetsName(TString name)   { fJetsRecName = name ; }
    void SetUseForestMatching(bool b)   { fUseForestMatching = b; }
+
+   void SetUseOnlyLeadingJet(bool b, double maxDist) {fUseOnlyLeadingJet = b; fMaxMatchDistLeadJet = maxDist;}
+   
    void SetRhoMapName(TString n)       { fRhoMapName    = n ; }
    void SetMaxDistance(double dr)      { fMaxDist       = dr; }
    void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
@@ -51,6 +54,9 @@ public:
    int               fRefPartonFlavorMax;     //required parton flavor
    double            fMinJetPtRec;            //min jet pt for reco jets
    double            fMinJetPtRaw;            //min RAW jet pt for reco jets
+
+   bool              fUseOnlyLeadingJet;      //use only leading
+   double            fMaxMatchDistLeadJet;    //max distance between leading reco and gen jet
 
    TH1F      *fhEventSel;
    TH1F      *fhCentrality;
