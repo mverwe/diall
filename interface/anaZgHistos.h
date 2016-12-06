@@ -84,6 +84,7 @@ public:
    TH2F           **fh2PtGenNSubjets; //!jet gen pt vs number of subjets
    TH2F           **fh2PtMass;     //!jet pt vs mass
    TH2F           **fh2PtPtGF;     //!pt jet vs ptg/pt  
+   TH2F           **fh2PtNDrop;    //!pt jet vs number of dropped branches
  
    TH2F           **fh2PtSubjetPtRatio21; //!jet pt vs subjetratio 2/1
   
@@ -117,11 +118,17 @@ public:
    TH2F           **fh2PtDeltaR12NoRef; //!jet pt vs DR12 for jets without MC match
    TH3F           **fh3PtRecPtTrueDeltaR12; //!jet pt reco vs pt true vs DR12
 
+   TH2F           **fh2PtMgOverPt; //!jet pt vs zg
+   TH2F           **fh2PtMgOverPtTrue; //!jet pt vs zg for true jets
+   TH2F           **fh2PtMgOverPtNoRef; //!jet pt vs zg for jets without MC match
+   TH3F           **fh3PtRecPtTrueMgOverPt; //!jet pt reco vs pt true vs thetag
 
+   TH3F           **fh3PtZgThetag; //!jet pt vs zg vs thetag
+   
    TH3F           **fh3PtTrueZgScaleZg; //! jet pt true vs zg true vs zgRec/zgTrue
 
    THnSparse      **fhnZgResponse;                  //!response matrix
    
-   ClassDef(anaZgHistos,2)
+   ClassDef(anaZgHistos,3)
 };
 #endif

@@ -333,7 +333,7 @@ Int_t LWJetProducer::FindJets() {
         double massSD = transformedJet.m();
         if(fJetCorrector && fDoJEC) {
           fJetCorrector->setJetEta(transformedJet.eta());
-          fJetCorrector->setJetPt(pt);
+          fJetCorrector->setJetPt(ptSD);
           fJetCorrector->setJetA(fFastJetWrapper.GetJetArea(ij));
           fJetCorrector->setRho(0.); 
           double correction = fJetCorrector->getCorrection();
@@ -341,8 +341,9 @@ Int_t LWJetProducer::FindJets() {
           massSD *= correction;
         }
 
-        double sym = transformedJet.structure_of<fastjet::contrib::SoftDrop>().symmetry();
-        if(ptSD>100.) Printf("%s: SD jet: %f eta: %f phi: %f zg: %f nsubjets: %d",GetName(),ptSD,transformedJet.eta(),transformedJet.phi(),sym,(int)sjpt.size());
+        int ndrop = transformedJet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+        //double sym = transformedJet.structure_of<fastjet::contrib::SoftDrop>().symmetry();
+        //if(ptSD>100.) Printf("%s: SD jet: %f eta: %f phi: %f zg: %f nsubjets: %d",GetName(),ptSD,transformedJet.eta(),transformedJet.phi(),sym,(int)sjpt.size());
         
         lwJet *jetSD = new lwJet(ptSD, transformedJet.eta(), transformedJet.phi(), massSD,transformedJet.user_index());
         jetSD->SetRawPt(transformedJet.perp());
@@ -351,6 +352,7 @@ Int_t LWJetProducer::FindJets() {
         jetSD->SetSubJetEta(sjeta);
         jetSD->SetSubJetPhi(sjphi);
         jetSD->SetSubJetM(sjm);
+        jetSD->SetNDroppedBranches(ndrop);
 
         flwSDJetContainer->AddJet(jetSD,jetCountSD);
         ++jetCountSD;
