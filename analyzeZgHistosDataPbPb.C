@@ -7,6 +7,7 @@
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
 #include "UserCode/diall/interface/triggerProducer.h"
 #include "UserCode/diall/interface/anaBaseTask.h"
+#include "UserCode/diall/interface/anaCreateJetTree.h"
 #include "UserCode/diall/interface/anaJetEnergyScale.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
 #include "UserCode/diall/interface/anaJetQA.h"
@@ -51,6 +52,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   // TString triggerName = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
   TString triggerName2 = "HLT_HIPuAK4CaloJet80_Eta5p1_v1";
   TString triggerName3 = "HLT_HIPuAK4CaloJet60_Eta5p1_v1";
+  std::vector<std::string> trigList;
+  trigList.push_back(triggerName.Data());
+  trigList.push_back(triggerName2.Data());
+  trigList.push_back(triggerName3.Data());
 
   bool doDRVar = false;
 
@@ -261,6 +266,28 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrLarge->DoJetShift(doJetShift,jetShift);
   handler->Add(anazghistosdrLarge);
 
+  anaCreateJetTree *anaJetTree = new anaCreateJetTree(Form("anaJetTree_%s",jetName.Data()),Form("anaJetTree_%s",jetName.Data()));
+  anaJetTree->ConnectEventObject(fEventObjects);
+  anaJetTree->SetHiEvtName("hiEventContainer");
+  anaJetTree->DoCollisionEventSel(true);
+  anaJetTree->DoHBHENoiseFilter(true);
+  anaJetTree->DoHBHENoiseFilterLoose(true);
+  anaJetTree->DoPrimaryVertexFilter(true);
+  anaJetTree->DoClusterCompatibilityFilter(true);
+  anaJetTree->DoHFCoincFilter(true);
+  anaJetTree->SetTriggerMapName("triggerMap");
+  anaJetTree->AddTriggerSel(triggerName.Data());
+  //anaJetTree->SetGenJetsName(Form("akt%dGenFor%s",rad[ij],jetName[ij].Data()));
+  anaJetTree->SetRecJetsName(jetSDName);
+  anaJetTree->SetGenJetsName(jetName);
+  anaJetTree->SetNCentBins(1);
+  anaJetTree->SetUseForestMatching(false);
+  anaJetTree->SetMaxDistance(0.2);
+  anaJetTree->SetStoreSubjets(true);
+  //anaJetTree->SetMinJetPtRec(80.);
+  anaJetTree->SetMinJetPtRef(80.);
+  handler->Add(anaJetTree);
+  
   if(doDRVar) {
     anaZgHistos *anazghistosDRVarDown = new anaZgHistos("anaZgHistosDrVarDown","anaZgHistosDrVarDown");
     anazghistosDRVarDown->ConnectEventObject(fEventObjects);
@@ -302,7 +329,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
     anazghistosDRVarUp->SetJetEtaRange(-1.3,1.3);
     anazghistosDRVarUp->SetDeltaRRange(0.1*1.15,999.);
     anazghistosDRVarUp->DoJetShift(doJetShift,jetShift);
-    handler->Add(anazghistosDRVarUp);
+    handler->Add(anazghistosDRVarUp);  
   }
 
   //---------------------------------------------------------------
@@ -310,13 +337,24 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   //---------------------------------------------------------------
   Long64_t entries_tot =  chain->GetEntries(); //93064
   if(nentries<0) lastEvent = chain->GetEntries();
+  int entryDiv = ((int)((lastEvent-firstEvent)/20));
   Printf("nentries: %lld  tot: %lld",nentries,entries_tot);
   for (Long64_t jentry=firstEvent; jentry<lastEvent; ++jentry) {
-    if(jentry%10000==0) cout << "entry: "<< jentry << endl;
+    //if(jentry%10000==0) cout << "entry: "<< jentry << endl;
+    if(jentry%entryDiv==0) cout << "entry: "<< jentry << endl;
     //Run producers
     //Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
     p_trg->Run(jentry);
+    //stop here if trigger of interest didn't fire
+    triggerMap *trgMap = p_trg->GetTriggerMap();
+    bool passTrig = false;
+    for(std::vector<std::string>::const_iterator s = trigList.begin(); s != trigList.end(); ++s) {
+       int fire = trgMap->TriggerFired(*s);
+       if(fire>0) passTrig = true;
+    }
+    if(!passTrig) continue;
+    
     //Printf("produce jets");
     p_SDJet->Run(jentry); //forest SoftDrop jets
     p_Jet->Run(jentry); //forest jets

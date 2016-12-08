@@ -33,6 +33,9 @@ public:
    void SetUseRawPt(bool b)            { fUseRawPt      = b;  }     
    void SetRefPartonFlavor(int min, int max)  { fRefPartonFlavorMin = min; fRefPartonFlavorMax = max;} 
    void SetMinJetPtRec(double pt)      { fMinJetPtRec = pt ; }
+   void SetMinJetPtRef(double pt)      { fMinJetPtRef = pt ; }
+
+   void SetStoreSubjets(bool b)        { fStoreSubjets = b; }
 
    void ClearOutJetTreeVars();
    
@@ -53,6 +56,9 @@ public:
    int               fRefPartonFlavorMin;     //required parton flavor
    int               fRefPartonFlavorMax;     //required parton flavor
    double            fMinJetPtRec;            //min jet pt for reco jets
+   double            fMinJetPtRef;            //min jet pt for ref jets
+
+   bool              fStoreSubjets;           //store subjets in tree
 
    TTree             *fTreeOut;
 
@@ -65,6 +71,15 @@ public:
      std::vector<float> fPhi;
      std::vector<float> fM;
      std::vector<float> fPtRef;
+     std::vector<float> fEtaRef;
+     std::vector<std::vector<float> > fSubJetPt;
+     std::vector<std::vector<float> > fSubJetEta;
+     std::vector<std::vector<float> > fSubJetPhi;
+     std::vector<std::vector<float> > fSubJetM;
+     std::vector<std::vector<float> > fSubJetPtRef;
+     std::vector<std::vector<float> > fSubJetEtaRef;
+     std::vector<std::vector<float> > fSubJetPhiRef;
+     std::vector<std::vector<float> > fSubJetMRef;
    };
 
    outJetTreeVars     fOutJetTreeVars;
