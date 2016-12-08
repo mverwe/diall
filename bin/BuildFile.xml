@@ -32,6 +32,7 @@
   <bin name="runDijetAjDataPbPb"      file="runDijetAjDataPbPb.cc"></bin>
   <bin name="runDijetAjDataPP"        file="runDijetAjDataPP.cc"></bin>
   <bin name="runGroomedJetMassDataPbPb" file="runGroomedJetMassDataPbPb.cc"></bin>
+  <bin name="runGroomedJetMassDataPP" file="runGroomedJetMassDataPP.cc"></bin>
   <bin name="runGroomedJetMassMCPP"   file="runGroomedJetMassMCPP.cc"></bin>
   <bin name="runGroomedJetMassMCPbPb" file="runGroomedJetMassMCPbPb.cc"></bin>
   <bin name="runSoftdropMCPbPb"       file="runSoftdropMCPbPb.cc"></bin>

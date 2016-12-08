@@ -29,6 +29,7 @@ class triggerProducer : public inputBase {
   void     AddTrigger(std::string s)    { fTriggerList.push_back(s); }
 
   const char* GetTriggerMapName() const { return fTriggerMapName.Data() ; }
+  triggerMap *GetTriggerMap()      const { return fTriggerMap; }
   
  protected:
   TString                      fTriggerMapName;  // name of trigger map

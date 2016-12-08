@@ -237,6 +237,30 @@ void analyzeGroomedJetMass(std::vector<std::string> urls, const char *outname = 
   anazghistosdrLarge->DoJetShift(doJetShift,jetShift);
   handler->Add(anazghistosdrLarge);
 
+  anaJetMatching *matchZCut010Beta000 = new anaJetMatching("jetMatchingZCut010Beta000","jetMatchingZCut010Beta000");
+  matchZCut010Beta000->ConnectEventObject(fEventObjects);
+  matchZCut010Beta000->SetHiEvtName("hiEventContainer");
+  matchZCut010Beta000->SetJetsNameBase(jetName); //forest jets ungroomed
+  matchZCut010Beta000->SetJetsNameTag(jetSDName);
+  matchZCut010Beta000->SetMatchingType(0);
+  matchZCut010Beta000->SetNCentBins(1);
+  handler->Add(matchZCut010Beta000);
+
+
+  //zg analysis with zcut = 0.1 and beta = 0
+  anaZgHistos *anazghistosZCut010Beta000 = new anaZgHistos("anaZgHistosZCut010Beta000","anaZgHistosZCut010Beta000");
+  anazghistosZCut010Beta000->ConnectEventObject(fEventObjects);
+  anazghistosZCut010Beta000->SetHiEvtName("hiEventContainer");
+  anazghistosZCut010Beta000->SetJetsName(jetSDName);
+  anazghistosZCut010Beta000->SetJetsRefName(jetName);
+  anazghistosZCut010Beta000->SetNCentBins(1);
+  anazghistosZCut010Beta000->SetJetEtaRange(-1.3,1.3);
+  anazghistosZCut010Beta000->SetDeltaRRange(0.1,999.);
+  anazghistosZCut010Beta000->SetUseRhoMCWeight(false);
+  anazghistosZCut010Beta000->DoJetShift(doJetShift,jetShift);
+  handler->Add(anazghistosZCut010Beta000);
+  
+
   //------------------------------------------------------------------------------------------------
   //                  GEN JETS
   //------------------------------------------------------------------------------------------------
