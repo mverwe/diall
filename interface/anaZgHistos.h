@@ -94,6 +94,7 @@ public:
    TH2F           **fh2PtSubjetPtInvMass21; //!jet pt vs subjetratio 2/1
 
    TH2F           **fh2PtZg; //!jet pt vs zg
+   TH2F           **fh2PtZgDRNoPass; //!jet pt vs zg for jets which fail DR cut
    TH2F           **fh2PtZgAll; //!jet pt vs zg all jets (including zg<zcut)
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
    TH2F           **fh2PtZgNoRef; //!jet pt vs zg for jets without MC match

@@ -174,7 +174,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
   //jetQA->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
-  handler->Add(jetQA);
+  //handler->Add(jetQA);
 
   anaJetMatching *match = new anaJetMatching("jetMatching","jetMatching");
   match->ConnectEventObject(fEventObjects);
@@ -202,11 +202,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistos->DoHFCoincFilter(true);
   anazghistos->SetTriggerMapName("triggerMap");
   anazghistos->AddTriggerSel(triggerName.Data());
-  anazghistos->AddTriggerSel(triggerName2.Data());
-  anazghistos->AddTriggerSel(triggerName3.Data());
+  //anazghistos->AddTriggerSel(triggerName2.Data());
+  //anazghistos->AddTriggerSel(triggerName3.Data());
   //anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
-  //  anazghistos->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
   anazghistos->SetRhoMax(330.);
   anazghistos->SetJetsName(jetSDName);
   anazghistos->SetJetsRefName(jetName);
@@ -227,11 +226,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrSmall->DoHFCoincFilter(true);
   anazghistosdrSmall->SetTriggerMapName("triggerMap");
   anazghistosdrSmall->AddTriggerSel(triggerName.Data());
-  anazghistosdrSmall->AddTriggerSel(triggerName2.Data());
-  anazghistosdrSmall->AddTriggerSel(triggerName3.Data());
+  //anazghistosdrSmall->AddTriggerSel(triggerName2.Data());
+  //anazghistosdrSmall->AddTriggerSel(triggerName3.Data());
   //anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
-  //  anazghistosdrSmall->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
   anazghistosdrSmall->SetRhoMax(330.);
   anazghistosdrSmall->SetJetsName(jetSDName);
   anazghistosdrSmall->SetJetsRefName(jetName);
@@ -252,11 +250,10 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrLarge->DoHFCoincFilter(true);
   anazghistosdrLarge->SetTriggerMapName("triggerMap");
   anazghistosdrLarge->AddTriggerSel(triggerName.Data());
-  anazghistosdrLarge->AddTriggerSel(triggerName2.Data());
-  anazghistosdrLarge->AddTriggerSel(triggerName3.Data());
+  //anazghistosdrLarge->AddTriggerSel(triggerName2.Data());
+  //anazghistosdrLarge->AddTriggerSel(triggerName3.Data());
   //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet80_Eta5p1_v1");
   //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_v1");
-  //  anazghistosdrLarge->AddTriggerSel("HLT_HIPuAK4CaloJet100_Eta5p1_Cent30_100_v1");
   anazghistosdrLarge->SetRhoMax(330.);
   anazghistosdrLarge->SetJetsName(jetSDName);
   anazghistosdrLarge->SetJetsRefName(jetName);

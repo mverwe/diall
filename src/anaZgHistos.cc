@@ -46,6 +46,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac2(),
   fh2PtSubjetPtInvMass21(),
   fh2PtZg(),
+  fh2PtZgDRNoPass(),
   fh2PtZgAll(),
   fh2PtZgTrue(),
   fh2PtZgNoRef(),
@@ -84,6 +85,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac1   = new TH2F*[fNcentBins];
   fh2PtSubjetPtFrac2   = new TH2F*[fNcentBins];
   fh2PtZg              = new TH2F*[fNcentBins];
+  fh2PtZgDRNoPass      = new TH2F*[fNcentBins];
   fh2PtZgAll           = new TH2F*[fNcentBins];
   fh2PtZgTrue          = new TH2F*[fNcentBins];
   fh2PtZgNoRef         = new TH2F*[fNcentBins];
@@ -125,6 +127,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh2PtSubjetPtFrac2[i]   = 0;
     fh2PtSubjetPtInvMass21[i]   = 0;
     fh2PtZg[i]                  = 0;
+    fh2PtZgDRNoPass[i]          = 0;
     fh2PtZgAll[i]               = 0;
     fh2PtZgTrue[i]              = 0;
     fh2PtZgNoRef[i]             = 0;
@@ -391,9 +394,14 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     thetag = v1.Angle(v2.Vect());
     // Printf("ptjet: %f zg: %f thetag: %f",pt,zg,thetag);
     deltaR12 = DeltaR(sjphi.at(0),sjphi.at(1),sjeta.at(0),sjeta.at(1));
+
+    //reject jets outside requested DeltaR12 + bookkeep them
+    if(deltaR12<fMinDeltaR || deltaR12>fMaxDeltaR) {
+      if(fCentBin>-1 && fCentBin<fNcentBins)
+        fh2PtZgDRNoPass[fCentBin]->Fill(pt,zg,weight);
+      continue;
+    }
     
-    if(deltaR12<fMinDeltaR || deltaR12>fMaxDeltaR) continue;
- 
     if(fCentBin>-1 && fCentBin<fNcentBins) {
       
       fh2PtPtGF[fCentBin]->Fill(pt,ptg/pt);
@@ -565,6 +573,11 @@ void anaZgHistos::CreateOutputObjects() {
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtZg[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
     fOutput->Add(fh2PtZg[i]);
+
+    histName = Form("fh2PtZgDRNoPass_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh2PtZgDRNoPass[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
+    fOutput->Add(fh2PtZgDRNoPass[i]);
 
     histName = Form("fh2PtZgAll_%d",i);
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());

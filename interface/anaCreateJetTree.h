@@ -45,7 +45,7 @@ public:
    lwJetContainer   *fJetsGenCont;       //!gen jet container
    TString           fJetsRecName;      //name of rec jet container
    lwJetContainer   *fJetsRecCont;      //!rec jet container
-
+   
    bool              fUseForestMatching; //use matched ref jet from forest
    bool              fUseRawPt;          //use raw pt
 
@@ -70,6 +70,8 @@ public:
      std::vector<float> fEta;
      std::vector<float> fPhi;
      std::vector<float> fM;
+     std::vector<float> fPtMatch;
+     std::vector<float> fEtaMatch;
      std::vector<float> fPtRef;
      std::vector<float> fEtaRef;
      std::vector<std::vector<float> > fSubJetPt;

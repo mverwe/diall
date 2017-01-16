@@ -8,6 +8,7 @@
 #include "UserCode/diall/interface/lwJetFromForestProducer.h"
 #include "UserCode/diall/interface/subjetSmearing.h"
 #include "UserCode/diall/interface/anaBaseTask.h"
+#include "UserCode/diall/interface/anaCreateJetTree.h"
 #include "UserCode/diall/interface/anaJetEnergyScale.h"
 #include "UserCode/diall/interface/anaJetMatching.h"
 #include "UserCode/diall/interface/anaJetQA.h"
@@ -254,6 +255,20 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anazghistosdrLarge->SetZgReweight(doZgReweight,f1ZgReweight);
   anazghistosdrLarge->SetZgReweightMulti(doJewelZgReweight,jrw);
   handler->Add(anazghistosdrLarge);
+
+  anaCreateJetTree *anaJetTree = new anaCreateJetTree(Form("anaJetTree_%s",jetName.Data()),Form("anaJetTree_%s",jetName.Data()));
+  anaJetTree->ConnectEventObject(fEventObjects);
+  anaJetTree->SetHiEvtName("hiEventContainer");
+  //anaJetTree->SetGenJetsName(Form("akt%dGenFor%s",rad[ij],jetName[ij].Data()));
+  anaJetTree->SetRecJetsName(jetSDName);
+  anaJetTree->SetGenJetsName(jetName);
+  anaJetTree->SetNCentBins(1);
+  anaJetTree->SetUseForestMatching(true);
+  anaJetTree->SetMaxDistance(0.2);
+  anaJetTree->SetStoreSubjets(true);
+  //anaJetTree->SetMinJetPtRec(80.);
+  anaJetTree->SetMinJetPtRef(80.);
+  handler->Add(anaJetTree);
 
 
   anaZgHistos *anazghistosGen = new anaZgHistos("anazghistosGen","anazghistosGen");

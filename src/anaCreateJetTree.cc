@@ -98,10 +98,12 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
      double jtphi = jet->Phi();
      double jtm = jet->M();
      double refpt = -1.;
+     double refeta = -999.;
+     double matchpt = -1.;
+     double matcheta = -999.;
 
      if(jtpt<fMinJetPtRec) continue;
 
-     double refeta = -999.;
      if(fUseForestMatching) {
        //reject unmatched or badly matched jets
        if(jet->GetRefDr()>fMaxDist
@@ -109,6 +111,14 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
          continue;
        refpt = jet->GetRefPt();
        refeta = jet->GetRefEta();
+
+       int id = jet->GetMatchId1();
+       lwJet *jetGen = fJetsGenCont->GetJet(id);
+       if(!jetGen) continue;
+       double dR = jet->DeltaR(jetGen);
+       if(dR>fMaxDist) continue;
+       matchpt = jetGen->Pt();
+       matcheta = jetGen->Eta();       
      } else {
        int id = jet->GetMatchId1();
        lwJet *jetGen = fJetsGenCont->GetJet(id);
@@ -117,10 +127,12 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
        if(dR>fMaxDist) continue;
        refpt = jetGen->Pt();
        refeta = jetGen->Eta();
+       matchpt = refpt;
+       matcheta = refeta;
      }
 
      if(refpt<fMinJetPtRef) continue;
-
+     
      fOutJetTreeVars.fPt.push_back(jtpt);
      fOutJetTreeVars.fPtRaw.push_back(rawpt);
      fOutJetTreeVars.fEta.push_back(jteta);
@@ -135,7 +147,9 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
      
      fOutJetTreeVars.fPtRef.push_back(refpt);
      fOutJetTreeVars.fEtaRef.push_back(refeta);
-
+     fOutJetTreeVars.fPtMatch.push_back(matchpt);
+     fOutJetTreeVars.fEtaMatch.push_back(matcheta);
+     
      if(fStoreSubjets) {
        if(fUseForestMatching) {
          fOutJetTreeVars.fSubJetPtRef.push_back(jet->GetRefSubJetPt());
@@ -175,6 +189,8 @@ void anaCreateJetTree::CreateOutputObjects() {
   fTreeOut->Branch("fM",&fOutJetTreeVars.fM);
   fTreeOut->Branch("fPtRef",&fOutJetTreeVars.fPtRef);
   fTreeOut->Branch("fEtaRef",&fOutJetTreeVars.fEtaRef);
+  fTreeOut->Branch("fPtMatch",&fOutJetTreeVars.fPtMatch);
+  fTreeOut->Branch("fEtaMatch",&fOutJetTreeVars.fEtaMatch);
   if(fStoreSubjets) {
     fTreeOut->Branch("fSubJetPt",&fOutJetTreeVars.fSubJetPt);
     fTreeOut->Branch("fSubJetEta",&fOutJetTreeVars.fSubJetEta);
@@ -203,6 +219,8 @@ void anaCreateJetTree::ClearOutJetTreeVars() {
   fOutJetTreeVars.fM.clear();
   fOutJetTreeVars.fPtRef.clear();
   fOutJetTreeVars.fEtaRef.clear();
+  fOutJetTreeVars.fPtMatch.clear();
+  fOutJetTreeVars.fEtaMatch.clear();
   fOutJetTreeVars.fSubJetPt.clear();
   fOutJetTreeVars.fSubJetEta.clear();
   fOutJetTreeVars.fSubJetPhi.clear();
