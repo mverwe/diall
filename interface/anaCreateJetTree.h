@@ -36,6 +36,7 @@ public:
    void SetMinJetPtRef(double pt)      { fMinJetPtRef = pt ; }
 
    void SetStoreSubjets(bool b)        { fStoreSubjets = b; }
+   void SetStorePFIdInfo(bool b)       { fStorePFIdInfo = b; }
 
    void ClearOutJetTreeVars();
    
@@ -59,6 +60,7 @@ public:
    double            fMinJetPtRef;            //min jet pt for ref jets
 
    bool              fStoreSubjets;           //store subjets in tree
+   bool              fStorePFIdInfo;          //store PF id info
 
    TTree             *fTreeOut;
 
@@ -78,10 +80,23 @@ public:
      std::vector<std::vector<float> > fSubJetEta;
      std::vector<std::vector<float> > fSubJetPhi;
      std::vector<std::vector<float> > fSubJetM;
+     
      std::vector<std::vector<float> > fSubJetPtRef;
      std::vector<std::vector<float> > fSubJetEtaRef;
      std::vector<std::vector<float> > fSubJetPhiRef;
      std::vector<std::vector<float> > fSubJetMRef;
+
+     std::vector<float> fCHF;
+     std::vector<float> fNHF;
+     std::vector<float> fCEF;
+     std::vector<float> fNEF;
+     std::vector<float> fMUF;
+     std::vector<float> fCHM;
+     std::vector<float> fNHM;
+     std::vector<float> fCEM;
+     std::vector<float> fNEM;
+     std::vector<float> fMUM;
+
    };
 
    outJetTreeVars     fOutJetTreeVars;

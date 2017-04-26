@@ -11,6 +11,7 @@
 #include "UserCode/diall/interface/lwJetContainer.h"
 #include "UserCode/diall/interface/subjetSmearing.h"
 #include "UserCode/diall/interface/subjetSmearingResolution.h"
+#include "UserCode/diall/interface/triggerObjectMap.h"
 
 class anaZgHistos : public anaBaseTask {
    
@@ -21,6 +22,11 @@ public:
    void Exec(Option_t *option="");
    void CreateOutputObjects();
 
+   void SetTriggerObjectName(TString name)  { fTriggerObjName  = name ; }
+   void SetTriggerObjectEtaRange(float min, float max) { fTrigEtaMin = min; fTrigEtaMax = max; }
+
+   void SetVzBarycenter(float b)          { fVzOffset = b;};
+   
    void SetNCentBins(Int_t n)             { fNcentBins    = n;  }
    void SetJetsName(TString name)         { fJetsName = name ; }
    void SetJetsRefName(TString name)         { fJetsRefName = name ; }
@@ -45,6 +51,12 @@ public:
  
  protected:
    double DeltaR(double phi1, double phi2, double eta1, double eta2);
+
+   TString           fTriggerObjName;           //name of trigger object map
+   triggerObjectMap *fTriggerObj;               //!trigger object
+   float             fTrigEtaMin;               //min eta for trigger object to accept event
+   float             fTrigEtaMax;               //max eta for trigger object to accept event
+   float            fVzOffset;                  //barycenter offset to be applied (only for data)
    
    int              fNcentBins;
    TString          fJetsName;    //name of SD jet container
@@ -78,6 +90,9 @@ public:
  
    TH1F            *fhCentrality;  //!centrality
    TH2F            *fh2RhoCent;         //!rho_central vs cent
+   TH1F            *fh1Vz;         //! z-vertex
+
+   TH3F           **fh3PtEtaPhiTrigObj; //!jet pt vs eta vs phi
    
    TH3F           **fh3PtEtaPhi;   //!jet pt vs eta vs phi
    TH2F           **fh2PtNSubjets; //!jet pt vs number of subjets
@@ -94,6 +109,8 @@ public:
    TH2F           **fh2PtSubjetPtInvMass21; //!jet pt vs subjetratio 2/1
 
    TH2F           **fh2PtZg; //!jet pt vs zg
+   TH2F           **fh2PtGZg; //!jet ptg vs zg
+   TH2F           **fh2PtZgChMax; //!jet pt vs zg
    TH2F           **fh2PtZgDRNoPass; //!jet pt vs zg for jets which fail DR cut
    TH2F           **fh2PtZgAll; //!jet pt vs zg all jets (including zg<zcut)
    TH2F           **fh2PtZgTrue; //!jet pt vs zg for true jets
@@ -108,6 +125,8 @@ public:
    TH3F           **fh3PtTruePtRecoSJScalePtSJ;  //!jet pt true vs pt subjet vs scale pt subjet
    TH3F           **fh3PtTruePtRecoLSJScalePtLSJ;  //!jet pt true vs pt leading subjet vs scale pt leading subjet
    TH3F           **fh3PtTruePtRecoSLSJScalePtSLSJ;  //!jet pt true vs pt subleading subjet vs scale pt subleading subjet
+
+   TH2F           **fh2PtChMax; //!jet pt vs charged max
    
    TH2F           **fh2PtThetag; //!jet pt vs zg
    TH2F           **fh2PtThetagTrue; //!jet pt vs zg for true jets

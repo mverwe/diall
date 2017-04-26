@@ -26,7 +26,12 @@ inputBase("lwJetFromForestProducer"),
   fL1Fastjet(""),
   fL2Relative(""),
   fL3Absolute(""),
-  fL2L3Residual("")
+  fL2L3Residual(""),
+  fEvtName(""),
+  fHiEvent(),
+  fDoResidualChris(false),
+  fResidualChris(),
+  fCorrFormChris("[0]+[1]/TMath::Sqrt(x)+[2]/x")
 {
   //default constructor
 }
@@ -47,7 +52,12 @@ lwJetFromForestProducer::lwJetFromForestProducer(const char *name) :
   fL1Fastjet(""),
   fL2Relative(""),
   fL3Absolute(""),
-  fL2L3Residual("")
+  fL2L3Residual(""),
+  fEvtName(""),
+  fHiEvent(),
+  fDoResidualChris(false),
+  fResidualChris(),
+  fCorrFormChris("[0]+[1]/TMath::Sqrt(x)+[2]/x")
 {
   //standard constructor
 }
@@ -295,6 +305,14 @@ Bool_t lwJetFromForestProducer::InitEventObjects() {
     fJetCorrector = new FactorizedJetCorrector(vPar);
   }
 
+  if(fDoResidualChris && !fHiEvent && !fEvtName.IsNull()) {
+    fHiEvent = dynamic_cast<hiEventContainer*>(fEventObjects->FindObject(fEvtName.Data()));
+    if(!fHiEvent) {
+      Printf("%s: !!WARNING: Couldn't locate %s branch. Turning off residual correction.",GetName(),fEvtName.Data());
+      fDoResidualChris = false;
+    }
+  }
+
   return kTRUE;
 }
 
@@ -322,8 +340,10 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
     }
     //Printf("%s: jet pt: %f",GetName(),fForestJets.jtpt[i]);
 
-    double pt = fForestJets.rawpt[i];
+    double pt = fForestJets.jtpt[i];
+   
     if(fJetCorrector && fDoJEC) {
+      pt = fForestJets.rawpt[i];
       fJetCorrector->setJetEta(fForestJets.jteta[i]);
       fJetCorrector->setJetPt(pt);
       fJetCorrector->setJetA(fForestJets.jtarea[i]);
@@ -331,9 +351,15 @@ Bool_t lwJetFromForestProducer::Run(Long64_t entry) {
       double correction = fJetCorrector->getCorrection();
       pt *= correction;
     }
-    else
-      pt = fForestJets.jtpt[i];
 
+    if(fDoResidualChris) {
+      //Printf("retrieve residual correction from Chris. Init pt: %f",pt);
+      if(!fHiEvent) Printf("fHiEvent doesn't exist");
+      double correction = fResidualChris.getPtEtaJetResidualCorr(pt,fForestJets.jteta[i],(int)fHiEvent->GetCentrality(),fCorrFormChris);
+      pt *= correction;
+      //Printf("corrected pt: %f correction: %f",pt,correction);
+    }
+    
     lwJet *jet = new lwJet(pt,
                            fForestJets.jteta[i],
                            fForestJets.jtphi[i],

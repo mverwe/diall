@@ -16,6 +16,7 @@
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaPuppiParticles.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
+#include <UserCode/diall/include/residualJetCorrChris.h>
 
 #include <TList.h>
 #include <TChain.h>
@@ -41,10 +42,10 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
 
   TString jetName = "aktPuppiR040";
   TString jetTreeName = "akPuppi4PFJetAnalyzer";
-  jetName = "aktCsR040";
-  jetTreeName = "akCs4PFJetAnalyzer";
-  //jetName = "aktPuR030";
-  //jetTreeName = "akPu3PFJetAnalyzer";
+  jetName = "aktPuR030";
+  jetTreeName = "akPu3PFJetAnalyzer";
+  //jetName = "aktVsR040";
+  //jetTreeName = "akVs4PFJetAnalyzer";
 
   std::cout << "analyzing JES for: " << jetName << " tree: " << jetTreeName << std::endl;
    
@@ -94,6 +95,12 @@ void analyzeJES(std::vector<std::string> urls, const char *outname = "eventObjec
   p_PUJet->SetGenJetContName("akt4Gen");
   p_PUJet->SetEventObjects(fEventObjects);
   p_PUJet->SetRadius(0.4);
+  p_PUJet->SetHiEvtName("hiEventContainer");
+  residualJetCorrChris resCorr;
+  std::string corrFileName = "/afs/cern.ch/work/m/mverweij/PbPb5TeV/mc/resCorrChris/corrFile_jecConfigDijet_NoCorr_LINX_Weighted_PYTHIA_HYDJET_20170118.root";
+  //std::string corrFileName = "/afs/cern.ch/work/m/mverweij/PbPb5TeV/mc/resCorrChris/corrFile_jecConfigDijet_ZJetReweight_NoCorr_LINX_PYTHIA_HYDJET_20170115.root";
+  resCorr.initPtEtaJetResidualCorr(corrFileName,"[0]+[1]/TMath::Sqrt(x)+[2]/x");
+  p_PUJet->SetDoResidualChris(true,resCorr);
   
   //---------------------------------------------------------------
   //analysis modules

@@ -1,4 +1,4 @@
-#include "UserCode/diall/analyzeZgHistosMCPbPb.C"
+#include "UserCode/diall/analyzeZgHistosDataPbPbJet80.C"
 
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -42,14 +42,6 @@ int main(int argc, char* argv[])
   if(argc>4)
     doJetShift = atoi(argv[5]);
 
-  int doZgReweight = 0;
-  if(argc>5)
-    doZgReweight = atoi(argv[6]);
-
-  int doRhoMCWeight = 0;
-  if(argc>5)
-    doRhoMCWeight = atoi(argv[6]); 
- 
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
@@ -62,7 +54,7 @@ int main(int argc, char* argv[])
   std::string outname = "AnaResultsZg.root";
   int maxEvts = runProcess.getParameter<int>("maxEvents");
     
-  analyzeZgHistos(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,doJetShift,doZgReweight,doRhoMCWeight);
+  analyzeZgHistos(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,doJetShift);
   
   std::cout << "Results have been stored in " << outname << std::endl;
 }

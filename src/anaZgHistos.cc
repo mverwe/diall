@@ -10,6 +10,11 @@ ClassImp(anaZgHistos)
    
 anaZgHistos::anaZgHistos(const char *name, const char *title) 
 :anaBaseTask(name,title),
+  fTriggerObjName(""),
+  fTriggerObj(0x0),
+  fTrigEtaMin(-5.),
+  fTrigEtaMax(5.),
+  fVzOffset(0.),
   fNcentBins(4),
   fJetsName(""),
   fJetsCont(0x0),
@@ -35,6 +40,8 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fJewelZgReweight(),
   fhCentrality(0),
   fh2RhoCent(),
+  fh1Vz(),
+  fh3PtEtaPhiTrigObj(),
   fh3PtEtaPhi(),
   fh2PtNSubjets(),
   fh2PtGenNSubjets(),
@@ -46,6 +53,8 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac2(),
   fh2PtSubjetPtInvMass21(),
   fh2PtZg(),
+  fh2PtGZg(),
+  fh2PtZgChMax(),
   fh2PtZgDRNoPass(),
   fh2PtZgAll(),
   fh2PtZgTrue(),
@@ -58,6 +67,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh3PtTruePtRecoSJScalePtSJ(),
   fh3PtTruePtRecoLSJScalePtLSJ(),
   fh3PtTruePtRecoSLSJScalePtSLSJ(),
+  fh2PtChMax(),
   fh2PtThetag(),
   fh2PtThetagTrue(),
   fh2PtThetagNoRef(),
@@ -75,6 +85,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fhnZgResponse()
 {
   
+  fh3PtEtaPhiTrigObj   = new TH3F*[fNcentBins];
   fh3PtEtaPhi          = new TH3F*[fNcentBins];
   fh2PtNSubjets        = new TH2F*[fNcentBins];
   fh2PtGenNSubjets     = new TH2F*[fNcentBins];
@@ -85,6 +96,8 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh2PtSubjetPtFrac1   = new TH2F*[fNcentBins];
   fh2PtSubjetPtFrac2   = new TH2F*[fNcentBins];
   fh2PtZg              = new TH2F*[fNcentBins];
+  fh2PtGZg             = new TH2F*[fNcentBins];
+  fh2PtZgChMax         = new TH2F*[fNcentBins];
   fh2PtZgDRNoPass      = new TH2F*[fNcentBins];
   fh2PtZgAll           = new TH2F*[fNcentBins];
   fh2PtZgTrue          = new TH2F*[fNcentBins];
@@ -97,6 +110,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fh3PtTruePtRecoSJScalePtSJ     = new TH3F*[fNcentBins];
   fh3PtTruePtRecoLSJScalePtLSJ   = new TH3F*[fNcentBins];
   fh3PtTruePtRecoSLSJScalePtSLSJ = new TH3F*[fNcentBins];
+  fh2PtChMax          = new TH2F*[fNcentBins];
   fh2PtThetag          = new TH2F*[fNcentBins];
   fh2PtThetagTrue      = new TH2F*[fNcentBins];
   fh2PtThetagNoRef     = new TH2F*[fNcentBins];
@@ -116,6 +130,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
   fhnZgResponse        = new THnSparse*[fNcentBins];
 
   for (int i = 0; i < fNcentBins; i++) {
+    fh3PtEtaPhiTrigObj[i] = 0;
     fh3PtEtaPhi[i]      = 0;
     fh2PtNSubjets[i]    = 0;
     fh2PtGenNSubjets[i] = 0;
@@ -127,6 +142,8 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh2PtSubjetPtFrac2[i]   = 0;
     fh2PtSubjetPtInvMass21[i]   = 0;
     fh2PtZg[i]                  = 0;
+    fh2PtGZg[i]                 = 0;
+    fh2PtZgChMax[i]             = 0;
     fh2PtZgDRNoPass[i]          = 0;
     fh2PtZgAll[i]               = 0;
     fh2PtZgTrue[i]              = 0;
@@ -139,6 +156,7 @@ anaZgHistos::anaZgHistos(const char *name, const char *title)
     fh3PtTruePtRecoSJScalePtSJ[i]    = 0;
     fh3PtTruePtRecoLSJScalePtLSJ[i]  = 0;
     fh3PtTruePtRecoSLSJScalePtSLSJ[i]= 0;
+    fh2PtChMax[i]               = 0;
     fh2PtThetag[i]              = 0;
     fh2PtThetagTrue[i]          = 0;
     fh2PtThetagNoRef[i]         = 0;
@@ -162,10 +180,29 @@ void anaZgHistos::Exec(Option_t * /*option*/)
 {
   //printf("anaZgHistos executing\n");
   anaBaseTask::Exec();
-  if(!SelectEvent()) return;
-  //Printf("event selected");
   if(!fInitOutput) CreateOutputObjects();
 
+  //Get MC weight
+  float weight = 1.;
+  if(fHiEvent) {
+    if(fHiEvent->GetWeight()>0.) weight = fHiEvent->GetWeight();
+  }
+  fh1Vz->Fill(fHiEvent->GetVz()-fVzOffset,weight);
+
+  //reject events not passing standard event selections
+  if(!SelectEvent()) return;
+  
+  //Printf("event selected");
+
+  //Get trigger object map
+  if(!fTriggerObj && !fTriggerObjName.IsNull()) {
+    fTriggerObj = dynamic_cast<triggerObjectMap*>(fEventObjects->FindObject(fTriggerObjName.Data()));
+    if(!fTriggerObj) {
+      Printf("%s: !!WARNING: Couldn't locate %s branch",GetName(),fTriggerObjName.Data());
+      return;
+    }
+  }
+  
   //Groomed jet. default zcut
   if(!fJetsCont && !fJetsName.IsNull())
     fJetsCont = dynamic_cast<lwJetContainer*>(fEventObjects->FindObject(fJetsName.Data()));
@@ -179,13 +216,6 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     return;
   }
   
-  //Get MC weight
-  float weight = 1.;
-  if(fHiEvent) {
-    if(fHiEvent->GetWeight()>0.) weight = fHiEvent->GetWeight();
-  }
-    
-
   //Determine centrality bin
   Double_t cent = 0.;
   if(fHiEvent) cent = fHiEvent->GetCentrality();
@@ -201,6 +231,20 @@ void anaZgHistos::Exec(Option_t * /*option*/)
     else fCentBin = -1;
   }
 
+  if(fTriggerObj) {
+    if(fTriggerObj->GetTriggerEta()<fTrigEtaMin || fTriggerObj->GetTriggerEta()>fTrigEtaMax) return;
+  }
+
+  if(fCentBin>-1 && fCentBin<fNcentBins && fTriggerObj) {
+    // TString strTrigObj = fTriggerList[0];
+    // strTrigObj.ReplaceAll("v1","v");
+    // strTrigObj.ReplaceAll("v2","v");
+    // strTrigObj.ReplaceAll("v3","v");
+    // strTrigObj.ReplaceAll("v4","v");
+    // strTrigObj.ReplaceAll("v5","v");
+    fh3PtEtaPhiTrigObj[fCentBin]->Fill(fTriggerObj->GetTriggerPt(),fTriggerObj->GetTriggerEta(),fTriggerObj->GetTriggerPhi()); 
+  }
+  
   float rhoCentral = -1.;
   if(fHiEvent) {
     rhoMap *rm = fHiEvent->GetRhoMap();
@@ -407,6 +451,9 @@ void anaZgHistos::Exec(Option_t * /*option*/)
       fh2PtPtGF[fCentBin]->Fill(pt,ptg/pt);
       fh2PtNDrop[fCentBin]->Fill(pt,ndrop);
       fh2PtZg[fCentBin]->Fill(pt,zg,weight);
+      fh2PtGZg[fCentBin]->Fill(ptg,zg,weight);
+      if(jetNotGroomed->GetChargedMax()>5.) fh2PtZgChMax[fCentBin]->Fill(pt,zg,weight);
+      fh2PtChMax[fCentBin]->Fill(pt,jetNotGroomed->GetChargedMax(),weight);
       fh2PtThetag[fCentBin]->Fill(pt,thetag,weight);
       fh2PtDeltaR12[fCentBin]->Fill(pt,deltaR12,weight);
       if(ptg>0.) fh2PtMgOverPt[fCentBin]->Fill(pt,mg/ptg,weight);
@@ -493,6 +540,9 @@ void anaZgHistos::CreateOutputObjects() {
   fh2RhoCent = new TH2F("fh2RhoCent","fh2RhoCent;centrality;#rho",100,0,100,500,0,500);
   fOutput->Add(fh2RhoCent);
 
+  fh1Vz = new TH1F("fh1Vz","fh1Vz",120,-30.,30.);
+  fOutput->Add(fh1Vz);
+  
   TString histTitle = "";
   TString histName  = "";
 
@@ -519,6 +569,11 @@ void anaZgHistos::CreateOutputObjects() {
   const Double_t xmax0[nBinsSparse0]  = { maxZg, maxZg, maxPt, maxPt, maxDPtRel, maxDZgRel};
   
   for (Int_t i = 0; i < fNcentBins; i++) {
+    histName = Form("fh3PtEtaPhiTrigObj_%d",i);
+    histTitle = Form("%s;pt;#eta;#phi;",histName.Data());
+    fh3PtEtaPhiTrigObj[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,100,-5,5,72,-TMath::Pi(),TMath::Pi());
+    fOutput->Add(fh3PtEtaPhiTrigObj[i]);
+
     histName = Form("fh2PtEtaPhi_%d",i);
     histTitle = Form("%s;pt;#eta;#phi;",histName.Data());
     fh3PtEtaPhi[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,100,-5,5,72,-TMath::Pi(),TMath::Pi());
@@ -574,6 +629,16 @@ void anaZgHistos::CreateOutputObjects() {
     fh2PtZg[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
     fOutput->Add(fh2PtZg[i]);
 
+    histName = Form("fh2PtGZg_%d",i);
+    histTitle = Form("%s;p_{T,g};z_{g};",histName.Data());
+    fh2PtGZg[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
+    fOutput->Add(fh2PtGZg[i]);
+
+    histName = Form("fh2PtZgChMax_%d",i);
+    histTitle = Form("%s;p_{T};z_{g};",histName.Data());
+    fh2PtZgChMax[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
+    fOutput->Add(fh2PtZgChMax[i]);
+
     histName = Form("fh2PtZgDRNoPass_%d",i);
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh2PtZgDRNoPass[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,50,0,0.5);
@@ -598,6 +663,11 @@ void anaZgHistos::CreateOutputObjects() {
     histTitle = Form("%s;p_{T};z_{g};",histName.Data());
     fh3PtRecPtTrueZg[i] = new TH3F(histName.Data(),histTitle.Data(),50,0,500,50,0,500,50,0,0.5);
     fOutput->Add(fh3PtRecPtTrueZg[i]);
+
+    histName = Form("fh2PtChMax_%d",i);
+    histTitle = Form("%s;p_{T};p_{T,ch max};",histName.Data());
+    fh2PtChMax[i] = new TH2F(histName.Data(),histTitle.Data(),50,0,500,100,0,100.);
+    fOutput->Add(fh2PtChMax[i]);
     
     histName = Form("fh2PtThetag_%d",i);
     histTitle = Form("%s;p_{T};#theta_{g};",histName.Data());

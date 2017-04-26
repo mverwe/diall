@@ -32,6 +32,8 @@
 #include "UserCode/diall/interface/subjetSmearingResolution.h"
 #include "UserCode/diall/interface/trackProducer.h"
 #include "UserCode/diall/interface/triggerMap.h"
+#include "UserCode/diall/interface/triggerObjectMap.h"
+#include "UserCode/diall/interface/triggerObjectProducer.h"
 #include "UserCode/diall/interface/triggerProducer.h"
 
 #include "UserCode/diall/interface/FJ_includes.h"
@@ -60,6 +62,8 @@
 #include "UserCode/diall/interface/anaZToMuMu.h"
 #include "UserCode/diall/interface/anaZgHistos.h"
 #include "UserCode/diall/interface/anaZgHistosCrossChecks.h"
+
+#include "UserCode/diall/include/residualJetCorrChris.h"
 
 #ifdef __CINT__
 
@@ -105,6 +109,8 @@
 //#endif
 #pragma link C++ class trackProducer+;
 #pragma link C++ class triggerMap+;
+#pragma link C++ class triggerObjectMap+;
+#pragma link C++ class triggerObjectProducer+;
 #pragma link C++ class triggerProducer+;
 
 #pragma link C++ class FJJetShape+;
@@ -132,6 +138,8 @@
 #pragma link C++ class anaZToMuMu+;
 #pragma link C++ class anaZgHistos+;
 #pragma link C++ class anaZgHistosCrossChecks+;
+
+#pragma link C++ class residualJetCorrChris.h;
 
 #endif
 

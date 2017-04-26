@@ -16,6 +16,7 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fTriggerMapName(""),
   fTriggerMap(),
   fTriggerList(0),
+  fTriggerListSubset(0),
   fCollSel(0),
   fHBHENoise(0),
   fHBHENoiseLoose(0),
@@ -155,6 +156,16 @@ bool anaBaseTask::SelectEvent() const {
     for(std::vector<std::string>::const_iterator s = fTriggerList.begin(); s != fTriggerList.end(); ++s) {
        int fire = fTriggerMap->TriggerFired(*s);
        if(fire>0) passTrig = true;
+    }
+
+    if(fTriggerListSubset.size()>0) {
+      bool passTrigSubset = false;
+      
+      for(std::vector<std::string>::const_iterator s = fTriggerListSubset.begin(); s != fTriggerListSubset.end(); ++s) {
+        int fire = fTriggerMap->TriggerFired(*s);
+        if(fire>0) passTrigSubset = true;
+      }
+      if(!passTrigSubset) passTrig = false;
     }
     accept = passTrig;
   }

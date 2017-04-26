@@ -152,6 +152,7 @@ class lwJet : public particleBase {
   Float_t           fCsvSimpleDiscr;//csv simple b-jet discriminator
 
   float             fTau[3];
+  //float             fTrackMax;
   
   std::vector<float>  fSubJetPt;  //list of subjet pt
   std::vector<float>  fSubJetEta; //list of subjet eta

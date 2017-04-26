@@ -28,6 +28,6 @@ class triggerMap : public TNamed {
   triggerMap(const triggerMap& obj); // copy constructor
   triggerMap& operator=(const triggerMap& other); // assignment
 
-  ClassDef(triggerMap,1)
+  ClassDef(triggerMap,2)
 };
 #endif

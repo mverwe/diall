@@ -27,6 +27,7 @@ public:
    void SetHiEvtName(TString name)       { fEvtName  = name ; }
    void SetTriggerMapName(TString name)  { fTriggerMapName  = name ; }
    void AddTriggerSel(std::string s)     { fTriggerList.push_back(s); }
+   void AddTriggerSelSubset(std::string s) { fTriggerListSubset.push_back(s); }
 
    bool   SelectEvent() const;
    void   DoCollisionEventSel(bool b)    { fCollSel   = b; }
@@ -55,7 +56,8 @@ public:
    hiEventContainer *fHiEvent;                  //!event container
    TString           fTriggerMapName;           //name of trigger map
    triggerMap       *fTriggerMap;               //!trigger map
-   std::vector<std::string> fTriggerList;       // triggers to add to event
+   std::vector<std::string> fTriggerList;       // triggers to accept event OR
+   std::vector<std::string> fTriggerListSubset; // triggers to accept event AND with fTriggerList
    bool        fCollSel;                        //flag to do collision event sel
    bool        fHBHENoise;                      //HBHE noise filter
    bool        fHBHENoiseLoose;                 //HBHE noise filter loose

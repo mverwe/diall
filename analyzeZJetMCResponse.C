@@ -14,6 +14,7 @@
 #include "UserCode/diall/interface/anaPuppiProducer.h"
 #include "UserCode/diall/interface/anaZJetMCResponse.h"
 #include "UserCode/diall/interface/anaZToMuMu.h"
+#include <UserCode/diall/include/residualJetCorrChris.h>
 
 #include <TList.h>
 #include <TChain.h>
@@ -109,7 +110,12 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   p_PUJet->SetJetContName(jetName);
   p_PUJet->SetGenJetContName("");//akt4Gen");
   p_PUJet->SetEventObjects(fEventObjects);
-  p_PUJet->SetRadius(0.4);
+  p_PUJet->SetRadius(0.3);
+  p_PUJet->SetHiEvtName("hiEventContainer");
+  residualJetCorrChris resCorr;
+  std::string corrFileName = "/afs/cern.ch/work/m/mverweij/PbPb5TeV/mc/resCorrChris/corrFile_jecConfigZJet_NoCorr_LINX_PYTHIA_HYDJET_7Over8PIDPhiCut_20170118.root";
+  resCorr.initPtEtaJetResidualCorr(corrFileName,"[0]+[1]/TMath::Sqrt(x)+[2]/x");
+  p_PUJet->SetDoResidualChris(true,resCorr);
 
   //---------------------------------------------------------------
   //analysis modules
@@ -132,7 +138,7 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
   ZResp->SetHiEvtName("hiEventContainer");
   ZResp->SetZsName("zMuMuBosons");
   ZResp->SetJetsName(jetName);
-  ZResp->SetNCentBins(3);
+  ZResp->SetNCentBins(4);
   handler->Add(ZResp);
 
 
@@ -149,8 +155,9 @@ void analyzeZJetMCResponse(std::vector<std::string> urls, const char *outname = 
     // Printf("produce hiEvent");
     p_evt->Run(jentry);   //hi event properties
 
-    //Printf("produce pf particles");
+    //Printf("produce gen particles");
     p_gen->Run(jentry);   //gen particles
+    //Printf("produce jets");
     p_PUJet->Run(jentry); //jets
     
     //Execute all analysis tasks

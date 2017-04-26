@@ -19,7 +19,7 @@ anaZJetMCResponse::anaZJetMCResponse(const char *name, const char *title)
   fGenJetsCont(0x0),
   fUseForestMatching(true),
   fMaxJetEta(2.),
-  fMinJetPt(30.),
+  fMinJetPt(0.),
   fMinZPt(40.),
   fh1ZPtInc(0),
   fh3ZJetPtRecGenInc(0),
@@ -139,7 +139,7 @@ void anaZJetMCResponse::Exec(Option_t * /*option*/)
       if(refpt<10. || fabs(jet->Eta())>fMaxJetEta) continue; //only select true jets
       
       double dphi = acos(cos(jet->Phi() - z->Phi()));
-      double mindphi = 2*3.14159/3.;
+      double mindphi = 7*3.14159/8.;//2*3.14159/3.;
       if(dphi<mindphi) continue;
       if(fCentBin>-1 && fCentBin<fNcentBins) {
         fh3ZJetPtRecGen[fCentBin]->Fill(z->Pt(),jet->Pt(),refpt,weight);

@@ -1,4 +1,4 @@
-#include "UserCode/diall/analyzeZgHistosMCPbPb.C"
+#include "UserCode/diall/analyzeJESPbPbResCorr.C"
 
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -37,19 +37,7 @@ int main(int argc, char* argv[])
   Int_t firstEvent = 0;
   if(argc>3)
     firstEvent = atoi(argv[4]);
-
-  int doJetShift = 0;
-  if(argc>4)
-    doJetShift = atoi(argv[5]);
-
-  int doZgReweight = 0;
-  if(argc>5)
-    doZgReweight = atoi(argv[6]);
-
-  int doRhoMCWeight = 0;
-  if(argc>5)
-    doRhoMCWeight = atoi(argv[6]); 
- 
+  
   std::cout << "Have " << argc << " arguments:" << std::endl;
   for (int i = 0; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
@@ -59,10 +47,10 @@ int main(int argc, char* argv[])
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("config");
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
 
-  std::string outname = "AnaResultsZg.root";
+  std::string outname = "AnaResultsJES.root";
   int maxEvts = runProcess.getParameter<int>("maxEvents");
     
-  analyzeZgHistos(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent,doJetShift,doZgReweight,doRhoMCWeight);
+  analyzeJES(urls,outname.c_str(),maxEvts,firstFile,lastFile,firstEvent);
   
   std::cout << "Results have been stored in " << outname << std::endl;
 }

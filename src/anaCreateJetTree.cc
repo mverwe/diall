@@ -21,6 +21,7 @@ anaCreateJetTree::anaCreateJetTree(const char *name, const char *title)
   fMinJetPtRec(0.),
   fMinJetPtRef(0.),
   fStoreSubjets(false),
+  fStorePFIdInfo(false),
   fOutJetTreeVars()
   //  fForestJets()
 {
@@ -104,6 +105,8 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
 
      if(jtpt<fMinJetPtRec) continue;
 
+     lwJet *jetGen;
+     
      if(fUseForestMatching) {
        //reject unmatched or badly matched jets
        if(jet->GetRefDr()>fMaxDist
@@ -113,7 +116,7 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
        refeta = jet->GetRefEta();
 
        int id = jet->GetMatchId1();
-       lwJet *jetGen = fJetsGenCont->GetJet(id);
+       jetGen = fJetsGenCont->GetJet(id);
        if(!jetGen) continue;
        double dR = jet->DeltaR(jetGen);
        if(dR>fMaxDist) continue;
@@ -121,7 +124,7 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
        matcheta = jetGen->Eta();       
      } else {
        int id = jet->GetMatchId1();
-       lwJet *jetGen = fJetsGenCont->GetJet(id);
+       jetGen = fJetsGenCont->GetJet(id);
        if(!jetGen) continue;
        double dR = jet->DeltaR(jetGen);
        if(dR>fMaxDist) continue;
@@ -149,6 +152,34 @@ void anaCreateJetTree::Exec(Option_t * /*option*/)
      fOutJetTreeVars.fEtaRef.push_back(refeta);
      fOutJetTreeVars.fPtMatch.push_back(matchpt);
      fOutJetTreeVars.fEtaMatch.push_back(matcheta);
+
+     if(fStorePFIdInfo) {
+       if(fUseForestMatching) {
+         fOutJetTreeVars.fCHF.push_back(jet->GetCHF());
+         fOutJetTreeVars.fNHF.push_back(jet->GetNHF());
+         fOutJetTreeVars.fCEF.push_back(jet->GetCEF());
+         fOutJetTreeVars.fNEF.push_back(jet->GetNEF());
+         fOutJetTreeVars.fMUF.push_back(jet->GetMUF());
+       
+         fOutJetTreeVars.fCHM.push_back(jet->GetCHM());
+         fOutJetTreeVars.fNHM.push_back(jet->GetNHM());
+         fOutJetTreeVars.fCEM.push_back(jet->GetCEM());
+         fOutJetTreeVars.fNEM.push_back(jet->GetNEM());
+         fOutJetTreeVars.fMUM.push_back(jet->GetMUM());
+       } else {
+         fOutJetTreeVars.fCHF.push_back(jetGen->GetCHF());
+         fOutJetTreeVars.fNHF.push_back(jetGen->GetNHF());
+         fOutJetTreeVars.fCEF.push_back(jetGen->GetCEF());
+         fOutJetTreeVars.fNEF.push_back(jetGen->GetNEF());
+         fOutJetTreeVars.fMUF.push_back(jetGen->GetMUF());
+       
+         fOutJetTreeVars.fCHM.push_back(jetGen->GetCHM());
+         fOutJetTreeVars.fNHM.push_back(jetGen->GetNHM());
+         fOutJetTreeVars.fCEM.push_back(jetGen->GetCEM());
+         fOutJetTreeVars.fNEM.push_back(jetGen->GetNEM());
+         fOutJetTreeVars.fMUM.push_back(jetGen->GetMUM());
+       }
+     }
      
      if(fStoreSubjets) {
        if(fUseForestMatching) {
@@ -202,6 +233,18 @@ void anaCreateJetTree::CreateOutputObjects() {
     fTreeOut->Branch("fSubJetPhiRef",&fOutJetTreeVars.fSubJetPhiRef);
     fTreeOut->Branch("fSubJetMRef",&fOutJetTreeVars.fSubJetMRef);
   }
+  if(fStorePFIdInfo) {
+    fTreeOut->Branch("fCHF",&fOutJetTreeVars.fCHF);
+    fTreeOut->Branch("fNHF",&fOutJetTreeVars.fNHF);
+    fTreeOut->Branch("fCEF",&fOutJetTreeVars.fCEF);
+    fTreeOut->Branch("fNEF",&fOutJetTreeVars.fNEF);
+    fTreeOut->Branch("fMUF",&fOutJetTreeVars.fMUF);
+    fTreeOut->Branch("fCHM",&fOutJetTreeVars.fCHM);
+    fTreeOut->Branch("fNHM",&fOutJetTreeVars.fNHM);
+    fTreeOut->Branch("fCEM",&fOutJetTreeVars.fCEM);
+    fTreeOut->Branch("fNEM",&fOutJetTreeVars.fNEM);
+    fTreeOut->Branch("fMUM",&fOutJetTreeVars.fMUM);
+  }
   fOutput->Add(fTreeOut);
   
   // TString histTitle = "";
@@ -229,4 +272,14 @@ void anaCreateJetTree::ClearOutJetTreeVars() {
   fOutJetTreeVars.fSubJetEtaRef.clear();
   fOutJetTreeVars.fSubJetPhiRef.clear();
   fOutJetTreeVars.fSubJetMRef.clear();
+  fOutJetTreeVars.fCHF.clear();
+  fOutJetTreeVars.fNHF.clear();
+  fOutJetTreeVars.fCEF.clear();
+  fOutJetTreeVars.fNEF.clear();
+  fOutJetTreeVars.fMUF.clear();
+  fOutJetTreeVars.fCHM.clear();
+  fOutJetTreeVars.fNHM.clear();
+  fOutJetTreeVars.fCEM.clear();
+  fOutJetTreeVars.fNEM.clear();
+  fOutJetTreeVars.fMUM.clear();
 }

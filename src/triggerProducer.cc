@@ -27,11 +27,11 @@ triggerProducer::triggerProducer(const char *name) :
   inputBase(name),
   fTriggerMapName("triggerMap"),
   fTriggerMap(0),
-  fTriggerList(0),
+  fTriggerList(0),  
   fTrigVal(),
   fTrigBranch(),
   fNTriggers(0)
-{
+ {
   //standard constructor
 }
 
@@ -46,11 +46,11 @@ void triggerProducer::SetInput(TChain *chain) {
 Bool_t triggerProducer::Init() {
 
   if(!inputBase::Init()) return kFALSE;
-
- fNTriggers = 0;
+  
+  fNTriggers = 0;
   for(std::vector<std::string>::const_iterator s = fTriggerList.begin(); s != fTriggerList.end(); ++s) {
     if(fChain->SetBranchAddress((*s).c_str(),&fTrigVal[fNTriggers],&fTrigBranch[fNTriggers])<0) continue;
-  fNTriggers++;
+    fNTriggers++;
   }
 
   fInit = kTRUE;
@@ -115,7 +115,7 @@ Bool_t triggerProducer::Run(Long64_t entry) {
     fChain->GetEntry(entry);
     fTriggerMap->AddTrigger(fTriggerList.at(i),fTrigVal[i]);
   }
- 
+  
   //fTriggerMap->PrintTriggers();
 
   return kTRUE; 
@@ -145,6 +145,6 @@ Long64_t triggerProducer::LoadTree(Long64_t entry) {
   }
   
   fChain->GetEntry(entry);
-  
+
   return centry;  
 }

@@ -16,6 +16,9 @@
 #include <UserCode/diall/interface/lwJetContainer.h>
 #include <UserCode/diall/interface/ForestJets.h>
 
+#include "UserCode/diall/interface/hiEventContainer.h"
+#include <UserCode/diall/include/residualJetCorrChris.h>
+
 class lwJetFromForestProducer : public inputBase {
  public:
   lwJetFromForestProducer();
@@ -42,6 +45,9 @@ class lwJetFromForestProducer : public inputBase {
   void                   SetL2Relative(TString s)    { fL2Relative    = s; }
   void                   SetL3Absolute(TString s)    { fL3Absolute    = s; }
   void                   SetL2L3Residual(TString s)  { fL2L3Residual  = s; }
+
+  void SetHiEvtName(TString name)       { fEvtName  = name ; }
+  void                   SetDoResidualChris(bool b, residualJetCorrChris obj)  { fDoResidualChris = b; fResidualChris = obj; }
   
  protected:
   bool                         IsGoodPFJet(int i) const;
@@ -62,10 +68,17 @@ class lwJetFromForestProducer : public inputBase {
   TString          fL3Absolute;
   TString          fL2L3Residual;
 
+  TString           fEvtName;                  //name of hi event container
+  hiEventContainer *fHiEvent;                  //!event container
+  bool              fDoResidualChris;          //residual correction from Chris
+  //TString          fResidualChrisFile;     //file with residual corrections from Chris
+  residualJetCorrChris fResidualChris;     //residual correction object
+  std::string      fCorrFormChris;         //correction form
+  
  private:
   lwJetFromForestProducer(const lwJetFromForestProducer& obj); // copy constructor
   lwJetFromForestProducer& operator=(const lwJetFromForestProducer& other); // assignment
   
-  ClassDef(lwJetFromForestProducer,1)
+  ClassDef(lwJetFromForestProducer,2)
 };
 #endif

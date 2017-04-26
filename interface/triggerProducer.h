@@ -25,8 +25,8 @@ class triggerProducer : public inputBase {
   Bool_t   InitEventObjects();
   Bool_t   Run(Long64_t entry);
   
-  void     SetTriggerMapName(TString n) { fTriggerMapName = n; }
-  void     AddTrigger(std::string s)    { fTriggerList.push_back(s); }
+  void     SetTriggerMapName(TString n)    { fTriggerMapName = n; }
+  void     AddTrigger(std::string s)       { fTriggerList.push_back(s); }
 
   const char* GetTriggerMapName() const { return fTriggerMapName.Data() ; }
   triggerMap *GetTriggerMap()      const { return fTriggerMap; }
@@ -34,11 +34,11 @@ class triggerProducer : public inputBase {
  protected:
   TString                      fTriggerMapName;  // name of trigger map
   triggerMap                  *fTriggerMap;      //! trigger map
-  std::vector<std::string>     fTriggerList;     // triggers to add to event 
+  std::vector<std::string>     fTriggerList;     // triggers to add to event
   int                          fTrigVal[20000];
   TBranch                     *fTrigBranch[20000];
   int                          fNTriggers;
- 
+
  private:
   triggerProducer(const triggerProducer& obj); // copy constructor
   triggerProducer& operator=(const triggerProducer& other); // assignment

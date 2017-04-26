@@ -115,8 +115,8 @@ Bool_t genParticleProducer::Run(Long64_t entry) {
     genParticle *gp = new genParticle(fFGenParts.pt->at(i),
                                       fFGenParts.eta->at(i),
                                       fFGenParts.phi->at(i),
-                                      fFGenParts.m->at(i),
-//                                      0,
+                                      //                                      fFGenParts.m->at(i),
+                                      0,
                                       i);
     
     //gp->SetCharge((int)(fFGenParts.chg->at(i)));
@@ -143,6 +143,7 @@ Bool_t genParticleProducer::AcceptParticle(Int_t i) {
   // if((*fFGenParts.sta)[i]!=fStatus)                  return kFALSE;
   //if((*fFGenParts.sube)[i]!=fSube)                   return kFALSE;
   int pdgabs = fabs((int)fFGenParts.pdg->at(i));
+  //Printf("pdgabs: %d",pdgabs);
   if(pdgabs==12 || pdgabs==14 || pdgabs==16) //12,14,16 exclude neutrinos
    return kFALSE;
   
