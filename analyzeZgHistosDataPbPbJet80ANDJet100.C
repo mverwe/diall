@@ -227,6 +227,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anaZgHistos *anazghistosOnlyJet60 = new anaZgHistos("anaZgHistosOnlyJet60","anaZgHistosOnlyJet60");
   anazghistosOnlyJet60->ConnectEventObject(fEventObjects);
   anazghistosOnlyJet60->SetHiEvtName("hiEventContainer");
+  anazghistosOnlyJet60->SetMaxZVertex(9999.);
   anazghistosOnlyJet60->DoCollisionEventSel(true);
   anazghistosOnlyJet60->DoHBHENoiseFilter(true);
   anazghistosOnlyJet60->DoHBHENoiseFilterLoose(true);
@@ -251,6 +252,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anaZgHistos *anazghistosOnlyJet80 = new anaZgHistos("anaZgHistosOnlyJet80","anaZgHistosOnlyJet80");
   anazghistosOnlyJet80->ConnectEventObject(fEventObjects);
   anazghistosOnlyJet80->SetHiEvtName("hiEventContainer");
+  anazghistosOnlyJet80->SetMaxZVertex(9999.);
   anazghistosOnlyJet80->DoCollisionEventSel(true);
   anazghistosOnlyJet80->DoHBHENoiseFilter(true);
   anazghistosOnlyJet80->DoHBHENoiseFilterLoose(true);
@@ -275,6 +277,7 @@ void analyzeZgHistos(std::vector<std::string> urls, const char *outname = "event
   anaZgHistos *anazghistosOnlyJet100 = new anaZgHistos("anaZgHistosOnlyJet100","anaZgHistosOnlyJet100");
   anazghistosOnlyJet100->ConnectEventObject(fEventObjects);
   anazghistosOnlyJet100->SetHiEvtName("hiEventContainer");
+  anazghistosOnlyJet100->SetMaxZVertex(9999.);
   anazghistosOnlyJet100->DoCollisionEventSel(true);
   anazghistosOnlyJet100->DoHBHENoiseFilter(true);
   anazghistosOnlyJet100->DoHBHENoiseFilterLoose(true);

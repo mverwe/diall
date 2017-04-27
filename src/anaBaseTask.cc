@@ -17,6 +17,7 @@ anaBaseTask::anaBaseTask(const char *name, const char *title)
   fTriggerMap(),
   fTriggerList(0),
   fTriggerListSubset(0),
+  fZVertexMax(15.),
   fCollSel(0),
   fHBHENoise(0),
   fHBHENoiseLoose(0),
@@ -101,7 +102,8 @@ bool anaBaseTask::SelectEvent() const {
   bool accept = true;
   
   if(fHiEvent) {
-    if(std::abs(fHiEvent->GetVz())>15.) accept = false;
+    //if(std::abs(fHiEvent->GetVz())>15.) accept = false;
+    if(std::abs(fHiEvent->GetVz())>fZVertexMax) accept = false;
     if(fCollSel && !fHiEvent->GetColl()) {
       //Printf("collSel rejected");
       accept = false;

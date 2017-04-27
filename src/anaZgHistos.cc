@@ -182,6 +182,9 @@ void anaZgHistos::Exec(Option_t * /*option*/)
   anaBaseTask::Exec();
   if(!fInitOutput) CreateOutputObjects();
 
+  //reject events not passing standard event selections
+  if(!SelectEvent()) return;
+  
   //Get MC weight
   float weight = 1.;
   if(fHiEvent) {
@@ -189,8 +192,7 @@ void anaZgHistos::Exec(Option_t * /*option*/)
   }
   fh1Vz->Fill(fHiEvent->GetVz()-fVzOffset,weight);
 
-  //reject events not passing standard event selections
-  if(!SelectEvent()) return;
+  if(std::abs(fHiEvent->GetVz())>15.) return;
   
   //Printf("event selected");
 

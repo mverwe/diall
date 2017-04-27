@@ -30,6 +30,7 @@ public:
    void AddTriggerSelSubset(std::string s) { fTriggerListSubset.push_back(s); }
 
    bool   SelectEvent() const;
+   void   SetMaxZVertex(float z)         { fZVertexMax = z; }
    void   DoCollisionEventSel(bool b)    { fCollSel   = b; }
    void   DoHBHENoiseFilter(bool b)      { fHBHENoise = b; }
    void   DoHBHENoiseFilterLoose(bool b) { fHBHENoiseLoose = b; }
@@ -58,6 +59,7 @@ public:
    triggerMap       *fTriggerMap;               //!trigger map
    std::vector<std::string> fTriggerList;       // triggers to accept event OR
    std::vector<std::string> fTriggerListSubset; // triggers to accept event AND with fTriggerList
+   float       fZVertexMax;                     // max z-vertex to accept
    bool        fCollSel;                        //flag to do collision event sel
    bool        fHBHENoise;                      //HBHE noise filter
    bool        fHBHENoiseLoose;                 //HBHE noise filter loose
